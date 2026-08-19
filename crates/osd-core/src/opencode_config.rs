@@ -31,17 +31,51 @@ const BROWSER_IDLE_TIMEOUT_MS: &str = "600000";
 /// that merely end in the token).
 const DANGEROUS_BASH: &[&str] = &[
     // deletion
-    "rm", "rmdir", "shred", "git clean",
+    "rm",
+    "rmdir",
+    "shred",
+    "git clean",
     // privilege / system state
-    "sudo", "su", "chmod", "chown", "kill", "pkill", "killall", "launchctl",
-    "systemctl", "crontab", "osascript", "diskutil", "dd",
+    "sudo",
+    "su",
+    "chmod",
+    "chown",
+    "kill",
+    "pkill",
+    "killall",
+    "launchctl",
+    "systemctl",
+    "crontab",
+    "osascript",
+    "diskutil",
+    "dd",
     // dependency installs
-    "pip install", "pip3 install", "uv add", "uv pip install", "npm install",
-    "npm i", "pnpm add", "pnpm install", "yarn add", "conda install",
-    "mamba install", "brew install", "cargo install", "gem install",
-    "apt install", "apt-get install",
+    "pip install",
+    "pip3 install",
+    "uv add",
+    "uv pip install",
+    "npm install",
+    "npm i",
+    "pnpm add",
+    "pnpm install",
+    "yarn add",
+    "conda install",
+    "mamba install",
+    "brew install",
+    "cargo install",
+    "gem install",
+    "apt install",
+    "apt-get install",
     // remote / outward
-    "ssh", "scp", "sftp", "rsync", "curl", "wget", "nc", "git push", "modal",
+    "ssh",
+    "scp",
+    "sftp",
+    "rsync",
+    "curl",
+    "wget",
+    "nc",
+    "git push",
+    "modal",
     "sbatch",
 ];
 
@@ -436,7 +470,9 @@ fn ensure_named_plugin(existing: &str, plugin_path: &str, filename: &str) -> Opt
     }
     let arr = plugins.as_array_mut().unwrap();
     let ours = |v: &Value| v.as_str().is_some_and(|s| s.ends_with(filename));
-    if arr.iter().any(|v| v.as_str() == Some(plugin_path)) && arr.iter().filter(|v| ours(v)).count() == 1 {
+    if arr.iter().any(|v| v.as_str() == Some(plugin_path))
+        && arr.iter().filter(|v| ours(v)).count() == 1
+    {
         return None; // already exactly right
     }
     arr.retain(|v| !ours(v));
@@ -578,7 +614,6 @@ pub(crate) fn read_config(existing: &str) -> Option<Value> {
         }
     }
 }
-
 
 /// Turn OpenCode's automatic context compaction on the first time we see a
 /// config without a `compaction` block. Without it a long conversation ends in
@@ -741,13 +776,22 @@ mod tests {
         let updated = set_default_model(existing, "anthropic/claude-opus-4-5").expect("parses");
         let v: Value = serde_json::from_str(&updated).unwrap();
         assert_eq!(v["model"], "anthropic/claude-opus-4-5");
-        assert_eq!(v["provider"]["openai"]["options"]["apiKey"], "sk", "keys survive");
-        assert_eq!(v["permission"]["bash"]["rm *"], "ask", "so does the approval config");
+        assert_eq!(
+            v["provider"]["openai"]["options"]["apiKey"], "sk",
+            "keys survive"
+        );
+        assert_eq!(
+            v["permission"]["bash"]["rm *"], "ask",
+            "so does the approval config"
+        );
         assert_eq!(v["$schema"], "https://opencode.ai/config.json");
 
         // A config with no model at all gains one.
         let fresh = set_default_model("{}", "openai/gpt-5").expect("parses");
-        assert_eq!(serde_json::from_str::<Value>(&fresh).unwrap()["model"], "openai/gpt-5");
+        assert_eq!(
+            serde_json::from_str::<Value>(&fresh).unwrap()["model"],
+            "openai/gpt-5"
+        );
 
         // An unreadable config is never rewritten (#116).
         assert!(set_default_model("{ not json", "openai/gpt-5").is_none());
@@ -795,7 +839,10 @@ mod tests {
         );
         // Everything else survives, including the `//` inside a string value.
         assert_eq!(v["$schema"], json!("https://opencode.ai/config.json"));
-        assert_eq!(v["provider"]["openai"]["options"]["apiKey"], json!("sk-SECRET"));
+        assert_eq!(
+            v["provider"]["openai"]["options"]["apiKey"],
+            json!("sk-SECRET")
+        );
         assert_eq!(v["mcp"]["open-science-browser"]["enabled"], json!(true));
         assert_eq!(v["model"], json!("openai/gpt-5.6"));
     }
@@ -889,7 +936,8 @@ mod tests {
 
     #[test]
     fn browser_mcp_migration_keeps_an_existing_new_entry() {
-        let start = r#"{"mcp":{"browser-control":{"old":true},"open-science-browser":{"new":true}}}"#;
+        let start =
+            r#"{"mcp":{"browser-control":{"old":true},"open-science-browser":{"new":true}}}"#;
         let out = migrate_browser_integration(start).unwrap();
         let v: Value = serde_json::from_str(&out).unwrap();
         assert!(v["mcp"].get("browser-control").is_none());
@@ -1009,7 +1057,10 @@ mod tests {
         let out = set_agent_model("{}", "general", Some("anthropic/claude-haiku-4-5"));
         assert_eq!(
             agent_models(&out),
-            vec![("general".to_string(), "anthropic/claude-haiku-4-5".to_string())]
+            vec![(
+                "general".to_string(),
+                "anthropic/claude-haiku-4-5".to_string()
+            )]
         );
         let cleared = set_agent_model(&out, "general", None);
         assert!(agent_models(&cleared).is_empty());
@@ -1064,7 +1115,14 @@ mod tests {
 
     #[test]
     fn writes_provider_key_model_into_empty_config() {
-        let out = merge_config("", "anthropic", "sk-test", "anthropic/claude-sonnet-4-5", None).unwrap();
+        let out = merge_config(
+            "",
+            "anthropic",
+            "sk-test",
+            "anthropic/claude-sonnet-4-5",
+            None,
+        )
+        .unwrap();
         let v: Value = serde_json::from_str(&out).unwrap();
         assert_eq!(v["model"], "anthropic/claude-sonnet-4-5");
         assert_eq!(v["provider"]["anthropic"]["options"]["apiKey"], "sk-test");
@@ -1084,7 +1142,10 @@ mod tests {
     fn sets_base_url_when_provided() {
         let out = merge_config("", "openai", "k", "openai/gpt-4o", Some("https://x/v1")).unwrap();
         let v: Value = serde_json::from_str(&out).unwrap();
-        assert_eq!(v["provider"]["openai"]["options"]["baseURL"], "https://x/v1");
+        assert_eq!(
+            v["provider"]["openai"]["options"]["baseURL"],
+            "https://x/v1"
+        );
     }
 
     #[test]
@@ -1108,7 +1169,10 @@ mod tests {
         // An outward connection through the browser is gated like webfetch;
         // without this rule MCP tools match the builtin "*": "allow" and the
         // expensive path is the silent one.
-        assert_eq!(v["permission"]["open-science-browser_agent_browser_*"], "ask");
+        assert_eq!(
+            v["permission"]["open-science-browser_agent_browser_*"],
+            "ask"
+        );
     }
 
     #[test]
@@ -1117,7 +1181,10 @@ mod tests {
         let stale = r#"{"permission":{"bash":{"rm *":"ask"},"webfetch":"ask"}}"#;
         let out = migrate_browser_permission(stale).expect("approve config is back-filled");
         let v: Value = serde_json::from_str(&out).unwrap();
-        assert_eq!(v["permission"]["open-science-browser_agent_browser_*"], "ask");
+        assert_eq!(
+            v["permission"]["open-science-browser_agent_browser_*"],
+            "ask"
+        );
         // Idempotent, and a user who relaxed the rule keeps their choice.
         assert!(migrate_browser_permission(&out).is_none());
         let relaxed = r#"{"permission":{"bash":{"rm *":"ask"},
@@ -1136,7 +1203,10 @@ mod tests {
         let out = set_permission_mode(&approved, MODE_FULL).unwrap();
         let v: Value = serde_json::from_str(&out).unwrap();
         // Every ask this app adds is gone…
-        assert_eq!(v["permission"], json!({ "external_directory": { "*": "allow" } }));
+        assert_eq!(
+            v["permission"],
+            json!({ "external_directory": { "*": "allow" } })
+        );
         assert!(v["permission"].get("bash").is_none());
         assert!(v["permission"].get("webfetch").is_none());
         // …and the one remaining rule exists to beat OpenCode's builtin
@@ -1174,7 +1244,10 @@ mod tests {
         let out = migrate_external_directory(stale).expect("approve config is back-filled");
         let v: Value = serde_json::from_str(&out).unwrap();
         let ext = v["permission"]["external_directory"].as_object().unwrap();
-        assert!(!ext.contains_key("*"), "approve keeps the builtin ask for other paths");
+        assert!(
+            !ext.contains_key("*"),
+            "approve keeps the builtin ask for other paths"
+        );
         assert!(!ext.is_empty());
         // Existing rules survive, and a second pass is a no-op.
         assert_eq!(v["permission"]["bash"]["rm *"], "ask");
@@ -1189,10 +1262,10 @@ mod tests {
         // Never touches a config that has no mode yet (first run seeds it), and
         // never overwrites rules already present — including a user's own.
         assert!(migrate_external_directory("{}").is_none());
-        assert!(
-            migrate_external_directory(r#"{"permission":{"external_directory":{"*":"deny"}}}"#)
-                .is_none()
-        );
+        assert!(migrate_external_directory(
+            r#"{"permission":{"external_directory":{"*":"deny"}}}"#
+        )
+        .is_none());
     }
 
     #[test]
@@ -1204,13 +1277,19 @@ mod tests {
         push_temp_root(&mut roots, "/tmp/");
         assert_eq!(
             roots,
-            vec!["/var/folders/ab/T", "/private/var/folders/ab/T", "/tmp", "/private/tmp"]
+            vec![
+                "/var/folders/ab/T",
+                "/private/var/folders/ab/T",
+                "/tmp",
+                "/private/tmp"
+            ]
         );
     }
 
     #[test]
     fn set_permission_mode_preserves_unrelated_keys() {
-        let existing = r#"{"model":"anthropic/claude","provider":{"openai":{"options":{"apiKey":"k"}}}}"#;
+        let existing =
+            r#"{"model":"anthropic/claude","provider":{"openai":{"options":{"apiKey":"k"}}}}"#;
         let out = set_permission_mode(existing, MODE_APPROVE).unwrap();
         let v: Value = serde_json::from_str(&out).unwrap();
         assert_eq!(v["model"], "anthropic/claude");
@@ -1231,10 +1310,14 @@ mod tests {
 
     #[test]
     fn ensure_goal_plugin_replaces_stale_path_and_keeps_others() {
-        let existing = r#"{"plugin":["my-other-plugin","/old/place/goal-plugin.server.js"],"model":"m"}"#;
+        let existing =
+            r#"{"plugin":["my-other-plugin","/old/place/goal-plugin.server.js"],"model":"m"}"#;
         let out = ensure_goal_plugin(existing, "/new/goal-plugin.server.js").unwrap();
         let v: Value = serde_json::from_str(&out).unwrap();
-        assert_eq!(v["plugin"], json!(["my-other-plugin", "/new/goal-plugin.server.js"]));
+        assert_eq!(
+            v["plugin"],
+            json!(["my-other-plugin", "/new/goal-plugin.server.js"])
+        );
         assert_eq!(v["model"], "m"); // unrelated keys preserved
     }
 
@@ -1243,7 +1326,6 @@ mod tests {
         let existing = r#"{"plugin":["/app/goal-plugin.server.js"]}"#;
         assert!(ensure_goal_plugin(existing, "/app/goal-plugin.server.js").is_none());
     }
-
 
     #[test]
     fn ensure_browser_guard_plugin_replaces_only_its_own_stale_path() {
@@ -1284,4 +1366,3 @@ mod tests {
         assert_eq!(permission_mode_of(&full), Some(MODE_FULL));
     }
 }
-

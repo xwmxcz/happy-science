@@ -1,8 +1,10 @@
-# Open Science Desktop
+# Happy Science
 
-Brand name: **Open Science Desktop** — "Local-first, model-agnostic AI research
-workbench for macOS, Windows & Linux." Formerly Open Science. Bundle identifier stays
-`com.ai4s.workbench` and internal `@ai4s/*` package names are unchanged.
+Brand name: **Happy Science** — "Local-first, model-agnostic AI research
+workbench for macOS, Windows & Linux." The temporary bundle identifier is
+`com.happyscience.desktop`. Internal `@ai4s/*`, `osd*`, `.openscience/`, and
+`OPENSCIENCE_*` compatibility identifiers remain unchanged until an explicit
+contract migration replaces them.
 
 Project rules and working context for AI agents (Claude Code, Cursor, Codex, etc.).
 `CLAUDE.md` is a symlink to this file — edit only `AGENTS.md`.

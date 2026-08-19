@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Record a remote (SSH/HPC/Modal) experiment run into the Open Science provenance.
+"""Record a remote (SSH/HPC/Modal) experiment run into the Happy Science provenance.
 
 Remote runs execute off the laptop, so the app can't capture their environment,
 hardware, or outputs. This helper — called by the remote-compute / modal-run skills
@@ -155,7 +155,7 @@ def reject_reused_output_paths(record):
 
 
 def main():
-    p = argparse.ArgumentParser(description="Record a remote run into Open Science provenance.")
+    p = argparse.ArgumentParser(description="Record a remote run into Happy Science provenance.")
     p.add_argument("--command", required=True, help="the submit command, e.g. 'sbatch train.slurm'")
     p.add_argument("--surface", required=True, choices=["hpc", "modal", "ssh"], help="compute surface")
     p.add_argument("--status", default="ok", choices=["ok", "failed"], help="terminal outcome")

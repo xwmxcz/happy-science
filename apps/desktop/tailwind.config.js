@@ -29,8 +29,8 @@ export default {
         input: "10px",
       },
       boxShadow: {
-        card: "0 1px 2px rgba(40, 39, 35, 0.04), 0 4px 16px rgba(40, 39, 35, 0.05)",
-        pop: "0 8px 30px rgba(40, 39, 35, 0.14)",
+        card: "0 1px 2px rgba(16, 59, 58, 0.04), 0 4px 16px rgba(16, 59, 58, 0.05)",
+        pop: "0 8px 30px rgba(16, 59, 58, 0.14)",
       },
     },
   },

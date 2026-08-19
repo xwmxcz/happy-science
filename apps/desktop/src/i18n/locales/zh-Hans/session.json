@@ -138,26 +138,314 @@
   },
   "starters": {
     "newSession": "新建会话",
-    "heading": "我们该研究什么？",
-    "subheading": "在下方描述您的分析——或从以下选项开始。",
-    "demo": {
-      "title": "端到端运行一次演示分析",
-      "description": "模拟一份数据集，拟合模型，并生成图表和可追溯的报告。"
+    "missionControl": "研究任务控制台",
+    "heading": "先定义任务，再决定证据标准",
+    "subheading": "选择研究任务、查看交付物，并决定智能体完成多少验证后才能给出结果。",
+    "brief": {
+      "contract": "任务契约",
+      "title": "研究坐标",
+      "defined": "已定义 {{defined}}/{{total}}",
+      "optional": "· 可选",
+      "required": "请先定义任务目标再启动。",
+      "scaffold": "将缺失信息标为明确的 TBD，并给出可选方案，而不是停在一长串问卷上。",
+      "objective": {
+        "plan": { "label": "研究问题 / 假设", "placeholder": "在 Z 人群中，干预 X 相比对照是否改变结局 Y？" },
+        "literature": { "label": "综述问题 / 主题", "placeholder": "哪些证据支持或反驳……" },
+        "reproduce": { "label": "需要复现的主张", "placeholder": "填写定量主张、论文、图或表" },
+        "audit": { "label": "审计对象", "placeholder": "填写稿件、报告或完整性问题" }
+      },
+      "population": { "label": "人群 / 样本", "placeholder": "对象、场景、纳排标准、目标 N" },
+      "intervention": { "label": "干预 / 对照", "placeholder": "治疗、暴露、剂量、对照" },
+      "primaryOutcome": { "label": "主要结局", "placeholder": "变量、时间点、单位" },
+      "constraints": { "label": "范围与约束", "placeholder": "时间、文件、日期范围、方法、伦理、固定选择" }
+    },
+    "ledger": {
+      "label": "主张—证据图谱",
+      "description": "每条主张都关联可追溯证据；Happy Science 对本地来源快照计算哈希、核对原文摘录并生成争议图谱。",
+      "supports": "支持",
+      "contradicts": "反驳",
+      "qualifies": "限定",
+      "ready": "已关联 {{claims}} 条主张与 {{sources}} 个已核验来源，核对 {{quotes}} 条原文摘录并识别 {{contested}} 条争议主张。"
+    },
+    "deliverables": "任务交付物",
+    "launch": "启动研究任务",
+    "quickTools": "快速工具",
+    "rigor": {
+      "label": "严谨度旋钮",
+      "explore": {
+        "title": "探索级",
+        "description": "快速定位方向；所有未核实来源、假设与结论都必须明确标记。"
+      },
+      "research": {
+        "title": "研究级",
+        "description": "验证来源、可复现执行、结论可追溯，并在关键决策前等待确认。"
+      },
+      "publication": {
+        "title": "发表级",
+        "description": "在研究级基础上进行独立二次审查，不保留任何无依据结论。"
+      }
+    },
+    "plan": {
+      "title": "研究启动",
+      "description": "查看结果前，先锁定假设、估计目标、终点与决策门槛。",
+      "outputs": {
+        "protocol": "预注册式研究方案",
+        "decisions": "分析决策与敏感性假设",
+        "gate": "分析结果前的人工确认门"
+      }
+    },
+    "literature": {
+      "title": "证据冲刺",
+      "description": "用可核验检索链路，找出共识、矛盾与研究空白。",
+      "outputs": {
+        "search": "完整检索式与检索日期",
+        "evidence": "带可解析来源的筛选证据表",
+        "map": "共识、冲突、不确定性与空白图谱",
+        "ledger": "含原文摘录、可由机器验收的主张—证据图谱",
+        "sources": "带 SHA-256 的来源快照与检索清单"
+      }
     },
     "analyze": {
       "title": "分析我的数据",
       "description": "让代理处理您添加的文件；获取图表和报告。"
     },
+    "reproduce": {
+      "title": "复现挑战",
+      "description": "独立重建一项定量结论，并给出经得起追问的裁定。",
+      "outputs": {
+        "environment": "输入哈希、运行环境与命令清单",
+        "comparison": "原始值与复现值逐项对比",
+        "verdict": "通过、失败或受阻的裁定与偏差",
+        "ledger": "原始主张与复现结论对应的来源证据",
+        "sources": "带 SHA-256 的来源快照与检索清单"
+      }
+    },
     "audit": {
-      "title": "审查报告的可追溯性",
-      "description": "检查引用、无来源数字，以及图表与代码的一致性。"
+      "title": "稿件压力测试",
+      "description": "投稿前，对引用、数字、图表与局限性进行红队审查。",
+      "outputs": {
+        "findings": "按严重程度排序的科研诚信问题",
+        "checks": "引用、数字及图表到代码的核验",
+        "repair": "每项关键问题的修复计划",
+        "ledger": "被审计主张的支持、反驳与限定证据图谱",
+        "sources": "带 SHA-256 的来源快照与检索清单"
+      }
     },
     "example-climate": {
-      "title": "探索示例：气候趋势",
+      "title": "运行 NASA 气候基准",
       "description": "真实的 NASA GISTEMP 数据——趋势、十年对比、图表和报告。"
     },
     "error": {
-      "setup": "无法设置示例：{{message}}"
+      "setup": "无法设置示例：{{message}}",
+      "mission": "无法启动研究任务：{{message}}",
+      "incomplete": "任务已结束，但缺少规定证据：{{files}}"
+    }
+  },
+  "researchWorkspace": {
+    "status": {
+      "planned": "任务已规划",
+      "running": "任务进行中",
+      "waiting-for-input": "等待研究者输入",
+      "waiting-for-approval": "等待审批",
+      "paused": "任务已暂停",
+      "interrupted": "执行已中断",
+      "review-ready": "可以审阅",
+      "completed": "任务已完成",
+      "failed": "任务失败",
+      "cancelled": "任务已取消"
+    },
+    "lifecycle": {
+      "pause": "暂停",
+      "resume": "继续",
+      "complete": "确认完成",
+      "failed": "无法更新任务状态：{{message}}"
+    },
+    "nextActions": {
+      "title": "下一步队列",
+      "owner": { "agent": "智能体", "researcher": "你" },
+      "start-mission": "启动已规划的研究任务。",
+      "resume-mission": "从已保留的检查点继续任务。",
+      "answer-question": "回答当前阻塞研究进程的问题。",
+      "review-approval": "批准或拒绝当前待确认操作。",
+      "create-deliverable": "创建必要研究产物：{{target}}",
+      "resolve-protocol": "解决 {{target}} 中全部 TBD 和未勾选项目。",
+      "approve-protocol": "审阅并批准当前研究协议：{{target}}",
+      "review-evidence": "审阅 {{count}} 条尚未裁定的证据。",
+      "repair-evidence": "修复证据契约问题：{{target}}",
+      "review-run-integrity": "审阅 {{count}} 项方案偏离或可复现性问题。",
+      "complete-mission": "审阅已验证研究包并确认任务完成。"
+    },
+    "runIntegrity": {
+      "title": "方案 ↔ 实际运行一致性",
+      "summary": "{{runs}} 次运行 · {{aligned}} 次一致 · {{attention}} 次待审阅",
+      "noPlan": "{{count}} 次运行未找到预注册方案或分析计划。",
+      "aligned": "所有已检查运行均符合登记方案。"
+    },
+    "refresh": "检查状态",
+    "checking": "检查中",
+    "executor": "智能体执行器",
+    "recovery": {
+      "title": "应用重启中断了本次执行",
+      "description": "已完成的步骤均已保留，可从最近检查点继续，不会要求重新开始。",
+      "resume": "继续任务"
+    },
+    "gate": {
+      "progress": "协议验证路径",
+      "verified": "已验证",
+      "current": "当前步骤",
+      "pending": "待处理",
+      "next": "下一步",
+      "complete": "质量门已全部完成",
+      "allVerified": "全部必要质量门均已验证",
+      "unresolved": "{{count}} 项未解决",
+      "generic": "该要求仍需任务工作区提供可验证证据。",
+      "protocol-complete": { "title": "完成研究协议", "description": "解决 research/protocol.md 中所有 [TBD] 和未勾选项目。" },
+      "approval-before-outcomes": { "title": "查看结果前批准", "description": "在查看任何结局或运行分析前，审阅并批准当前协议哈希。" },
+      "deliverables-present": { "title": "核验研究产物", "description": "确认工作区内所有必要产物均存在且内容非空。" },
+      "approve": "批准当前协议",
+      "approving": "正在记录批准…",
+      "approvalRecorded": "当前协议已批准并绑定哈希。",
+      "approvalFailed": "协议批准失败：{{message}}",
+      "confirm": {
+        "title": "批准这份研究协议？",
+        "body": "系统会写入一条仅追加的决策记录，并绑定当前协议的 SHA-256；此后修改协议会自动使本次批准失效。",
+        "confirm": "批准协议"
+      }
+    },
+    "tabs": {
+      "mission": "任务",
+      "decisions": "决策",
+      "literature": "文献",
+      "evidence": "证据",
+      "sources": "来源",
+      "artifacts": "产物",
+      "review": "审阅"
+    },
+    "decisionLog": {
+      "title": "记录研究决策",
+      "description": "记录选择了什么以及为什么。日志只追加；修订会明确取代旧决策，而不会覆盖历史。",
+      "question": "决策问题",
+      "choice": "最终选择",
+      "rationale": "理由与依据",
+      "alternatives": "考虑过的备选方案（每行一项）",
+      "impact": "预期影响或代价",
+      "supersedes": "取代先前决策",
+      "none": "不取代，这是新决策",
+      "optional": "可选",
+      "save": "记录决策",
+      "saving": "正在记录",
+      "history": "已记录 {{count}} 项决策",
+      "empty": "尚未记录研究决策。",
+      "alternativesLabel": "备选方案：{{values}}",
+      "impactLabel": "影响：{{value}}",
+      "supersedesLabel": "取代 {{id}}"
+    },
+    "literature": {
+      "notRequired": "证据、复现与审计任务可使用文献采集。",
+      "searchLabel": "Crossref 文献发现",
+      "searchPlaceholder": "按主题、标题、作者或引文搜索…",
+      "search": "搜索文献",
+      "searching": "正在搜索",
+      "corpus": "语料库 {{count}} 篇",
+      "fullText": "全文快照 {{count}} 篇",
+      "abstractOnly": "仅摘要 {{count}} 篇",
+      "metadataOnly": "仅元数据 {{count}} 篇",
+      "results": "搜索结果 {{count}} 条",
+      "deduplicated": "已去重 {{count}} 条",
+      "noResults": "没有匹配且 DOI 可解析的记录。",
+      "fullTextCandidate": "可尝试获取全文",
+      "abstractCandidate": "有摘要",
+      "metadataCandidate": "仅元数据",
+      "capture": "采集来源",
+      "capturing": "正在采集",
+      "captured": "已采集",
+      "capturedSources": "已核验的本地来源语料库",
+      "status": {
+        "full-text": "已采集全文",
+        "abstract-only": "仅摘要",
+        "metadata-only": "仅元数据"
+      }
+    },
+    "gates": "已通过 {{passed}} / {{total}} 个质量门。",
+    "notChecked": "检查研究状态，以读取当前证据和质量门结果。",
+    "notRequired": "这类任务不要求主张—证据图谱或来源快照清单。",
+    "metrics": {
+      "claims": "主张",
+      "sources": "来源",
+      "contested": "争议主张",
+      "relations": "证据关系",
+      "manifestRecords": "清单记录",
+      "snapshots": "已核验快照",
+      "quotes": "精确引用"
+    },
+    "contested": "争议主张",
+    "stances": { "supports": "支持", "contradicts": "反驳", "qualifies": "限定" },
+    "emptyEvidence": "尚无可读取的证据记录。",
+    "emptySources": "尚无可读取的来源快照。",
+    "snapshotVerified": "快照已核验",
+    "snapshotUnverified": "尚未核验",
+    "hash": "SHA-256",
+    "retrieved": "获取于 {{date}}",
+    "adjudication": "人工证据裁决",
+    "reviewed": "已裁决 {{reviewed}} / {{total}} 条证据关系。",
+    "decisions": { "accepted": "接受", "needs-review": "待复核", "rejected": "拒绝" },
+    "decisionNote": {
+      "needs-review": "还需要核查什么？",
+      "rejected": "为什么应排除这条证据？"
+    },
+    "saveDecision": "保存裁决",
+    "savingDecision": "保存中",
+    "cancelDecision": "取消",
+    "reviewCounts": {
+      "accepted": "接受 {{count}}",
+      "needsReview": "待复核 {{count}}",
+      "rejected": "拒绝 {{count}}"
+    },
+    "noActiveMission": "没有正在进行的证据任务",
+    "claimPassport": "主张护照",
+    "passportVersion": "v1",
+    "claimStatuses": {
+      "review-pending": "等待审阅",
+      "supported": "结论已获支持",
+      "contested": "结论存在争议",
+      "contradicted": "结论受到反驳",
+      "qualified": "结论仅在限定条件下成立",
+      "unsupported": "证据不足"
+    },
+    "passportReviewed": "已审 {{reviewed}}/{{total}}",
+    "passportSources": "来源核验 {{verified}}/{{total}}",
+    "passportsReady": "{{count}} 条主张已通过",
+    "passportsBlocked": "{{count}} 条主张尚未解决",
+    "artifacts": "已生成 {{present}} / {{total}} 个规定产物。",
+    "ready": "可以进入审阅",
+    "blocked": "仍有 {{count}} 个问题阻止审阅。",
+    "release": {
+      "eyebrow": "研究发布封印",
+      "version": "v1",
+      "ready": "可以封装",
+      "blocked": "发布被阻止",
+      "sealed": "已封装",
+      "title": "可核验研究发布包",
+      "description": "将规定产物、来源快照、人工裁决和主张护照连同 SHA-256 哈希一并封装。",
+      "blockedHint": "解决全部审阅问题，并使每份主张护照通过后才能封装。",
+      "generate": "封装发布包",
+      "generating": "正在封装",
+      "get": "获取发布包",
+      "files": "{{count}} 个文件",
+      "claims": "{{count}} 份护照",
+      "fingerprint": "内容指纹",
+      "unavailable": "当前客户端无法交付此发布包。",
+      "verifyTitle": "校验或导入研究发布包",
+      "verifyHint": "填写工作区内的 ZIP 相对路径。导入前会逐项重算哈希，并解压到全新的 imports/ 隔离目录，不覆盖任何文件。",
+      "pathLabel": "研究发布包路径",
+      "pathPlaceholder": "releases/happy-science-….zip",
+      "verify": "独立校验",
+      "verifying": "校验中",
+      "verified": "校验通过 · {{count}} 个载荷文件",
+      "invalid": "无效发布包 · {{count}} 个问题",
+      "import": "安全导入",
+      "importing": "导入中",
+      "imported": "已无覆盖导入至 → {{path}}"
     }
   },
   "live": {
@@ -186,7 +474,7 @@
       "openTitle": "打开 {{path}} — 代理在此会话中处理此笔记本"
     },
     "connBadge": {
-      "title": "OpenCode · {{status}}",
+      "title": "执行器 · {{status}}",
       "status": {
         "ready": "就绪",
         "connecting": "连接中",

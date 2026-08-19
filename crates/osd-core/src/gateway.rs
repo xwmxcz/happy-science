@@ -19,7 +19,9 @@ use std::time::{Duration, Instant};
 
 use crate::artifact_file::{locate_under, mime_for, resolve_under, scope_root};
 use crate::env::Env;
-use crate::runtime::{random_hex, runtime_root, server_password, sidecar_url, tighten_private, workspace_dir};
+use crate::runtime::{
+    random_hex, runtime_root, server_password, sidecar_url, tighten_private, workspace_dir,
+};
 
 /// The web client + all `/v1` routes are served on this port when free, so a
 /// bookmarked URL / QR survives restarts; falls back to an ephemeral port.
@@ -27,7 +29,16 @@ const PREFERRED_PORT: u16 = 4098;
 
 /// SPA route roots (client-side routes served by index.html, not the OpenCode
 /// proxy). Everything else that isn't a static asset is proxied to the sidecar.
-const SPA_ROOTS: &[&str] = &["live", "example", "skills", "notebooks", "files", "runs", "projects", "settings"];
+const SPA_ROOTS: &[&str] = &[
+    "live",
+    "example",
+    "skills",
+    "notebooks",
+    "files",
+    "runs",
+    "projects",
+    "settings",
+];
 
 // ---- persisted config (app-level, under the runtime root) -------------------
 
@@ -119,7 +130,11 @@ pub fn ensure_token(env: &Env, requested: Option<String>) -> Result<String, Stri
 }
 
 fn normalize_mode(m: &str) -> String {
-    if m == "read-only" { "read-only".into() } else { "full".into() }
+    if m == "read-only" {
+        "read-only".into()
+    } else {
+        "full".into()
+    }
 }
 
 // ---- runtime state ----------------------------------------------------------
@@ -198,7 +213,11 @@ impl GatewayState {
         assets: Arc<dyn Assets>,
         on_sessions_changed: Option<Arc<dyn Fn() + Send + Sync>>,
     ) -> Self {
-        GatewayState { running: Mutex::new(None), assets, on_sessions_changed }
+        GatewayState {
+            running: Mutex::new(None),
+            assets,
+            on_sessions_changed,
+        }
     }
 }
 
@@ -265,11 +284,10 @@ pub fn start_at(
         return Err("gateway token is not set".into());
     }
     stop(env, state);
-    let listener = bind_listener(p.lan, requested)
-        .map_err(|e| match requested {
-            Some(port) => format!("port {port} is not available: {e}"),
-            None => format!("gateway bind failed: {e}"),
-        })?;
+    let listener = bind_listener(p.lan, requested).map_err(|e| match requested {
+        Some(port) => format!("port {port} is not available: {e}"),
+        None => format!("gateway bind failed: {e}"),
+    })?;
     listener.set_nonblocking(true).map_err(|e| e.to_string())?;
     let port = listener.local_addr().map_err(|e| e.to_string())?.port();
     let stop_flag = Arc::new(AtomicBool::new(false));
@@ -308,7 +326,12 @@ pub fn start_at(
             Err(_) => std::thread::sleep(Duration::from_millis(300)),
         }
     });
-    *state.running.lock().unwrap() = Some(Running { port, lan: p.lan, stop: stop_flag, shared });
+    *state.running.lock().unwrap() = Some(Running {
+        port,
+        lan: p.lan,
+        stop: stop_flag,
+        shared,
+    });
     // Record where we ended up, so a CLI on this machine can find us — unless
     // the record already names a DIFFERENT gateway that is still answering.
     //
@@ -384,6 +407,56 @@ struct Request {
     body: Vec<u8>,
 }
 
+#[derive(serde::Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+struct PlanMissionRequest {
+    kind: crate::missions::MissionKind,
+    rigor: crate::missions::RigorLevel,
+}
+
+#[derive(serde::Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+struct StartMissionRequest {
+    session_id: String,
+}
+
+#[derive(serde::Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+struct TransitionMissionRequest {
+    action: crate::missions::MissionAction,
+    #[serde(default)]
+    reason: Option<String>,
+}
+
+#[derive(serde::Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+struct DecideEvidenceRequest {
+    evidence_id: String,
+    verdict: crate::adjudication::EvidenceVerdict,
+    #[serde(default)]
+    note: String,
+}
+
+#[derive(serde::Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+struct SearchLiteratureRequest {
+    query: String,
+    #[serde(default)]
+    limit: Option<usize>,
+}
+
+#[derive(serde::Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+struct CaptureLiteratureRequest {
+    work: crate::literature::LiteratureWork,
+}
+
+#[derive(serde::Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+struct ReleasePathRequest {
+    path: String,
+}
+
 impl Request {
     fn parse(stream: &TcpStream) -> Option<Request> {
         let mut reader = BufReader::new(stream.try_clone().ok()?);
@@ -424,11 +497,20 @@ impl Request {
         if content_length > 0 {
             reader.read_exact(&mut body).ok()?;
         }
-        Some(Request { method, path, query, headers, body })
+        Some(Request {
+            method,
+            path,
+            query,
+            headers,
+            body,
+        })
     }
 
     fn header(&self, k: &str) -> Option<&str> {
-        self.headers.iter().find(|(hk, _)| hk == k).map(|(_, v)| v.as_str())
+        self.headers
+            .iter()
+            .find(|(hk, _)| hk == k)
+            .map(|(_, v)| v.as_str())
     }
 
     fn query_get(&self, key: &str) -> Option<String> {
@@ -452,7 +534,11 @@ fn route(stream: &mut TcpStream, req: &Request, ctx: &Ctx) {
 
     // Liveness — open (carries no capability).
     if req.method == "GET" && path == "/v1/health" {
-        respond_json(stream, 200, "{\"ok\":true,\"service\":\"open-science-gateway\"}");
+        respond_json(
+            stream,
+            200,
+            "{\"ok\":true,\"service\":\"open-science-gateway\"}",
+        );
         return;
     }
 
@@ -533,7 +619,11 @@ fn route(stream: &mut TcpStream, req: &Request, ctx: &Ctx) {
         // key / provider / auth.
         let model_only = path.starts_with("/global/config") && body_only_sets_model(&req.body);
         if !model_only {
-            respond_json(stream, 403, "{\"error\":\"provider/model config is managed on the desktop\"}");
+            respond_json(
+                stream,
+                403,
+                "{\"error\":\"provider/model config is managed on the desktop\"}",
+            );
             return;
         }
     }
@@ -576,17 +666,26 @@ fn v1(stream: &mut TcpStream, req: &Request, ctx: &Ctx, rest: &str) {
                 }
                 _ => "{}".to_string(),
             };
-            if forward(stream, upstream_post(ctx, "/session", &[("directory", &dir)], &body)) {
+            if forward(
+                stream,
+                upstream_post(ctx, "/session", &[("directory", &dir)], &body),
+            ) {
                 ctx.sessions_changed();
             }
         }
         ("DELETE", ["sessions", id]) => {
-            if forward(stream, upstream_delete(ctx, &format!("/session/{}", enc(id)))) {
+            if forward(
+                stream,
+                upstream_delete(ctx, &format!("/session/{}", enc(id))),
+            ) {
                 ctx.sessions_changed();
             }
         }
         ("GET", ["sessions", id, "messages"]) => {
-            forward(stream, upstream_get(ctx, &format!("/session/{}/message", enc(id)), &[]));
+            forward(
+                stream,
+                upstream_get(ctx, &format!("/session/{}/message", enc(id)), &[]),
+            );
         }
         // `model` ("provider/model") and `agent` are what make a scripted run
         // reproducible: without them the turn silently inherits whatever the
@@ -621,28 +720,50 @@ fn v1(stream: &mut TcpStream, req: &Request, ctx: &Ctx, rest: &str) {
             }
             forward(
                 stream,
-                upstream_post(ctx, &format!("/session/{}/prompt_async", enc(id)), &[], &body.to_string()),
+                upstream_post(
+                    ctx,
+                    &format!("/session/{}/prompt_async", enc(id)),
+                    &[],
+                    &body.to_string(),
+                ),
             );
         }
         // Whether a turn is still running. `prompt` returns as soon as the turn
         // is ACCEPTED, so without this there is nothing for a script to wait on.
         ("GET", ["sessions", id, "status"]) => session_status(stream, ctx, id),
         ("POST", ["sessions", id, "abort"]) => {
-            forward(stream, upstream_post(ctx, &format!("/session/{}/abort", enc(id)), &[], "{}"));
+            forward(
+                stream,
+                upstream_post(ctx, &format!("/session/{}/abort", enc(id)), &[], "{}"),
+            );
         }
         ("GET", ["permissions"]) => {
             let ws = ws_dir(ctx);
-            forward(stream, upstream_get(ctx, "/permission", &[("directory", &ws)]));
+            forward(
+                stream,
+                upstream_get(ctx, "/permission", &[("directory", &ws)]),
+            );
         }
         ("GET", ["questions"]) => {
             let ws = ws_dir(ctx);
-            forward(stream, upstream_get(ctx, "/question", &[("directory", &ws)]));
+            forward(
+                stream,
+                upstream_get(ctx, "/question", &[("directory", &ws)]),
+            );
         }
         ("POST", ["permissions", rid, "reply"]) => {
             let ws = ws_dir(ctx);
             let reply = json_str_field(&req.body, "reply").unwrap_or_else(|| "reject".into());
             let body = serde_json::json!({ "reply": reply }).to_string();
-            forward(stream, upstream_post(ctx, &format!("/permission/{}/reply", enc(rid)), &[("directory", &ws)], &body));
+            forward(
+                stream,
+                upstream_post(
+                    ctx,
+                    &format!("/permission/{}/reply", enc(rid)),
+                    &[("directory", &ws)],
+                    &body,
+                ),
+            );
         }
         ("GET", ["fs", "list"]) => fs_list(stream, req, ctx),
         ("GET", ["fs", "read"]) => fs_read(stream, req, ctx),
@@ -659,7 +780,11 @@ fn v1(stream: &mut TcpStream, req: &Request, ctx: &Ctx, rest: &str) {
         // Read-only projects + runs (local state the sidecar doesn't own) so the
         // web client can see existing projects and run history.
         ("GET", ["projects"]) => match crate::project::list_projects(&ctx.env) {
-            Ok(list) => respond_json(stream, 200, &serde_json::to_string(&list).unwrap_or_else(|_| "[]".into())),
+            Ok(list) => respond_json(
+                stream,
+                200,
+                &serde_json::to_string(&list).unwrap_or_else(|_| "[]".into()),
+            ),
             Err(e) => respond_json(stream, 500, &err_json(&e)),
         },
         // Creating a project is a folder + metadata + the agent harness — no
@@ -679,15 +804,262 @@ fn v1(stream: &mut TcpStream, req: &Request, ctx: &Ctx, rest: &str) {
                 Err(e) => respond_json(stream, 400, &err_json(&e)),
             }
         }
-        ("GET", ["runs"]) => match crate::runs::list_runs(&ctx.env) {
-            Ok(list) => respond_json(stream, 200, &serde_json::to_string(&list).unwrap_or_else(|_| "[]".into())),
+        // Happy Science owns mission semantics and lifecycle. OpenCode remains
+        // an executor behind this contract instead of being the product model.
+        ("POST", ["missions"]) => {
+            let request = match serde_json::from_slice::<PlanMissionRequest>(&req.body) {
+                Ok(request) => request,
+                Err(e) => {
+                    return respond_json(stream, 400, &err_json(&format!("bad mission: {e}")))
+                }
+            };
+            match crate::missions::plan_mission(&ctx.env, request.kind, request.rigor) {
+                Ok(plan) => respond_json(
+                    stream,
+                    200,
+                    &serde_json::to_string(&plan).unwrap_or_else(|_| "{}".into()),
+                ),
+                Err(e) => respond_json(stream, 400, &err_json(&e)),
+            }
+        }
+        ("POST", ["missions", mission_id, "start"]) => {
+            let request = match serde_json::from_slice::<StartMissionRequest>(&req.body) {
+                Ok(request) => request,
+                Err(e) => {
+                    return respond_json(stream, 400, &err_json(&format!("bad mission start: {e}")))
+                }
+            };
+            match crate::missions::start_mission(&ctx.env, mission_id, &request.session_id) {
+                Ok(mission) => respond_json(
+                    stream,
+                    200,
+                    &serde_json::to_string(&mission).unwrap_or_else(|_| "{}".into()),
+                ),
+                Err(e) => respond_json(stream, 400, &err_json(&e)),
+            }
+        }
+        ("POST", ["missions", mission_id, "transition"]) => {
+            let request = match serde_json::from_slice::<TransitionMissionRequest>(&req.body) {
+                Ok(request) => request,
+                Err(error) => {
+                    return respond_json(
+                        stream,
+                        400,
+                        &err_json(&format!("bad mission transition: {error}")),
+                    )
+                }
+            };
+            match crate::missions::transition_mission(
+                &ctx.env,
+                mission_id,
+                request.action,
+                request.reason.as_deref(),
+            ) {
+                Ok(mission) => respond_json(
+                    stream,
+                    200,
+                    &serde_json::to_string(&mission).unwrap_or_else(|_| "{}".into()),
+                ),
+                Err(error) => respond_json(stream, 400, &err_json(&error)),
+            }
+        }
+        ("POST", ["missions", mission_id, "check"]) => {
+            match crate::missions::check_mission(&ctx.env, mission_id) {
+                Ok(check) => respond_json(
+                    stream,
+                    200,
+                    &serde_json::to_string(&check).unwrap_or_else(|_| "{}".into()),
+                ),
+                Err(e) => respond_json(stream, 400, &err_json(&e)),
+            }
+        }
+        ("POST", ["missions", mission_id, "approve-protocol"]) => {
+            match crate::missions::approve_protocol(&ctx.env, mission_id) {
+                Ok(check) => respond_json(
+                    stream,
+                    200,
+                    &serde_json::to_string(&check).unwrap_or_else(|_| "{}".into()),
+                ),
+                Err(error) => respond_json(stream, 400, &err_json(&error)),
+            }
+        }
+        ("POST", ["missions", mission_id, "evidence-decisions"]) => {
+            let request = match serde_json::from_slice::<DecideEvidenceRequest>(&req.body) {
+                Ok(request) => request,
+                Err(error) => {
+                    return respond_json(
+                        stream,
+                        400,
+                        &err_json(&format!("bad evidence decision: {error}")),
+                    )
+                }
+            };
+            match crate::missions::decide_evidence(
+                &ctx.env,
+                mission_id,
+                &request.evidence_id,
+                request.verdict,
+                &request.note,
+            ) {
+                Ok(review) => respond_json(
+                    stream,
+                    200,
+                    &serde_json::to_string(&review).unwrap_or_else(|_| "{}".into()),
+                ),
+                Err(error) => respond_json(stream, 400, &err_json(&error)),
+            }
+        }
+        ("POST", ["missions", mission_id, "decisions"]) => {
+            let request =
+                match serde_json::from_slice::<crate::decisions::NewResearchDecision>(&req.body) {
+                    Ok(request) => request,
+                    Err(error) => {
+                        return respond_json(
+                            stream,
+                            400,
+                            &err_json(&format!("bad research decision: {error}")),
+                        )
+                    }
+                };
+            match crate::decisions::record(&ctx.env, mission_id, request) {
+                Ok(log) => respond_json(
+                    stream,
+                    200,
+                    &serde_json::to_string(&log).unwrap_or_else(|_| "{}".into()),
+                ),
+                Err(error) => respond_json(stream, 400, &err_json(&error)),
+            }
+        }
+        ("POST", ["missions", mission_id, "literature", "search"]) => {
+            let request = match serde_json::from_slice::<SearchLiteratureRequest>(&req.body) {
+                Ok(request) => request,
+                Err(error) => {
+                    return respond_json(
+                        stream,
+                        400,
+                        &err_json(&format!("bad literature search: {error}")),
+                    )
+                }
+            };
+            match crate::literature::search(
+                &ctx.env,
+                mission_id,
+                &request.query,
+                request.limit.unwrap_or(10),
+            ) {
+                Ok(result) => respond_json(
+                    stream,
+                    200,
+                    &serde_json::to_string(&result).unwrap_or_else(|_| "{}".into()),
+                ),
+                Err(error) => respond_json(stream, 400, &err_json(&error)),
+            }
+        }
+        ("POST", ["missions", mission_id, "literature", "capture"]) => {
+            let request = match serde_json::from_slice::<CaptureLiteratureRequest>(&req.body) {
+                Ok(request) => request,
+                Err(error) => {
+                    return respond_json(
+                        stream,
+                        400,
+                        &err_json(&format!("bad literature capture: {error}")),
+                    )
+                }
+            };
+            match crate::literature::capture(&ctx.env, mission_id, request.work) {
+                Ok(result) => respond_json(
+                    stream,
+                    200,
+                    &serde_json::to_string(&result).unwrap_or_else(|_| "{}".into()),
+                ),
+                Err(error) => respond_json(stream, 400, &err_json(&error)),
+            }
+        }
+        ("POST", ["missions", mission_id, "release"]) => {
+            match crate::release_package::create(&ctx.env, mission_id) {
+                Ok(release) => respond_json(
+                    stream,
+                    200,
+                    &serde_json::to_string(&release).unwrap_or_else(|_| "{}".into()),
+                ),
+                Err(error) => respond_json(stream, 400, &err_json(&error)),
+            }
+        }
+        ("POST", ["releases", "verify"]) => {
+            let request = match serde_json::from_slice::<ReleasePathRequest>(&req.body) {
+                Ok(request) => request,
+                Err(error) => {
+                    return respond_json(
+                        stream,
+                        400,
+                        &err_json(&format!("bad release verification: {error}")),
+                    )
+                }
+            };
+            match crate::release_package::verify(&ctx.env, &request.path) {
+                Ok(verification) => respond_json(
+                    stream,
+                    200,
+                    &serde_json::to_string(&verification).unwrap_or_else(|_| "{}".into()),
+                ),
+                Err(error) => respond_json(stream, 400, &err_json(&error)),
+            }
+        }
+        ("POST", ["releases", "import"]) => {
+            let request = match serde_json::from_slice::<ReleasePathRequest>(&req.body) {
+                Ok(request) => request,
+                Err(error) => {
+                    return respond_json(
+                        stream,
+                        400,
+                        &err_json(&format!("bad release import: {error}")),
+                    )
+                }
+            };
+            match crate::release_package::import(&ctx.env, &request.path) {
+                Ok(imported) => respond_json(
+                    stream,
+                    200,
+                    &serde_json::to_string(&imported).unwrap_or_else(|_| "{}".into()),
+                ),
+                Err(error) => respond_json(stream, 400, &err_json(&error)),
+            }
+        }
+        ("GET", ["missions"]) => match crate::missions::list_missions(&ctx.env) {
+            Ok(list) => respond_json(
+                stream,
+                200,
+                &serde_json::to_string(&list).unwrap_or_else(|_| "[]".into()),
+            ),
             Err(e) => respond_json(stream, 500, &err_json(&e)),
         },
+        ("GET", ["runs"]) => match crate::runs::list_runs(&ctx.env) {
+            Ok(list) => respond_json(
+                stream,
+                200,
+                &serde_json::to_string(&list).unwrap_or_else(|_| "[]".into()),
+            ),
+            Err(e) => respond_json(stream, 500, &err_json(&e)),
+        },
+        ("POST", ["runs", run_id, "reproduce"]) => {
+            match crate::reproduction::prepare(&ctx.env, run_id) {
+                Ok(request) => respond_json(
+                    stream,
+                    200,
+                    &serde_json::to_string(&request).unwrap_or_else(|_| "{}".into()),
+                ),
+                Err(error) => respond_json(stream, 400, &err_json(&error)),
+            }
+        }
         ("GET", ["runs", "query"]) => {
             let q = req.query_get("q").unwrap_or_else(|| "{}".into());
             match serde_json::from_str::<crate::runs_index::RunQuery>(&q) {
                 Ok(query) => match crate::runs_index::query_runs_cmd(&ctx.env, query) {
-                    Ok(page) => respond_json(stream, 200, &serde_json::to_string(&page).unwrap_or_else(|_| "{}".into())),
+                    Ok(page) => respond_json(
+                        stream,
+                        200,
+                        &serde_json::to_string(&page).unwrap_or_else(|_| "{}".into()),
+                    ),
                     Err(e) => respond_json(stream, 500, &err_json(&e)),
                 },
                 Err(e) => respond_json(stream, 400, &err_json(&format!("bad query: {e}"))),
@@ -799,7 +1171,11 @@ fn serve_index(stream: &mut TcpStream, ctx: &Ctx) {
     match ctx.assets.get("index.html") {
         Some((bytes, _)) => {
             let html = String::from_utf8_lossy(&bytes);
-            let injected = html.replacen("<head>", "<head><script>window.__OS_WEB__=true;</script>", 1);
+            let injected = html.replacen(
+                "<head>",
+                "<head><script>window.__OS_WEB__=true;</script>",
+                1,
+            );
             respond(stream, 200, "text/html; charset=utf-8", injected.as_bytes());
         }
         None => respond(
@@ -822,8 +1198,24 @@ fn looks_static(path: &str) -> bool {
     match last.rsplit_once('.') {
         Some((_, ext)) => matches!(
             ext,
-            "js" | "mjs" | "css" | "map" | "svg" | "png" | "jpg" | "jpeg" | "gif" | "webp"
-                | "ico" | "woff" | "woff2" | "ttf" | "otf" | "json" | "wasm" | "txt" | "html"
+            "js" | "mjs"
+                | "css"
+                | "map"
+                | "svg"
+                | "png"
+                | "jpg"
+                | "jpeg"
+                | "gif"
+                | "webp"
+                | "ico"
+                | "woff"
+                | "woff2"
+                | "ttf"
+                | "otf"
+                | "json"
+                | "wasm"
+                | "txt"
+                | "html"
         ),
         None => false,
     }
@@ -858,9 +1250,14 @@ fn proxy_opencode(stream: &mut TcpStream, req: &Request, ctx: &Ctx) {
         Ok(m) => m,
         Err(_) => return respond_json(stream, 400, "{\"error\":\"bad method\"}"),
     };
-    let mut rb = shared_client().request(method, target).basic_auth("opencode", Some(pw));
+    let mut rb = shared_client()
+        .request(method, target)
+        .basic_auth("opencode", Some(pw));
     if !req.body.is_empty() {
-        let ct = req.header("content-type").unwrap_or("application/json").to_string();
+        let ct = req
+            .header("content-type")
+            .unwrap_or("application/json")
+            .to_string();
         rb = rb.header("Content-Type", ct).body(req.body.clone());
     }
     // Config/provider responses (reads AND the allowed model write): strip any
@@ -870,7 +1267,12 @@ fn proxy_opencode(stream: &mut TcpStream, req: &Request, ctx: &Ctx) {
             Ok(r) => {
                 let status = r.status().as_u16();
                 let body = r.bytes().map(|b| b.to_vec()).unwrap_or_default();
-                respond(stream, status, "application/json; charset=utf-8", &redact_config(&body));
+                respond(
+                    stream,
+                    status,
+                    "application/json; charset=utf-8",
+                    &redact_config(&body),
+                );
             }
             Err(e) => respond_json(stream, 502, &err_json(&format!("upstream: {e}"))),
         }
@@ -882,7 +1284,9 @@ fn proxy_opencode(stream: &mut TcpStream, req: &Request, ctx: &Ctx) {
 /// Config / provider endpoints — carry API keys, so reads are redacted and
 /// writes are blocked (see route()).
 fn is_config_path(path: &str) -> bool {
-    path.starts_with("/global/config") || path.starts_with("/config") || path.starts_with("/provider")
+    path.starts_with("/global/config")
+        || path.starts_with("/config")
+        || path.starts_with("/provider")
 }
 
 /// True only for a JSON object body whose sole key is `model` — the one config
@@ -900,10 +1304,21 @@ fn redact_secrets(v: &mut serde_json::Value) {
     match v {
         serde_json::Value::Object(map) => {
             for (k, val) in map.iter_mut() {
-                let norm: String = k.chars().filter(|c| c.is_alphanumeric()).map(|c| c.to_ascii_lowercase()).collect();
-                if ["apikey", "secret", "token", "password", "authorization", "credential"]
-                    .iter()
-                    .any(|p| norm.contains(p))
+                let norm: String = k
+                    .chars()
+                    .filter(|c| c.is_alphanumeric())
+                    .map(|c| c.to_ascii_lowercase())
+                    .collect();
+                if [
+                    "apikey",
+                    "secret",
+                    "token",
+                    "password",
+                    "authorization",
+                    "credential",
+                ]
+                .iter()
+                .any(|p| norm.contains(p))
                 {
                     *val = serde_json::Value::String("__redacted__".into());
                 } else {
@@ -939,7 +1354,9 @@ fn fs_base(ctx: &Ctx, req: &Request) -> Result<PathBuf, String> {
         let base_root = crate::runtime::base_workspace_dir(&ctx.env)?
             .canonicalize()
             .map_err(|e| e.to_string())?;
-        let canon = PathBuf::from(&dir).canonicalize().map_err(|_| "dir not found".to_string())?;
+        let canon = PathBuf::from(&dir)
+            .canonicalize()
+            .map_err(|_| "dir not found".to_string())?;
         if canon.starts_with(&base_root)
             || crate::project::is_registered_project_path(&ctx.env, &canon)
         {
@@ -1040,7 +1457,10 @@ fn events(stream: &mut TcpStream, ctx: &Ctx, directory: &str) {
         Err(e) => return respond_json(stream, 502, &err_json(&e.to_string())),
     };
     let resp = client
-        .get(format!("{base}{}", with_query("/event", &[("directory", directory)])))
+        .get(format!(
+            "{base}{}",
+            with_query("/event", &[("directory", directory)])
+        ))
         .basic_auth("opencode", Some(pw))
         .send();
     let mut resp = match resp {
@@ -1086,7 +1506,9 @@ fn endpoint(ctx: &Ctx) -> Option<(String, &'static str)> {
 }
 
 fn ws_dir(ctx: &Ctx) -> String {
-    workspace_dir(&ctx.env).map(|p| p.to_string_lossy().to_string()).unwrap_or_default()
+    workspace_dir(&ctx.env)
+        .map(|p| p.to_string_lossy().to_string())
+        .unwrap_or_default()
 }
 
 /// Append a percent-encoded query string to a path (built by hand so it needs
@@ -1208,8 +1630,16 @@ fn base64_encode(input: &[u8]) -> String {
         let b2 = *chunk.get(2).unwrap_or(&0);
         out.push(T[(b0 >> 2) as usize] as char);
         out.push(T[(((b0 & 0x03) << 4) | (b1 >> 4)) as usize] as char);
-        out.push(if chunk.len() > 1 { T[(((b1 & 0x0f) << 2) | (b2 >> 6)) as usize] as char } else { '=' });
-        out.push(if chunk.len() > 2 { T[(b2 & 0x3f) as usize] as char } else { '=' });
+        out.push(if chunk.len() > 1 {
+            T[(((b1 & 0x0f) << 2) | (b2 >> 6)) as usize] as char
+        } else {
+            '='
+        });
+        out.push(if chunk.len() > 2 {
+            T[(b2 & 0x3f) as usize] as char
+        } else {
+            '='
+        });
     }
     out
 }
@@ -1256,7 +1686,12 @@ fn respond(stream: &mut TcpStream, status: u16, content_type: &str, body: &[u8])
 }
 
 fn respond_json(stream: &mut TcpStream, status: u16, json: &str) {
-    respond(stream, status, "application/json; charset=utf-8", json.as_bytes());
+    respond(
+        stream,
+        status,
+        "application/json; charset=utf-8",
+        json.as_bytes(),
+    );
 }
 
 fn err_json(msg: &str) -> String {
@@ -1269,7 +1704,9 @@ fn enc(s: &str) -> String {
     let mut out = String::with_capacity(s.len());
     for b in s.bytes() {
         match b {
-            b'A'..=b'Z' | b'a'..=b'z' | b'0'..=b'9' | b'-' | b'_' | b'.' | b'~' => out.push(b as char),
+            b'A'..=b'Z' | b'a'..=b'z' | b'0'..=b'9' | b'-' | b'_' | b'.' | b'~' => {
+                out.push(b as char)
+            }
             _ => out.push_str(&format!("%{b:02X}")),
         }
     }
@@ -1298,7 +1735,9 @@ fn percent_decode(s: &str) -> String {
                 i += 1;
             }
             b'%' => {
-                let hex = bytes.get(i + 1..i + 3).and_then(|h| std::str::from_utf8(h).ok());
+                let hex = bytes
+                    .get(i + 1..i + 3)
+                    .and_then(|h| std::str::from_utf8(h).ok());
                 if let Some(v) = hex.and_then(|h| u8::from_str_radix(h, 16).ok()) {
                     out.push(v);
                     i += 3;
@@ -1408,7 +1847,9 @@ pub fn set_gateway_config(
         match guard.as_ref() {
             Some(r) if r.lan == p.lan => {
                 *r.shared.token.lock().unwrap() = p.token.clone();
-                r.shared.read_only.store(p.mode == "read-only", Ordering::Relaxed);
+                r.shared
+                    .read_only
+                    .store(p.mode == "read-only", Ordering::Relaxed);
                 true
             }
             _ => false,
@@ -1458,7 +1899,10 @@ mod tests {
         let live = listener.local_addr().unwrap().port();
         let (env, dir) = env_with_recorded_port("live", Some(live));
 
-        assert!(record_belongs_to_a_live_other(&env, live + 1), "the recorded gateway answers");
+        assert!(
+            record_belongs_to_a_live_other(&env, live + 1),
+            "the recorded gateway answers"
+        );
         assert!(
             !record_belongs_to_a_live_other(&env, live),
             "our own port is not somebody else's"
@@ -1475,7 +1919,10 @@ mod tests {
         let (env, dir) = env_with_recorded_port("beside", Some(live));
 
         let state = GatewayState::default();
-        let persisted = Persisted { token: "t".into(), ..read_persisted(&env) };
+        let persisted = Persisted {
+            token: "t".into(),
+            ..read_persisted(&env)
+        };
         let ours = start_at(&env, &state, &persisted, None).expect("a second gateway binds");
         assert_ne!(ours, live);
         assert_eq!(
@@ -1498,11 +1945,22 @@ mod tests {
     fn the_only_gateway_on_the_machine_does_record_itself() {
         let (env, dir) = env_with_recorded_port("alone", None);
         let state = GatewayState::default();
-        let persisted = Persisted { token: "t".into(), ..read_persisted(&env) };
+        let persisted = Persisted {
+            token: "t".into(),
+            ..read_persisted(&env)
+        };
         let ours = start_at(&env, &state, &persisted, None).unwrap();
-        assert_eq!(read_persisted(&env).port, Some(ours), "a CLI has to be able to find it");
+        assert_eq!(
+            read_persisted(&env).port,
+            Some(ours),
+            "a CLI has to be able to find it"
+        );
         stop(&env, &state);
-        assert_eq!(read_persisted(&env).port, None, "and its own exit clears its own address");
+        assert_eq!(
+            read_persisted(&env).port,
+            None,
+            "and its own exit clears its own address"
+        );
         std::fs::remove_dir_all(&dir).unwrap();
     }
 
@@ -1542,14 +2000,23 @@ mod tests {
 
     #[test]
     fn query_get_decodes() {
-        assert_eq!(query_get("path=a%2Fb&root=base", "path").as_deref(), Some("a/b"));
-        assert_eq!(query_get("path=a%2Fb&root=base", "root").as_deref(), Some("base"));
+        assert_eq!(
+            query_get("path=a%2Fb&root=base", "path").as_deref(),
+            Some("a/b")
+        );
+        assert_eq!(
+            query_get("path=a%2Fb&root=base", "root").as_deref(),
+            Some("base")
+        );
         assert_eq!(query_get("path=x", "missing"), None);
     }
 
     #[test]
     fn json_str_field_reads_top_level() {
-        assert_eq!(json_str_field(br#"{"text":"hi","n":1}"#, "text").as_deref(), Some("hi"));
+        assert_eq!(
+            json_str_field(br#"{"text":"hi","n":1}"#, "text").as_deref(),
+            Some("hi")
+        );
         assert_eq!(json_str_field(br#"{"text":"hi"}"#, "reply"), None);
         assert_eq!(json_str_field(b"not json", "text"), None);
     }
@@ -1574,7 +2041,9 @@ mod tests {
         // gets served and EventSource/JSON break).
         assert!(!looks_static("/event"));
         assert!(!looks_static("/experimental/session"));
-        assert!(!looks_static("/session/ses_07d47c275ffe6PKKbIF2DpjEhp/message"));
+        assert!(!looks_static(
+            "/session/ses_07d47c275ffe6PKKbIF2DpjEhp/message"
+        ));
         assert!(!looks_static("/permission"));
         // SPA routes → extensionless, also not assets.
         assert!(!looks_static("/settings"));
@@ -1595,7 +2064,9 @@ mod tests {
     fn only_model_writes_allowed() {
         assert!(body_only_sets_model(br#"{"model":"anthropic/claude"}"#));
         assert!(!body_only_sets_model(br#"{"model":"x","provider":{}}"#));
-        assert!(!body_only_sets_model(br#"{"provider":{"anthropic":{"apiKey":"sk"}}}"#));
+        assert!(!body_only_sets_model(
+            br#"{"provider":{"anthropic":{"apiKey":"sk"}}}"#
+        ));
         assert!(!body_only_sets_model(b"{}"));
         assert!(!body_only_sets_model(b"not json"));
     }
@@ -1606,8 +2077,14 @@ mod tests {
         let out = redact_config(input);
         let v: serde_json::Value = serde_json::from_slice(&out).unwrap();
         assert_eq!(v["model"], "anthropic/claude");
-        assert_eq!(v["provider"]["anthropic"]["options"]["baseURL"], "https://x");
-        assert_eq!(v["provider"]["anthropic"]["options"]["apiKey"], "__redacted__");
+        assert_eq!(
+            v["provider"]["anthropic"]["options"]["baseURL"],
+            "https://x"
+        );
+        assert_eq!(
+            v["provider"]["anthropic"]["options"]["apiKey"],
+            "__redacted__"
+        );
         assert_eq!(v["accessToken"], "__redacted__");
         assert_eq!(v["nested"][0]["clientSecret"], "__redacted__");
         // Unparseable input must not leak.
@@ -1657,7 +2134,10 @@ mod tests {
 
         let sep = buf.windows(4).position(|w| w == b"\r\n\r\n").unwrap();
         let body_len = buf.len() - (sep + 4);
-        assert_eq!(body_len, expected, "body truncated: got {body_len} of {expected}");
+        assert_eq!(
+            body_len, expected,
+            "body truncated: got {body_len} of {expected}"
+        );
     }
 
     #[test]

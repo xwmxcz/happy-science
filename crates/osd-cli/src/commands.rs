@@ -136,7 +136,11 @@ fn send(args: &Args) -> Result<(), String> {
     let before = message_count(&client, &session)?;
 
     let mut body = json!({ "text": text });
-    for (flag, key) in [("model", "model"), ("agent", "agent"), ("effort", "variant")] {
+    for (flag, key) in [
+        ("model", "model"),
+        ("agent", "agent"),
+        ("effort", "variant"),
+    ] {
         if let Some(v) = args.value(flag) {
             body[key] = json!(v);
         }
@@ -192,7 +196,10 @@ fn wait_for_reply(
 
     let timeout = args
         .value("timeout")
-        .map(|t| t.parse::<u64>().map_err(|_| format!("invalid --timeout {t:?}")))
+        .map(|t| {
+            t.parse::<u64>()
+                .map_err(|_| format!("invalid --timeout {t:?}"))
+        })
         .transpose()?
         .unwrap_or(3600);
     let started = Instant::now();
@@ -239,7 +246,9 @@ fn wait_for_reply(
         // two lines of noise a second for as long as the user takes to answer,
         // and it costs a request per poll to discover something that does not
         // change.
-        if !warned_about_approval && !args.has("quiet") && started.elapsed() > Duration::from_secs(5)
+        if !warned_about_approval
+            && !args.has("quiet")
+            && started.elapsed() > Duration::from_secs(5)
         {
             if let Ok(pending) = client.get("/v1/permissions") {
                 if let Some(rows) = pending.as_array().filter(|a| !a.is_empty()) {
@@ -353,7 +362,9 @@ fn project_dir(client: &Client, name: &str) -> Result<String, String> {
     let rows = list.as_array().cloned().unwrap_or_default();
     let hit = rows.iter().find(|p| {
         p["id"].as_str() == Some(name)
-            || p["name"].as_str().is_some_and(|n| n.eq_ignore_ascii_case(name))
+            || p["name"]
+                .as_str()
+                .is_some_and(|n| n.eq_ignore_ascii_case(name))
     });
     match hit {
         Some(p) => p["path"]
@@ -437,7 +448,9 @@ fn fs_get(args: &Args) -> Result<(), String> {
         }
         None => {
             use std::io::Write;
-            std::io::stdout().write_all(&bytes).map_err(|e| e.to_string())?;
+            std::io::stdout()
+                .write_all(&bytes)
+                .map_err(|e| e.to_string())?;
         }
     }
     Ok(())
@@ -519,9 +532,10 @@ fn model_ls(args: &Args) -> Result<(), String> {
         println!("Add one with `osd auth set <provider> --key <api-key>`.");
         return Ok(());
     }
-    let current = client.get("/global/config").ok().and_then(|c| {
-        c["model"].as_str().map(str::to_owned)
-    });
+    let current = client
+        .get("/global/config")
+        .ok()
+        .and_then(|c| c["model"].as_str().map(str::to_owned));
     for p in list {
         let id = p["id"].as_str().unwrap_or("?");
         println!("{}", p["name"].as_str().unwrap_or(id));
@@ -541,7 +555,11 @@ fn model_ls(args: &Args) -> Result<(), String> {
         for model in ids {
             let full = format!("{id}/{model}");
             // Mark the default, so `ls` answers "which one am I on" too.
-            let mark = if current.as_deref() == Some(full.as_str()) { " *" } else { "" };
+            let mark = if current.as_deref() == Some(full.as_str()) {
+                " *"
+            } else {
+                ""
+            };
             println!("    {full}{mark}");
         }
     }
@@ -598,7 +616,9 @@ fn approval_show(args: &Args) -> Result<(), String> {
         _ => {
             println!("approve — commands, deletions, dependency installs and remote access");
             println!("need an answer before the turn continues (`osd permission ls`).");
-            println!("On a machine with nobody watching, `osd approval set full` removes the wait.");
+            println!(
+                "On a machine with nobody watching, `osd approval set full` removes the wait."
+            );
         }
     }
     Ok(())
@@ -661,7 +681,10 @@ fn permissions(args: &Args) -> Result<(), String> {
 fn reply(args: &Args, verdict: &str) -> Result<(), String> {
     let client = Client::connect(args)?;
     let id = args.at(0, "request id")?;
-    client.post(&format!("/v1/permissions/{id}/reply"), json!({ "reply": verdict }))?;
+    client.post(
+        &format!("/v1/permissions/{id}/reply"),
+        json!({ "reply": verdict }),
+    )?;
     println!("Answered {id}: {verdict}");
     Ok(())
 }
@@ -669,7 +692,10 @@ fn reply(args: &Args, verdict: &str) -> Result<(), String> {
 // ---- rendering --------------------------------------------------------------
 
 fn print_json(v: &Value) -> Result<(), String> {
-    println!("{}", serde_json::to_string_pretty(v).map_err(|e| e.to_string())?);
+    println!(
+        "{}",
+        serde_json::to_string_pretty(v).map_err(|e| e.to_string())?
+    );
     Ok(())
 }
 
@@ -736,7 +762,10 @@ mod tests {
                 { "type": "text", "text": "final answer" }
             ]},
         ]);
-        assert_eq!(last_assistant_text(&messages, 0).as_deref(), Some("final answer"));
+        assert_eq!(
+            last_assistant_text(&messages, 0).as_deref(),
+            Some("final answer")
+        );
 
         // A turn that produced only tool calls has no answer to print.
         let toolsonly = json!([

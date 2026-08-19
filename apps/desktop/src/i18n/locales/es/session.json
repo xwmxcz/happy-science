@@ -138,26 +138,260 @@
   },
   "starters": {
     "newSession": "Nueva sesión",
-    "heading": "¿Qué deberíamos investigar?",
-    "subheading": "Describe tu análisis a continuación, o empieza con una de estas opciones.",
-    "demo": {
-      "title": "Ejecutar un análisis de demostración de principio a fin",
-      "description": "Simula un conjunto de datos, ajusta un modelo y produce una figura y un informe trazable."
+    "missionControl": "Control de misión",
+    "heading": "Define la misión. Fija el estándar de evidencia.",
+    "subheading": "Elige la tarea científica y sus entregables, y decide cuánta verificación debe completar el agente.",
+    "brief": {
+      "contract": "Contrato de misión", "title": "Coordenadas de investigación", "defined": "{{defined}}/{{total}} definidas", "optional": "· opcional", "required": "Define el objetivo antes de iniciar.",
+      "scaffold": "Redacta los datos faltantes como TBD explícitos y propone opciones concretas en vez de detenerse en un cuestionario.",
+      "objective": {
+        "plan": { "label": "Pregunta / hipótesis", "placeholder": "¿X cambia Y frente al control en la población Z?" },
+        "literature": { "label": "Pregunta de revisión / tema", "placeholder": "Qué evidencia respalda o contradice…" },
+        "reproduce": { "label": "Afirmación a reproducir", "placeholder": "Afirmación cuantitativa, artículo, figura o tabla" },
+        "audit": { "label": "Objetivo de auditoría", "placeholder": "Manuscrito, informe o problema de integridad" }
+      },
+      "population": { "label": "Población / muestra", "placeholder": "Quién, entorno, criterios, N objetivo" },
+      "intervention": { "label": "Intervención / comparación", "placeholder": "Tratamiento, exposición, dosis, control" },
+      "primaryOutcome": { "label": "Resultado principal", "placeholder": "Variable, momento, unidades" },
+      "constraints": { "label": "Alcance y restricciones", "placeholder": "Tiempo, archivos, fechas, métodos, ética, decisiones fijas" }
+    },
+    "ledger": {
+      "label": "Grafo afirmación–evidencia",
+      "description": "Cada afirmación conserva evidencia trazable; Happy Science calcula hashes de instantáneas locales, verifica extractos exactos y representa controversias.",
+      "supports": "Apoya",
+      "contradicts": "Contradice",
+      "qualifies": "Matiza",
+      "ready": "{{claims}} afirmaciones vinculadas a {{sources}} fuentes verificadas; {{quotes}} extractos comprobados y {{contested}} controversias detectadas."
+    },
+    "deliverables": "Entregables de la misión",
+    "launch": "Iniciar misión de investigación",
+    "quickTools": "Herramientas rápidas",
+    "rigor": {
+      "label": "Nivel de rigor",
+      "explore": { "title": "Explorar", "description": "Orientación rápida; toda fuente, supuesto y conclusión sin verificar queda marcada." },
+      "research": { "title": "Nivel investigación", "description": "Fuentes verificadas, ejecución reproducible, trazabilidad y puntos de aprobación." },
+      "publication": { "title": "Nivel publicación", "description": "Añade una segunda revisión independiente y elimina afirmaciones sin respaldo." }
+    },
+    "plan": {
+      "title": "Lanzamiento del estudio",
+      "description": "Fija hipótesis, estimandos, desenlaces y puertas de decisión antes de ver resultados.",
+      "outputs": { "protocol": "Protocolo tipo prerregistro", "decisions": "Decisiones de análisis y supuestos de sensibilidad", "gate": "Aprobación antes de analizar resultados" }
+    },
+    "literature": {
+      "title": "Sprint de evidencia",
+      "description": "Mapea consenso, contradicciones y vacíos con una búsqueda verificable.",
+      "outputs": { "search": "Consultas exactas y fechas de recuperación", "evidence": "Tabla de evidencia cribada con fuentes resolubles", "map": "Mapa de consenso, conflicto, incertidumbre y vacíos", "ledger": "Grafo verificable por máquina con extractos exactos", "sources": "Instantáneas SHA-256 y manifiesto de recuperación" }
     },
     "analyze": {
       "title": "Analizar mis datos",
       "description": "Indica al agente un archivo que hayas añadido; obtén figuras y un informe."
     },
+    "reproduce": {
+      "title": "Desafío de reproducción",
+      "description": "Reconstruye una afirmación cuantitativa de forma independiente y emite un veredicto.",
+      "outputs": { "environment": "Hashes, entorno y manifiesto de comandos", "comparison": "Comparación entre valor original y reproducido", "verdict": "Veredicto con desviaciones: pasa, falla o bloqueado", "ledger": "Afirmaciones originales y reproducidas enlazadas a evidencia", "sources": "Instantáneas SHA-256 y manifiesto de recuperación" }
+    },
     "audit": {
-      "title": "Auditar un informe para verificar su trazabilidad",
-      "description": "Comprueba citas, cifras sin fuente y la coherencia entre figuras y código."
+      "title": "Prueba de estrés del manuscrito",
+      "description": "Somete citas, cifras, figuras y limitaciones a revisión adversarial antes del envío.",
+      "outputs": { "findings": "Hallazgos de integridad priorizados", "checks": "Comprobaciones de citas, cifras y figura-código", "repair": "Plan de reparación para cada problema material", "ledger": "Grafo de apoyo, contradicción y matices de las afirmaciones auditadas", "sources": "Instantáneas SHA-256 y manifiesto de recuperación" }
     },
     "example-climate": {
-      "title": "Explorar un ejemplo: tendencias climáticas",
+      "title": "Ejecutar el benchmark climático de NASA",
       "description": "Datos reales de NASA GISTEMP — tendencia, comparación decenal, figura e informe."
     },
     "error": {
-      "setup": "No se pudo configurar el ejemplo: {{message}}"
+      "setup": "No se pudo configurar el ejemplo: {{message}}",
+      "mission": "No se pudo iniciar la misión de investigación: {{message}}",
+      "incomplete": "La misión terminó sin la evidencia requerida: {{files}}"
+    }
+  },
+  "researchWorkspace": {
+    "status": {
+      "planned": "Misión planificada",
+      "running": "Misión activa",
+      "waiting-for-input": "Esperando información",
+      "waiting-for-approval": "Esperando aprobación",
+      "paused": "Misión pausada",
+      "interrupted": "Ejecución interrumpida",
+      "review-ready": "Lista para revisión",
+      "completed": "Misión completada",
+      "failed": "Misión fallida",
+      "cancelled": "Misión cancelada"
+    },
+    "lifecycle": {
+      "pause": "Pausar",
+      "resume": "Reanudar",
+      "complete": "Completar",
+      "failed": "No se pudo actualizar la misión: {{message}}"
+    },
+    "nextActions": {
+      "title": "Próximas acciones",
+      "owner": { "agent": "Agente", "researcher": "Tú" },
+      "start-mission": "Iniciar la misión planificada.",
+      "resume-mission": "Continuar desde el punto guardado.",
+      "answer-question": "Responder la pregunta de investigación bloqueante.",
+      "review-approval": "Aprobar o rechazar la acción pendiente.",
+      "create-deliverable": "Crear el artefacto requerido: {{target}}",
+      "resolve-protocol": "Resolver los TBD y elementos pendientes de {{target}}.",
+      "approve-protocol": "Revisar y aprobar el protocolo actual: {{target}}",
+      "review-evidence": "Revisar {{count}} elementos de evidencia pendientes.",
+      "repair-evidence": "Reparar el contrato de evidencia: {{target}}",
+      "review-run-integrity": "Revisar {{count}} hallazgos de desviación o reproducibilidad.",
+      "complete-mission": "Revisar el paquete verificado y completar la misión."
+    },
+    "runIntegrity": {
+      "title": "Integridad plan ↔ ejecución",
+      "summary": "{{runs}} ejecuciones · {{aligned}} alineadas · {{attention}} por revisar",
+      "noPlan": "{{count}} ejecuciones no tenían un plan de análisis localizable.",
+      "aligned": "Todas las ejecuciones revisadas coinciden con el plan registrado."
+    },
+    "refresh": "Comprobar estado",
+    "checking": "Comprobando",
+    "executor": "Ejecutor del agente",
+    "recovery": {
+      "title": "Ejecución interrumpida por el reinicio",
+      "description": "Los pasos completados se conservan. Continúa desde el último punto de control sin repetir el trabajo terminado.",
+      "resume": "Continuar misión"
+    },
+    "gate": {
+      "progress": "Ruta de protocolo verificada", "verified": "Verificado", "current": "Actual", "pending": "Pendiente", "next": "Siguiente acción", "complete": "Secuencia completada", "allVerified": "Todas las puertas requeridas están verificadas", "unresolved": "{{count}} sin resolver", "generic": "Este requisito aún necesita evidencia verificable del espacio de trabajo.",
+      "protocol-complete": { "title": "Completar protocolo", "description": "Resuelve todos los [TBD] y elementos sin marcar de research/protocol.md." },
+      "approval-before-outcomes": { "title": "Aprobar antes de resultados", "description": "Aprueba el hash exacto del protocolo antes de inspeccionar resultados o analizar." },
+      "deliverables-present": { "title": "Verificar entregables", "description": "Confirma que todos los artefactos requeridos existen y no están vacíos." },
+      "approve": "Aprobar protocolo actual", "approving": "Registrando aprobación…", "approvalRecorded": "El protocolo actual fue aprobado y vinculado a su hash.", "approvalFailed": "Falló la aprobación: {{message}}",
+      "confirm": { "title": "¿Aprobar este protocolo?", "body": "Se registra una decisión inmutable vinculada al SHA-256 actual. Cualquier edición posterior invalida la aprobación.", "confirm": "Aprobar protocolo" }
+    },
+    "tabs": {
+      "mission": "Misión",
+      "decisions": "Decisiones",
+      "literature": "Literatura",
+      "evidence": "Evidencia",
+      "sources": "Fuentes",
+      "artifacts": "Artefactos",
+      "review": "Revisión"
+    },
+    "decisionLog": {
+      "title": "Registrar una decisión de investigación",
+      "description": "Registra qué se eligió y por qué. Las entradas solo se añaden; una revisión sustituye explícitamente a una anterior.",
+      "question": "Punto de decisión",
+      "choice": "Enfoque elegido",
+      "rationale": "Justificación y evidencia",
+      "alternatives": "Alternativas consideradas — una por línea",
+      "impact": "Impacto o coste esperado",
+      "supersedes": "Sustituye una decisión anterior",
+      "none": "No — es una decisión nueva",
+      "optional": "opcional",
+      "save": "Registrar decisión",
+      "saving": "Registrando",
+      "history": "{{count}} decisiones registradas",
+      "empty": "Todavía no hay decisiones de investigación.",
+      "alternativesLabel": "Alternativas: {{values}}",
+      "impactLabel": "Impacto: {{value}}",
+      "supersedesLabel": "Sustituye {{id}}"
+    },
+    "literature": {
+      "notRequired": "La captura bibliográfica está disponible en misiones de evidencia, reproducción y auditoría.",
+      "searchLabel": "Descubrimiento en Crossref",
+      "searchPlaceholder": "Buscar por tema, título, autor o cita…",
+      "search": "Buscar literatura",
+      "searching": "Buscando",
+      "corpus": "{{count}} fuentes en el corpus",
+      "fullText": "{{count}} capturas de texto completo",
+      "abstractOnly": "{{count}} solo resumen",
+      "metadataOnly": "{{count}} solo metadatos",
+      "results": "{{count}} resultados",
+      "deduplicated": "{{count}} duplicados eliminados",
+      "noResults": "No hay registros DOI resolubles para esta consulta.",
+      "fullTextCandidate": "posible texto completo",
+      "abstractCandidate": "resumen disponible",
+      "metadataCandidate": "solo metadatos",
+      "capture": "Capturar fuente",
+      "capturing": "Capturando",
+      "captured": "Capturada",
+      "capturedSources": "Corpus local de fuentes verificadas",
+      "status": { "full-text": "Texto completo capturado", "abstract-only": "Solo resumen", "metadata-only": "Solo metadatos" }
+    },
+    "gates": "{{passed}} de {{total}} controles de calidad superados.",
+    "notChecked": "Comprueba el estado para inspeccionar la evidencia y los controles de calidad.",
+    "notRequired": "Esta misión no requiere un grafo de evidencia ni un manifiesto de fuentes.",
+    "metrics": {
+      "claims": "Afirmaciones",
+      "sources": "Fuentes",
+      "contested": "En disputa",
+      "relations": "Relaciones",
+      "manifestRecords": "Filas del manifiesto",
+      "snapshots": "Copias verificadas",
+      "quotes": "Citas exactas"
+    },
+    "contested": "Afirmación controvertida",
+    "stances": { "supports": "Respalda", "contradicts": "Contradice", "qualifies": "Matiza" },
+    "emptyEvidence": "Aún no hay registros de evidencia legibles.",
+    "emptySources": "Aún no hay instantáneas de fuentes legibles.",
+    "snapshotVerified": "Instantánea verificada",
+    "snapshotUnverified": "Sin verificar",
+    "hash": "SHA-256",
+    "retrieved": "Recuperado el {{date}}",
+    "adjudication": "Revisión humana de evidencia",
+    "reviewed": "{{reviewed}} de {{total}} relaciones revisadas.",
+    "decisions": { "accepted": "Aceptar", "needs-review": "Revisar", "rejected": "Rechazar" },
+    "decisionNote": {
+      "needs-review": "¿Qué necesita otra comprobación?",
+      "rejected": "¿Por qué debe excluirse esta evidencia?"
+    },
+    "saveDecision": "Guardar decisión",
+    "savingDecision": "Guardando",
+    "cancelDecision": "Cancelar",
+    "reviewCounts": {
+      "accepted": "{{count}} aceptadas",
+      "needsReview": "{{count}} por revisar",
+      "rejected": "{{count}} rechazadas"
+    },
+    "noActiveMission": "No hay una misión de evidencia activa",
+    "claimPassport": "Pasaporte de afirmación",
+    "passportVersion": "v1",
+    "claimStatuses": {
+      "review-pending": "Revisión pendiente",
+      "supported": "Conclusión respaldada",
+      "contested": "Conclusión controvertida",
+      "contradicted": "Conclusión contradicha",
+      "qualified": "Conclusión matizada",
+      "unsupported": "Evidencia insuficiente"
+    },
+    "passportReviewed": "{{reviewed}}/{{total}} revisadas",
+    "passportSources": "{{verified}}/{{total}} fuentes verificadas",
+    "passportsReady": "{{count}} afirmaciones aprobadas",
+    "passportsBlocked": "{{count}} afirmaciones sin resolver",
+    "artifacts": "{{present}} de {{total}} artefactos requeridos están presentes.",
+    "ready": "Listo para revisión",
+    "blocked": "La revisión está bloqueada por {{count}} problemas.",
+    "release": {
+      "eyebrow": "Sello de publicación científica",
+      "version": "v1",
+      "ready": "Listo para sellar",
+      "blocked": "Publicación bloqueada",
+      "sealed": "Sellado",
+      "title": "Paquete de investigación verificable",
+      "description": "Empaqueta artefactos declarados, instantáneas de fuentes, decisiones humanas y pasaportes de afirmaciones con hashes SHA-256.",
+      "blockedHint": "Resuelve cada incidencia y aprueba cada pasaporte antes de sellar.",
+      "generate": "Sellar publicación",
+      "generating": "Sellando",
+      "get": "Obtener paquete",
+      "files": "{{count}} archivos",
+      "claims": "{{count}} pasaportes",
+      "fingerprint": "Huella del contenido",
+      "unavailable": "Este cliente no puede entregar el paquete.",
+      "verifyTitle": "Verificar o importar una entrega",
+      "verifyHint": "Use una ruta ZIP relativa al espacio de trabajo. La importación verifica cada hash y extrae en un directorio imports/ nuevo sin sobrescribir archivos.",
+      "pathLabel": "Ruta del paquete",
+      "pathPlaceholder": "releases/happy-science-….zip",
+      "verify": "Verificar",
+      "verifying": "Verificando",
+      "verified": "Verificado · {{count}} archivos",
+      "invalid": "Paquete no válido · {{count}} problemas",
+      "import": "Importación segura",
+      "importing": "Importando",
+      "imported": "Importado sin sobrescribir → {{path}}"
     }
   },
   "live": {
@@ -186,7 +420,7 @@
       "openTitle": "Abrir {{path}} — el agente trabaja en este cuaderno dentro de esta sesión"
     },
     "connBadge": {
-      "title": "OpenCode · {{status}}",
+      "title": "Ejecutor · {{status}}",
       "status": {
         "ready": "listo",
         "connecting": "conectando",

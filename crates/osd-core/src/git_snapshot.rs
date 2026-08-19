@@ -4,8 +4,8 @@ use std::sync::mpsc::{self, Receiver, RecvTimeoutError, Sender};
 use std::sync::{Mutex, OnceLock};
 use std::time::{Duration, Instant};
 
-use notify::{EventKind, RecommendedWatcher, RecursiveMode, Watcher};
 use crate::env::Env;
+use notify::{EventKind, RecommendedWatcher, RecursiveMode, Watcher};
 
 use crate::runtime::quiet_command;
 
@@ -19,8 +19,8 @@ fn git_lock() -> &'static Mutex<()> {
     LOCK.get_or_init(|| Mutex::new(()))
 }
 
-const AUTHOR_NAME: &str = "Open Science Desktop";
-const AUTHOR_EMAIL: &str = "open-science-desktop@local";
+const AUTHOR_NAME: &str = "Happy Science";
+const AUTHOR_EMAIL: &str = "happy-science@local";
 
 /// Snapshots commit to dedicated refs OUTSIDE `refs/heads/*`, never to any
 /// branch — one chain PER user branch, keyed as `<prefix>/<branch>` (following
@@ -70,7 +70,7 @@ const MAX_DIR_BYTES: u64 = 50 * 1024 * 1024;
 /// ignored; anything genuinely too big is caught by the >= 100 MB size guard,
 /// which is format-agnostic (a small `.mp4` is kept, a huge `.csv` is not).
 const DEFAULT_GITIGNORE: &str = "\
-# Managed by Open Science Desktop.
+# Managed by Happy Science.
 # Excludes paths with no provenance value plus secrets that must never be
 # committed. Research outputs, data, notebooks, and code are intentionally kept;
 # files >= 100 MB are dropped by the snapshot size guard, not by this list.
@@ -578,7 +578,9 @@ fn ensure_snapshot_repo(root: &Path) -> Result<bool, String> {
 /// Returns `Ok(true)` when a new snapshot was recorded, `Ok(false)` when there
 /// was nothing to record or the workspace opted out.
 pub fn commit(root: &Path, message: &str) -> Result<bool, String> {
-    let _lock = git_lock().lock().map_err(|_| "git snapshot lock poisoned".to_string())?;
+    let _lock = git_lock()
+        .lock()
+        .map_err(|_| "git snapshot lock poisoned".to_string())?;
     if !ensure_snapshot_repo(root)? {
         return Ok(false);
     }
@@ -754,7 +756,10 @@ fn snapshot_loop(rx: Receiver<PathBuf>) {
                 pending
                     .entry(root)
                     .and_modify(|p| p.last = now)
-                    .or_insert(PendingSnapshot { first: now, last: now });
+                    .or_insert(PendingSnapshot {
+                        first: now,
+                        last: now,
+                    });
             }
             Err(RecvTimeoutError::Timeout) => {}
             Err(RecvTimeoutError::Disconnected) => return,
@@ -854,7 +859,10 @@ mod tests {
     #[test]
     fn snapshot_due_debounces_bursts_but_caps_at_max_wait() {
         // Still within the quiet window since the last change → hold (coalesce).
-        assert!(!snapshot_due(Duration::from_millis(500), Duration::from_secs(2)));
+        assert!(!snapshot_due(
+            Duration::from_millis(500),
+            Duration::from_secs(2)
+        ));
         // Quiet window elapsed since the last change → fire (debounce).
         assert!(snapshot_due(SNAPSHOT_DEBOUNCE, Duration::from_secs(5)));
         // Changes still arriving, but the max wait elapsed → fire (no starvation).
@@ -885,7 +893,6 @@ mod tests {
         assert!(snapshot_files(&root).contains("AGENTS.md"));
         let _ = fs::remove_dir_all(&root);
     }
-
 
     #[test]
     fn a_project_repo_with_no_commits_does_not_kill_every_later_snapshot() {
@@ -928,7 +935,10 @@ mod tests {
         let stderr = "error: 'projects/Empty/' does not have a commit checked out\n                      error: 'sessions/2026-01-01/thing/' does not have a commit checked out\n                      fatal: adding files failed";
         assert_eq!(
             commitless_repos(stderr),
-            vec!["projects/Empty".to_string(), "sessions/2026-01-01/thing".to_string()]
+            vec![
+                "projects/Empty".to_string(),
+                "sessions/2026-01-01/thing".to_string()
+            ]
         );
         // Any other failure is left alone — it is not ours to reinterpret.
         assert!(commitless_repos("fatal: not a git repository").is_empty());
@@ -944,7 +954,11 @@ mod tests {
         let _ = fs::remove_dir_all(&root);
         fs::create_dir_all(&root).unwrap();
         fs::write(root.join("small.txt"), "keep me\n").unwrap();
-        fs::write(root.join("big.bin"), vec![0u8; super::MAX_BLOB_BYTES as usize]).unwrap();
+        fs::write(
+            root.join("big.bin"),
+            vec![0u8; super::MAX_BLOB_BYTES as usize],
+        )
+        .unwrap();
 
         // The small file is snapshotted; the oversized one is not.
         assert_eq!(commit(&root, "Initialize workspace").unwrap(), true);
@@ -1065,7 +1079,8 @@ mod tests {
             eprintln!("git unavailable; skipping git snapshot test");
             return;
         }
-        let root = std::env::temp_dir().join(format!("os-git-imported-repo-{}", std::process::id()));
+        let root =
+            std::env::temp_dir().join(format!("os-git-imported-repo-{}", std::process::id()));
         let _ = fs::remove_dir_all(&root);
         fs::create_dir_all(&root).unwrap();
         super::run(&root, &["init"]).unwrap();

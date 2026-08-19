@@ -10,9 +10,9 @@
 #
 #   osd-<version>-<target>/
 #     osd                 the binary (web client compiled in)
-#     opencode            the agent runtime
-#     uv                  Python environment provisioning
-#     agent-browser       browser tooling
+#     happy-science-opencode       the agent runtime
+#     happy-science-uv             Python environment provisioning
+#     happy-science-agent-browser  browser tooling
 #     resources/…         skills, plugins, agent prompts, examples
 #
 # Run it AFTER the frontend is built (`pnpm build`) — otherwise `osd` embeds no
@@ -40,16 +40,16 @@ echo "Building osd for ${target}..."
 cargo build --release --target "$target" --package osd-cli --manifest-path "$root/Cargo.toml"
 cp "$root/target/$target/release/osd$ext" "$stage/osd$ext"
 
-# The sidecars, under the plain names `sidecar_bin()` looks for next to the
-# executable (Tauri strips the target triple the same way when it bundles).
+# The sidecars use the same product-prefixed names `sidecar_bin()` looks for
+# next to the executable (Tauri strips the target triple when it bundles).
 for name in opencode uv agent-browser; do
-  src="$root/apps/desktop/src-tauri/binaries/$name-$target$ext"
+  src="$root/apps/desktop/src-tauri/binaries/happy-science-$name-$target$ext"
   if [ ! -e "$src" ]; then
     echo "Missing sidecar: $src (run scripts/dev/fetch-$name.sh $target)" >&2
     exit 1
   fi
-  cp "$src" "$stage/$name$ext"
-  chmod +x "$stage/$name$ext"
+  cp "$src" "$stage/happy-science-$name$ext"
+  chmod +x "$stage/happy-science-$name$ext"
 done
 
 # The bundled resources, under the names `Env::resource` asks for. This list
@@ -80,7 +80,7 @@ copy_resource runtime/acp-server acp-server
 copy_resource examples/climate-trends examples/climate-trends
 
 cat > "$stage/README.txt" <<'EOF'
-Open Science Desktop — headless (osd)
+Happy Science — headless (osd)
 
 Nothing to install: this directory runs as it is, on a server with no packages
 added (checked on a bare Ubuntu container).
@@ -112,7 +112,7 @@ As a service, systemd runs `osd server` unchanged, and stopping the unit takes
 the agent runtime with it. A unit that was tested end to end:
 
   [Unit]
-  Description=Open Science Desktop (headless)
+  Description=Happy Science (headless)
   After=network-online.target
   [Service]
   Type=simple

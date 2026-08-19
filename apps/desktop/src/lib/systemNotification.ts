@@ -3,6 +3,7 @@ import {
   requestPermission,
   sendNotification,
 } from "@tauri-apps/plugin-notification";
+import { PRODUCT_NAME } from "@ai4s/shared";
 
 export interface PermissionNotificationInput {
   action: string;
@@ -23,7 +24,7 @@ export async function notifyPermissionRequest(input: PermissionNotificationInput
 
   try {
     sendNotification({
-      title: "Open Science needs your approval",
+      title: `${PRODUCT_NAME} needs your approval`,
       body: permissionBody(input),
     });
     return true;

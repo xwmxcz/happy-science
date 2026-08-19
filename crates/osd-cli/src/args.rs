@@ -45,9 +45,7 @@ impl Args {
                 } else {
                     let value = match inline {
                         Some(v) => v,
-                        None => it
-                            .next()
-                            .ok_or_else(|| format!("--{name} needs a value"))?,
+                        None => it.next().ok_or_else(|| format!("--{name} needs a value"))?,
                     };
                     flags.insert(name, value);
                 }
@@ -57,7 +55,11 @@ impl Args {
                 positional.push(arg);
             }
         }
-        let command = if positional.is_empty() { String::new() } else { positional.remove(0) };
+        let command = if positional.is_empty() {
+            String::new()
+        } else {
+            positional.remove(0)
+        };
         // A second bare word is the subcommand only for the grouped commands;
         // `osd session send <id>` must not lose its id.
         let sub = match command.as_str() {
@@ -68,7 +70,13 @@ impl Args {
             }
             _ => String::new(),
         };
-        Ok(Args { command, sub, positional, flags, switches })
+        Ok(Args {
+            command,
+            sub,
+            positional,
+            flags,
+            switches,
+        })
     }
 
     pub fn value(&self, name: &str) -> Option<String> {

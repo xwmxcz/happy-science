@@ -54,12 +54,18 @@ mod tests {
         std::fs::write(src.join("data/x.csv"), "a,b\n1,2\n").unwrap();
 
         copy_missing(&src, &dst).unwrap();
-        assert_eq!(std::fs::read_to_string(dst.join("data/x.csv")).unwrap(), "a,b\n1,2\n");
+        assert_eq!(
+            std::fs::read_to_string(dst.join("data/x.csv")).unwrap(),
+            "a,b\n1,2\n"
+        );
 
         // The user edits a file; re-installing must keep the edit.
         std::fs::write(dst.join("README.md"), "user edited").unwrap();
         copy_missing(&src, &dst).unwrap();
-        assert_eq!(std::fs::read_to_string(dst.join("README.md")).unwrap(), "user edited");
+        assert_eq!(
+            std::fs::read_to_string(dst.join("README.md")).unwrap(),
+            "user edited"
+        );
 
         let _ = std::fs::remove_dir_all(base);
     }

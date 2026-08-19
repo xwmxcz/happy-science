@@ -49,10 +49,7 @@ pub fn goal_state(app: AppHandle, session_id: String) -> Result<Option<Value>, S
             let _ = write_goals(&app, &root); // best-effort heal
         }
     }
-    Ok(root
-        .get("goals")
-        .and_then(|g| g.get(&session_id))
-        .cloned())
+    Ok(root.get("goals").and_then(|g| g.get(&session_id)).cloned())
 }
 
 /// Pause / resume / clear a goal from the UI, without a model turn.

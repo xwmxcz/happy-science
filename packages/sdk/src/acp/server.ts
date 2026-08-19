@@ -1,4 +1,4 @@
-// Open Science AS an ACP agent — the server direction of #14.
+// Happy Science AS an ACP agent — the server direction of #14.
 //
 // The other half of `AcpRuntime`: there, this app is the CLIENT driving someone
 // else's agent; here, someone else's editor (Zed, JetBrains, Neovim, …) drives
@@ -17,6 +17,7 @@
 // diffed against what was already sent for that part. Sending the full value as
 // a chunk would make an editor render "ok" as "ook".
 import type { AgentRuntime } from "../runtime";
+import { PRODUCT_NAME, PRODUCT_SLUG } from "@ai4s/shared";
 import type {
   HistoryMessage,
   OpenCodeEvent,
@@ -27,8 +28,8 @@ import type {
 import { ACP_PROTOCOL_VERSION, JsonRpcPeer, type JsonRpcTransport } from "./protocol";
 
 /** What we call ourselves in `initialize`. */
-const AGENT_NAME = "open-science";
-const AGENT_TITLE = "Open Science";
+const AGENT_NAME = PRODUCT_SLUG;
+const AGENT_TITLE = PRODUCT_NAME;
 
 /** ACP's `auth_required`; unused here (the gateway token is the auth) but kept
  *  next to the codes we do answer with. */

@@ -174,9 +174,7 @@ fn chrome_candidates() -> Vec<(&'static str, Vec<String>)> {
             ),
             (
                 "brave",
-                vec![
-                    "/Applications/Brave Browser.app/Contents/MacOS/Brave Browser".into(),
-                ],
+                vec!["/Applications/Brave Browser.app/Contents/MacOS/Brave Browser".into()],
             ),
             (
                 "chromium",
@@ -187,8 +185,8 @@ fn chrome_candidates() -> Vec<(&'static str, Vec<String>)> {
     #[cfg(target_os = "windows")]
     {
         let pf = std::env::var("ProgramFiles").unwrap_or_else(|_| "C:\\Program Files".into());
-        let pf86 = std::env::var("ProgramFiles(x86)")
-            .unwrap_or_else(|_| "C:\\Program Files (x86)".into());
+        let pf86 =
+            std::env::var("ProgramFiles(x86)").unwrap_or_else(|_| "C:\\Program Files (x86)".into());
         let local = std::env::var("LOCALAPPDATA").unwrap_or_default();
         vec![
             (

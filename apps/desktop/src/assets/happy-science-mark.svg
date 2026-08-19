@@ -1,0 +1,9 @@
+<!-- Canonical Happy Science mark. Platform icons are generated from this asset. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title">
+  <title id="title">Happy Science</title>
+  <rect x="3" y="3" width="58" height="58" rx="15" fill="#103b3a"/>
+  <rect x="3.75" y="3.75" width="56.5" height="56.5" rx="14.25" fill="none" stroke="#2a5a55" stroke-width="1.5"/>
+  <path d="M19 16v32M45 16v32" fill="none" stroke="#f5f8f3" stroke-width="5.5" stroke-linecap="round"/>
+  <path d="M19 39c9 0 11-13 26-13" fill="none" stroke="#67dfc1" stroke-width="5.5" stroke-linecap="round"/>
+  <circle cx="45" cy="26" r="3.2" fill="#f2b84b"/>
+</svg>

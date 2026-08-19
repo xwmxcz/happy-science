@@ -28,6 +28,17 @@
     "succeeded": "Erfolgreich",
     "failed": "Fehlgeschlagen"
   },
+  "integrity": {
+    "section": "Forschungsintegrität",
+    "attention": "{{count}} Warnung",
+    "attention_other": "{{count}} Warnungen",
+    "attentionTitle": "Der Lauf weicht vom Plan ab oder enthält einen Reproduzierbarkeitshinweis.",
+    "aligned": "Plankonform",
+    "alignedTitle": "Keine geprüfte Abweichung vom Forschungsplan gefunden.",
+    "no-plan": "Kein Plan",
+    "no-planTitle": "Keine Präregistrierung, kein Analyseplan und kein Forschungsprotokoll gefunden.",
+    "plan": "Plan: {{path}}"
+  },
   "hardware": {
     "title": "Hardware, auf der dieser Durchlauf ausgeführt wurde",
     "remoteTitle": "Remote-Hardware, auf der dieser Durchlauf ausgeführt wurde",
@@ -40,7 +51,8 @@
   },
   "action": {
     "reproduce": "Reproduzieren",
-    "reproduceTitle": "Einen Prompt entwerfen, der diesen Befehl erneut ausführt und die Ausgaben vergleicht",
+    "reproducing": "Reproduktion",
+    "reproduceTitle": "Diesen Befehl ausführen und Eingaben, Code, Umgebung und Ergebnisse vergleichen",
     "log": "Protokoll",
     "logTitle": "Aufgezeichnete stdout/stderr anzeigen",
     "openConversation": "Unterhaltung öffnen",
@@ -51,8 +63,14 @@
   },
   "files": {
     "code": "Code",
+    "inputs": "Eingaben",
     "outputs": "Ausgaben",
     "openTitle": "Diese Ausgabedatei öffnen"
+  },
+  "reproduction": {
+    "section": "Reproduktionsvergleich", "baseline": "Basis {{id}}", "notConnected": "Vor der Reproduktion die Laufzeit verbinden.", "notStarted": "Der Reproduktionsbefehl wurde nicht gestartet.", "completed": "Reproduktion abgeschlossen; der Vergleich ist im neuen Lauf gespeichert.", "failed": "Reproduktion fehlgeschlagen: {{message}}", "matches": "Identisch", "differences": "{{count}} Unterschiede", "unverifiableFiles": "{{count}} nicht prüfbar", "unavailable": "Nicht erfasst",
+    "dimensions": { "inputs": "Eingaben", "code": "Code", "environment": "Umgebung", "outputs": "Ergebnisse" },
+    "outcome": { "identical": "Identisch", "different": "Unterschiede gefunden", "unverifiable": "Teilweise nicht prüfbar", "failed": "Befehl fehlgeschlagen" }
   },
   "remote": {
     "hpcLabel": "einem HPC-Cluster",

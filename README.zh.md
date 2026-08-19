@@ -1,13 +1,14 @@
 <div align="center">
 
-[![Open Science Desktop — 本地优先 AI 科研桌面工作台](./docs/assets/banner.webp)](https://github.com/ai4s-research/open-science)
+<img src="docs/assets/happy-science-banner.svg" alt="Happy Science — local-first research agent" width="100%" />
 
-# Open Science Desktop
+# Happy Science
 
 **本地优先、模型无关的 macOS、Windows & Linux AI 科研桌面工作台。**
 
-原名 Open Science。它是 Claude Science 及同类 AI-for-science 工作台的开源桌面替代：
-基于 Tauri、MCP、agent skills 和可复现工件构建。它把智能体、笔记本、文件、图表、
+Happy Science 是基于 MIT 许可项目
+[Open Science Desktop](https://github.com/ai4s-research/open-science) 的独立产品分支。
+它基于 Tauri、MCP、agent skills 和可复现工件构建，把智能体、笔记本、文件、图表、
 报告、运行记录和审查连接成一条可审计的桌面工作流。
 
 <p>
@@ -22,8 +23,6 @@
 
 <p>
   <a href="./LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License: MIT"></a>
-  <a href="https://doi.org/10.5281/zenodo.21351225"><img src="https://img.shields.io/badge/DOI-10.5281%2Fzenodo.21351225-1682D4" alt="DOI"></a>
-  <a href="https://internscience.github.io/ResearchClawBench-Home/"><img src="https://img.shields.io/badge/%F0%9F%8F%86%20%231-ResearchClawBench-FFB300" alt="#1 on ResearchClawBench"></a>
   <img src="https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20%7C%20Linux-blue" alt="Platforms">
   <img src="https://img.shields.io/badge/i18n-7%20languages-5B8DEF" alt="7 interface languages">
   <img src="https://img.shields.io/badge/built%20with-Tauri%202%20%2B%20React-24C8DB" alt="Built with Tauri + React">
@@ -184,13 +183,13 @@
 
 ## 安装
 
-从 [Releases 页面](https://github.com/ai4s-research/open-science/releases/latest) 下载最新安装包。
+从 [Releases 页面](https://github.com/xwmxcz/happy-science/releases/latest) 下载最新安装包。
 
-- **macOS**：`.dmg` / `.app`，Apple Silicon 和 Intel，要求 macOS 13 Ventura 或更高。
+- **macOS**：支持从源码构建；当前预览版暂不提供签名安装包。
 - **Windows**：NSIS `.exe`，Windows 10/11 x64 —— 按用户安装，无需管理员权限。另发 `.msi` 供机构批量部署；两种格式请择一使用，不要混装。
 - **Linux**：x86_64 Linux 的 `.deb` 和 `.rpm`。
 
-macOS 安装包已使用 Developer ID 签名、公证并 staple，可直接打开，无需 `xattr` 之类的绕过操作。Windows 与 Linux 构建尚未签名。
+当前 Happy Science 预览版发布的 Windows 和 Linux 安装包尚未签名。
 
 **Windows**：如果出现 SmartScreen，选择 **更多信息 -> 仍要运行**。
 
@@ -261,7 +260,7 @@ osd approval set full   # 一律不问：命令、删除、装依赖、访问网
 ```ini
 # /etc/systemd/system/osd.service
 [Unit]
-Description=Open Science Desktop (headless)
+Description=Happy Science (headless)
 After=network-online.target
 
 [Service]
@@ -292,8 +291,8 @@ WantedBy=multi-user.target
 - Tauri 在当前系统需要的 macOS、Windows 或 Linux 依赖
 
 ```bash
-git clone https://github.com/ai4s-research/open-science
-cd open-science
+git clone https://github.com/xwmxcz/happy-science
+cd happy-science
 pnpm install
 
 bash scripts/dev/fetch-opencode.sh
@@ -346,7 +345,7 @@ pnpm lint
 产品和架构说明位于 [`docs/PRD.md`](./docs/PRD.md) 和
 [`docs/TECHNICAL_DESIGN.md`](./docs/TECHNICAL_DESIGN.md)，但这些文档同时包含目标设计和历史状态说明。
 
-近期工作集中在 Windows 代码签名、自动更新、更广的 Windows/Linux 验证、连接器加固，以及继续强化可复现性审查。macOS 发布版已完成签名与公证。
+近期工作集中在 Windows 代码签名、自动更新、更广的 Windows/Linux 验证、连接器加固、可复现性审查，以及首个 macOS 公开安装包的签名。
 
 ## 参与贡献
 
@@ -355,16 +354,15 @@ pnpm lint
 
 ## 引用
 
-如果 Open Science Desktop 对你的研究有帮助,请如下引用:
+如果 Happy Science 对你的研究有帮助,请如下引用:
 
 ```bibtex
-@software{open_science_desktop,
-  author  = {{The Open Science Desktop Contributors}},
-  title   = {Open Science Desktop: a local-first, model-agnostic AI research workbench},
+@software{happy_science,
+  author  = {{The Happy Science Contributors}},
+  title   = {Happy Science: a local-first, model-agnostic AI research workbench},
   year    = {2026},
   version = {0.5.0},
-  doi     = {10.5281/zenodo.22004919},
-  url     = {https://github.com/ai4s-research/open-science},
+  url     = {https://github.com/xwmxcz/happy-science},
   license = {MIT}
 }
 ```
@@ -375,4 +373,4 @@ pnpm lint
 
 [MIT](./LICENSE)。随附的第三方技能和连接器保留各自许可证。
 
-> Open Science Desktop 仍是 beta 阶段科研工具。产出应视为草稿：发表或决策前请核对数字、引用、代码和结论。
+> Happy Science 仍是 beta 阶段科研工具。产出应视为草稿：发表或决策前请核对数字、引用、代码和结论。

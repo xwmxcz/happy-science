@@ -1,4 +1,4 @@
-# Open Science publication figure style (P1-5 chart design system).
+# Happy Science publication figure style (P1-5 chart design system).
 # The categorical color cycle is the SAME validated palette used by the app's
 # native charts (packages/shared chartPalette / index.css --series-*), so an
 # agent-generated figure and a native stat tile read as one system.

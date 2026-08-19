@@ -11,8 +11,8 @@
 # it. Cargo and Vite both no-op when nothing changed, so the double build costs
 # almost nothing.
 #
-# Tauri strips the target triple when it bundles, so inside the app `osd` sits
-# under its plain name next to `opencode` — exactly the layout it expects.
+# Tauri strips the target triple when it bundles. The product prefix keeps the
+# Linux package from claiming the user's global `osd` command in `/usr/bin`.
 set -euo pipefail
 
 target="${1:?usage: build-osd-sidecar.sh <rust-target>}"
@@ -29,6 +29,6 @@ cargo build --release --target "$target" --package osd-cli --manifest-path "$roo
 
 dest_dir="$root/apps/desktop/src-tauri/binaries"
 mkdir -p "$dest_dir"
-cp "$root/target/$target/release/osd$ext" "$dest_dir/osd-$target$ext"
-chmod +x "$dest_dir/osd-$target$ext"
-ls -la "$dest_dir/osd-$target$ext"
+cp "$root/target/$target/release/osd$ext" "$dest_dir/happy-science-osd-$target$ext"
+chmod +x "$dest_dir/happy-science-osd-$target$ext"
+ls -la "$dest_dir/happy-science-osd-$target$ext"

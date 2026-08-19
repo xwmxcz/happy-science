@@ -21,7 +21,7 @@ function workspacePath(directory: string, requestedPath: string): string {
 
 export default tool({
   description:
-    "Actually display an existing workspace artifact in the Open Science Desktop UI. You MUST call this tool when the user asks to show, display, render, preview, or open a file in the conversation or a Screen panel; reading the file or mentioning its path does not display it. Use inline for the conversation. For panel display, target can use the current Screen, create a new Screen with the source conversation, or create a real dedicated Agent Session in a new Screen. The file must already exist, and you must not claim it is displayed unless this call succeeds.",
+    "Actually display an existing workspace artifact in the Happy Science UI. You MUST call this tool when the user asks to show, display, render, preview, or open a file in the conversation or a Screen panel; reading the file or mentioning its path does not display it. Use inline for the conversation. For panel display, target can use the current Screen, create a new Screen with the source conversation, or create a real dedicated Agent Session in a new Screen. The file must already exist, and you must not claim it is displayed unless this call succeeds.",
   args: {
     path: tool.schema
       .string()

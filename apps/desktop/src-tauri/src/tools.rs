@@ -29,7 +29,11 @@ fn probe(name: &str, bin: &str, version_arg: &str) -> ToolStatus {
 /// First line of a `--version` run, when it succeeded. Some tools print to
 /// stderr (node, Rscript), hence the fallback.
 fn version_line(out: &std::process::Output) -> Option<String> {
-    let text = if !out.stdout.is_empty() { &out.stdout } else { &out.stderr };
+    let text = if !out.stdout.is_empty() {
+        &out.stdout
+    } else {
+        &out.stderr
+    };
     String::from_utf8_lossy(text)
         .lines()
         .next()
@@ -54,7 +58,12 @@ fn probe_with_path(name: &str, bin: &str, version_arg: &str, path: Option<&str>)
             version: version_line(&o),
             managed: false,
         },
-        _ => ToolStatus { name: name.to_string(), found: false, version: None, managed: false },
+        _ => ToolStatus {
+            name: name.to_string(),
+            found: false,
+            version: None,
+            managed: false,
+        },
     }
 }
 
@@ -72,7 +81,12 @@ fn probe_managed(name: &str, bin: &Path, version_arg: &str) -> Option<ToolStatus
         .ok()
         .filter(|o| o.status.success())
         .and_then(|o| version_line(&o));
-    Some(ToolStatus { name: name.to_string(), found: true, version, managed: true })
+    Some(ToolStatus {
+        name: name.to_string(),
+        found: true,
+        version,
+        managed: true,
+    })
 }
 
 /// Fall back to the app's own copy when the host probe found nothing. The
@@ -92,7 +106,11 @@ fn or_managed(host: ToolStatus, managed: Option<PathBuf>, version_arg: &str) -> 
 /// falling back to `jupyter` so an install without JupyterLab still counts.
 fn jupyter_host_probe() -> ToolStatus {
     let lab = probe("Jupyter", "jupyter-lab", "--version");
-    if lab.found { lab } else { probe("Jupyter", "jupyter", "--version") }
+    if lab.found {
+        lab
+    } else {
+        probe("Jupyter", "jupyter", "--version")
+    }
 }
 
 /// Report availability of the tools relevant to a research workflow. `async`:
@@ -104,7 +122,11 @@ fn jupyter_host_probe() -> ToolStatus {
 pub fn detect_tools(app: AppHandle) -> Vec<ToolStatus> {
     let python = {
         let p3 = probe("Python", "python3", "--version");
-        if p3.found { p3 } else { probe("Python", "python", "--version") }
+        if p3.found {
+            p3
+        } else {
+            probe("Python", "python", "--version")
+        }
     };
     vec![
         // The managed Jupyter env carries its own Python — the one the app's
@@ -114,7 +136,11 @@ pub fn detect_tools(app: AppHandle) -> Vec<ToolStatus> {
         probe("Node.js", "node", "--version"),
         // uv ships with the app (tauri externalBin) and is the uv every
         // provisioning flow actually runs — never report it missing.
-        or_managed(probe("uv", "uv", "--version"), crate::runtime::sidecar_bin("uv"), "--version"),
+        or_managed(
+            probe("uv", "uv", "--version"),
+            crate::runtime::sidecar_bin("uv"),
+            "--version",
+        ),
         // The managed env powers Open JupyterLab, the notebook kernel and the
         // agent's jupyter-mcp-server; it lives under app data, off any PATH.
         // `jupyter-lab` on both sides, not `jupyter`: it prints a bare version
@@ -161,10 +187,16 @@ mod tests {
         let found = probe_with_path("MyTool", "mytool", "--version", dir.to_str());
         assert!(found.found, "tool on the provided PATH must be found");
         assert_eq!(found.version.as_deref(), Some("mytool 9.9"));
-        assert!(!found.managed, "a tool on the user's PATH is not app-managed");
+        assert!(
+            !found.managed,
+            "a tool on the user's PATH is not app-managed"
+        );
 
         let missing = probe_with_path("MyTool", "mytool", "--version", Some("/nonexistent-dir"));
-        assert!(!missing.found, "tool off the provided PATH must not be found");
+        assert!(
+            !missing.found,
+            "tool off the provided PATH must not be found"
+        );
 
         let _ = std::fs::remove_dir_all(&dir);
     }
@@ -178,7 +210,10 @@ mod tests {
         script(&dir, "faketool", "echo 'not really installed' >&2\nexit 9");
 
         let status = probe_with_path("FakeTool", "faketool", "--version", dir.to_str());
-        assert!(!status.found, "a tool that exits non-zero on --version must not be found");
+        assert!(
+            !status.found,
+            "a tool that exits non-zero on --version must not be found"
+        );
 
         let _ = std::fs::remove_dir_all(&dir);
     }
@@ -195,8 +230,14 @@ mod tests {
         let host_missing =
             probe_with_path("Jupyter", "jupyter", "--version", Some("/nonexistent-dir"));
         let status = or_managed(host_missing, Some(bin), "--version");
-        assert!(status.found, "an app-managed binary must be reported as found");
-        assert!(status.managed, "it must be labelled app-managed, not the user's own");
+        assert!(
+            status.found,
+            "an app-managed binary must be reported as found"
+        );
+        assert!(
+            status.managed,
+            "it must be labelled app-managed, not the user's own"
+        );
         assert_eq!(status.version.as_deref(), Some("jupyter 4.4.1"));
 
         let _ = std::fs::remove_dir_all(&dir);
@@ -241,7 +282,11 @@ mod tests {
     #[test]
     fn nothing_installed_stays_not_found() {
         let host = probe_with_path("R", "Rscript", "--version", Some("/nonexistent-dir"));
-        let status = or_managed(host, Some(PathBuf::from("/nonexistent-dir/Rscript")), "--version");
+        let status = or_managed(
+            host,
+            Some(PathBuf::from("/nonexistent-dir/Rscript")),
+            "--version",
+        );
         assert!(!status.found && !status.managed && status.version.is_none());
     }
 }

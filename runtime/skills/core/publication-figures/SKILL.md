@@ -1,12 +1,12 @@
 ---
 name: publication-figures
-description: Use whenever you generate or review a chart, plot, table, or paper figure in this workspace, including work delegated by paper-writing, literature-survey, and experiment skills. Applies the Open Science publication style, enforces readable final-size layout for figures and tables, and rejects generic diagram-tool output as a publication figure. Interactive Plotly/HTML may be used for exploration, but paper delivery requires a static publication-ready export.
+description: Use whenever you generate or review a chart, plot, table, or paper figure in this workspace, including work delegated by paper-writing, literature-survey, and experiment skills. Applies the Happy Science publication style, enforces readable final-size layout for figures and tables, and rejects generic diagram-tool output as a publication figure. Interactive Plotly/HTML may be used for exploration, but paper delivery requires a static publication-ready export.
 ---
 
 # Publication Figures and Tables
 
 Make generated figures **publication-grade and on-system by default**. Every
-figure you produce with matplotlib must use the bundled Open Science style, so a
+figure you produce with matplotlib must use the bundled Happy Science style, so a
 figure in a report and a stat tile in the app read as one design system.
 When a paper/survey skill or target venue specifies its own publication palette
 and physical type scale, that more specific standard overrides this palette;

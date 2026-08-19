@@ -4,10 +4,22 @@
 // command, code version, environment, hardware, inputs, and outputs of an
 // execution. Pure derivation lives here; the Tauri bridge is separate so this
 // can be unit-tested without a desktop shell.
-import type { RunArtifact, RunRecord } from "@ai4s/shared";
+import type { ArtifactComparison, RunArtifact, RunRecord } from "@ai4s/shared";
 import type { ToolUpdatedEvent } from "@ai4s/sdk";
 import { isTauri, logDebug } from "./tauri";
-import { isGatewayWeb, gatewayGet } from "./webMode";
+import { isGatewayWeb, gatewayGet, gatewayPost } from "./webMode";
+
+export interface ReproductionRequest {
+  requestId: string;
+  baselineRunId: string;
+  command: string;
+  sessionId?: string;
+  requestedAt: number;
+  preflight: {
+    inputs: ArtifactComparison;
+    code: ArtifactComparison;
+  };
+}
 
 /** The compute surface a run targeted. Only "local" runs produce workspace
  *  files we can hash; remote surfaces are recorded honestly with their command
@@ -193,6 +205,8 @@ export function reproduceRunPrompt(r: RunRecord): string {
   }
   const code = fileList(r.code ?? []);
   if (code) parts.push(`The code version is pinned by hash: ${code} — check it hasn't changed since.`);
+  const inputs = fileList(r.inputs ?? []);
+  if (inputs) parts.push(`The recorded workspace inputs are: ${inputs} — verify their hashes before re-running.`);
   const remote = r.surface === "hpc" || r.surface === "modal" || r.surface === "ssh";
   if (remote)
     parts.push(
@@ -328,4 +342,20 @@ export async function readRunLog(hash: string): Promise<string | null> {
   } catch {
     return null;
   }
+}
+
+/** Arm one exact baseline so the next matching run receives an automatic
+ * input/code/environment/output comparison. */
+export async function prepareReproduction(runId: string): Promise<ReproductionRequest> {
+  if (isGatewayWeb) {
+    const request = await gatewayPost<ReproductionRequest>(
+      `/v1/runs/${encodeURIComponent(runId)}/reproduce`,
+      {},
+    );
+    if (!request) throw new Error("The reproduction request was not created");
+    return request;
+  }
+  if (!isTauri) throw new Error("Reproduction requires the desktop app or gateway");
+  const { invoke } = await import("@tauri-apps/api/core");
+  return invoke<ReproductionRequest>("prepare_reproduction", { runId });
 }

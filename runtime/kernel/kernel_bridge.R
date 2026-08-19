@@ -1,5 +1,5 @@
 #!/usr/bin/env Rscript
-# Minimal local R kernel for the Open Science notebook.
+# Minimal local R kernel for the Happy Science notebook.
 #
 # A persistent process that holds one environment across cells (shared state,
 # like a Jupyter kernel). The host writes the cell's code to a file (argv[1]),

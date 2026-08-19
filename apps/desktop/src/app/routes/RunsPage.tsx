@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import {
+  Boxes,
   Check,
   ChevronDown,
   ChevronRight,
@@ -20,13 +21,14 @@ import {
   X,
 } from "lucide-react";
 import type { RunArtifact, RunRecord } from "@ai4s/shared";
-import { queryRuns, readRunLog, reproduceRunPrompt, type RunFacet, type RunPage } from "@/lib/runs";
+import { prepareReproduction, queryRuns, readRunLog, type RunFacet, type RunPage } from "@/lib/runs";
 import { openArtifactExternally } from "@/lib/artifactFile";
 import { copyText } from "@/lib/clipboard";
 import { PaneTitlebarInset } from "@/components/inspector/RightPane";
-import { useUiStore } from "@/lib/store";
+import { useRuntimeStore } from "@/lib/runtime";
 import { cn } from "@/lib/cn";
 import i18n from "@/i18n";
+import { toast } from "@/lib/toast";
 
 type SincePreset = "24h" | "7d" | "30d";
 const SINCE_SECONDS: Record<SincePreset, number> = { "24h": 86_400, "7d": 604_800, "30d": 2_592_000 };
@@ -56,9 +58,11 @@ function RunsView({ sessionId }: { sessionId?: string }) {
   const [expanded, setExpanded] = useState<string | null>(null);
   const [log, setLog] = useState<{ hash: string; text: string | null } | null>(null);
   const [copied, setCopied] = useState<string | null>(null);
+  const [reproducing, setReproducing] = useState<string | null>(null);
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const setComposerDraft = useUiStore((s) => s.setComposerDraft);
+  const runtimeStatus = useRuntimeStore((state) => state.status);
+  const runShell = useRuntimeStore((state) => state.runShell);
 
   // Debounce the search box so each keystroke doesn't hit the index.
   useEffect(() => {
@@ -123,9 +127,28 @@ function RunsView({ sessionId }: { sessionId?: string }) {
     );
   };
 
-  const reproduce = (r: RunRecord) => {
-    setComposerDraft(reproduceRunPrompt(r));
-    navigate(r.sessionId ? `/live/${r.sessionId}` : "/live");
+  const reproduce = async (r: RunRecord) => {
+    if (runtimeStatus !== "ready") {
+      toast.error(t("reproduction.notConnected"));
+      return;
+    }
+    setReproducing(r.runId);
+    try {
+      const request = await prepareReproduction(r.runId);
+      const execution = runShell(request.command, request.sessionId);
+      navigate(request.sessionId ? `/live/${request.sessionId}` : "/live");
+      const sessionId = await execution;
+      if (!sessionId) throw new Error(t("reproduction.notStarted"));
+      toast.success(t("reproduction.completed"));
+    } catch (error) {
+      toast.error(
+        t("reproduction.failed", {
+          message: error instanceof Error ? error.message : String(error),
+        }),
+      );
+    } finally {
+      setReproducing(null);
+    }
   };
 
   const copyCommand = (r: RunRecord) => {
@@ -235,7 +258,8 @@ function RunsView({ sessionId }: { sessionId?: string }) {
                     run={r}
                     open={expanded === r.runId}
                     onToggle={() => setExpanded((e) => (e === r.runId ? null : r.runId))}
-                    onReproduce={() => reproduce(r)}
+                    onReproduce={() => void reproduce(r)}
+                    reproducing={reproducing === r.runId}
                     onOpenConversation={r.sessionId ? () => navigate(`/live/${r.sessionId}`) : undefined}
                     onCopy={() => copyCommand(r)}
                     copied={copied === r.runId}
@@ -320,6 +344,7 @@ function RunRow({
   open,
   onToggle,
   onReproduce,
+  reproducing,
   onOpenConversation,
   onCopy,
   copied,
@@ -330,6 +355,7 @@ function RunRow({
   open: boolean;
   onToggle: () => void;
   onReproduce: () => void;
+  reproducing: boolean;
   onOpenConversation?: () => void;
   onCopy: () => void;
   copied: boolean;
@@ -358,6 +384,21 @@ function RunRow({
         <span className={cn("min-w-0 flex-1 truncate font-mono text-[13px]", failed ? "text-text/70" : "text-text")}>
           {r.command}
         </span>
+        {r.integrity && (
+          <span
+            className={cn(
+              "shrink-0 rounded border px-1.5 py-0.5 text-[10px] font-semibold",
+              r.integrity.status === "attention"
+                ? "border-error/35 bg-error/[0.06] text-error"
+                : r.integrity.status === "aligned"
+                  ? "border-ok/35 bg-ok/[0.06] text-ok"
+                  : "border-border text-muted",
+            )}
+            title={t(`integrity.${r.integrity.status}Title`, { count: r.integrity.findings.length })}
+          >
+            {t(`integrity.${r.integrity.status}`, { count: r.integrity.findings.length })}
+          </span>
+        )}
         {remote && (
           <span className="shrink-0 text-[10px] font-semibold uppercase tracking-wide text-accent">{r.surface}</span>
         )}
@@ -398,9 +439,17 @@ function RunRow({
             )}
           </div>
 
+          {r.integrity && <IntegritySummary integrity={r.integrity} />}
+          {r.reproduction && <ReproductionComparison reproduction={r.reproduction} />}
+
           <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5">
-            <Action icon={<RotateCcw size={12} />} onClick={onReproduce} title={t("action.reproduceTitle")}>
-              {t("action.reproduce")}
+            <Action
+              icon={reproducing ? <Loader2 size={12} className="animate-spin" /> : <RotateCcw size={12} />}
+              onClick={onReproduce}
+              title={t("action.reproduceTitle")}
+              disabled={reproducing}
+            >
+              {reproducing ? t("action.reproducing") : t("action.reproduce")}
             </Action>
             {r.logHash && (
               <Action icon={<ScrollText size={12} />} onClick={() => onToggleLog(r.logHash!)} active={log?.hash === r.logHash} title={t("action.logTitle")}>
@@ -418,6 +467,7 @@ function RunRow({
           </div>
 
           {r.code && r.code.length > 0 && <FileGroup icon={<FileCode2 size={12} />} label={t("files.code")} files={r.code} />}
+          {r.inputs && r.inputs.length > 0 && <FileGroup icon={<Boxes size={12} />} label={t("files.inputs")} files={r.inputs} />}
           {r.outputs && r.outputs.length > 0 && (
             <FileGroup icon={<FileOutput size={12} />} label={t("files.outputs")} files={r.outputs} openable />
           )}
@@ -444,6 +494,123 @@ function RunRow({
         </div>
       )}
     </li>
+  );
+}
+
+function ReproductionComparison({ reproduction }: { reproduction: NonNullable<RunRecord["reproduction"]> }) {
+  const { t } = useTranslation("runs");
+  const dimensions = [
+    ["inputs", reproduction.inputs],
+    ["code", reproduction.code],
+    ["outputs", reproduction.outputs],
+  ] as const;
+  return (
+    <section
+      className={cn(
+        "rounded-input border px-2.5 py-2",
+        reproduction.outcome === "identical"
+          ? "border-ok/30 bg-ok/[0.03]"
+          : reproduction.outcome === "different" || reproduction.outcome === "failed"
+            ? "border-error/30 bg-error/[0.04]"
+            : "border-border bg-surface-2/50",
+      )}
+      aria-label={t("reproduction.section")}
+    >
+      <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+        <span className="font-semibold text-text">{t("reproduction.section")}</span>
+        <span className="text-muted">{t(`reproduction.outcome.${reproduction.outcome}`)}</span>
+        <span className="font-mono text-[9px] text-muted">
+          {t("reproduction.baseline", { id: reproduction.baselineRunId })}
+        </span>
+      </div>
+      <div className="mt-2 grid gap-1.5 sm:grid-cols-4">
+        {dimensions.map(([name, comparison]) => (
+          <ComparisonDimension key={name} name={name} comparison={comparison} />
+        ))}
+        <div className="border border-border bg-surface px-2 py-1.5">
+          <div className="font-mono text-[8px] uppercase tracking-[0.09em] text-muted">
+            {t("reproduction.dimensions.environment")}
+          </div>
+          <div className={cn("mt-1 text-[10px]", reproduction.environment.matches ? "text-ok" : reproduction.environment.matches === false ? "text-error" : "text-muted")}>
+            {reproduction.environment.matches === true
+              ? t("reproduction.matches")
+              : reproduction.environment.matches === false
+                ? reproduction.environment.changes.join(", ")
+                : t("reproduction.unavailable")}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function ComparisonDimension({
+  name,
+  comparison,
+}: {
+  name: "inputs" | "code" | "outputs";
+  comparison: NonNullable<RunRecord["reproduction"]>["inputs"];
+}) {
+  const { t } = useTranslation("runs");
+  const differences = [...comparison.changed, ...comparison.missing, ...comparison.added];
+  const uncertain = comparison.unverifiable;
+  return (
+    <div className="min-w-0 border border-border bg-surface px-2 py-1.5">
+      <div className="font-mono text-[8px] uppercase tracking-[0.09em] text-muted">
+        {t(`reproduction.dimensions.${name}`)}
+      </div>
+      <div
+        className={cn("mt-1 truncate text-[10px]", differences.length ? "text-error" : uncertain.length ? "text-muted" : "text-ok")}
+        title={[...differences, ...uncertain].join(", ")}
+      >
+        {differences.length
+          ? t("reproduction.differences", { count: differences.length })
+          : uncertain.length
+            ? t("reproduction.unverifiableFiles", { count: uncertain.length })
+            : t("reproduction.matches")}
+      </div>
+    </div>
+  );
+}
+
+function IntegritySummary({ integrity }: { integrity: NonNullable<RunRecord["integrity"]> }) {
+  const { t } = useTranslation("runs");
+  return (
+    <section
+      className={cn(
+        "rounded-input border px-2.5 py-2",
+        integrity.status === "attention"
+          ? "border-error/30 bg-error/[0.04]"
+          : integrity.status === "aligned"
+            ? "border-ok/25 bg-ok/[0.03]"
+            : "border-border bg-surface-2/50",
+      )}
+      aria-label={t("integrity.section")}
+    >
+      <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+        <span className="font-semibold text-text">{t("integrity.section")}</span>
+        <span className="text-muted">
+          {t(`integrity.${integrity.status}Title`, { count: integrity.findings.length })}
+        </span>
+        {integrity.planPaths.length > 0 && (
+          <span className="font-mono text-[10px] text-muted">
+            {t("integrity.plan", { path: integrity.planPaths.join(", ") })}
+          </span>
+        )}
+      </div>
+      {integrity.findings.length > 0 && (
+        <ul className="mt-2 space-y-1.5">
+          {integrity.findings.map((finding) => (
+            <li key={`${finding.kind}:${finding.path}:${finding.line}`} className="border-l-2 border-error/50 pl-2">
+              <div className="font-medium text-text">{finding.title}</div>
+              <pre className="mt-0.5 whitespace-pre-wrap break-words font-mono text-[10px] leading-4 text-muted">
+                {finding.evidence}
+              </pre>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
   );
 }
 
@@ -497,15 +664,26 @@ function Action({
   onClick,
   active,
   title,
+  disabled,
 }: {
   children: React.ReactNode;
   icon: React.ReactNode;
   onClick: () => void;
   active?: boolean;
   title?: string;
+  disabled?: boolean;
 }) {
   return (
-    <button className={cn("flex items-center gap-1 hover:underline", active ? "text-text" : "text-link")} onClick={onClick} aria-pressed={active} title={title}>
+    <button
+      className={cn(
+        "flex items-center gap-1 hover:underline disabled:cursor-not-allowed disabled:no-underline disabled:opacity-55",
+        active ? "text-text" : "text-link",
+      )}
+      onClick={onClick}
+      aria-pressed={active}
+      title={title}
+      disabled={disabled}
+    >
       {icon}
       {children}
     </button>

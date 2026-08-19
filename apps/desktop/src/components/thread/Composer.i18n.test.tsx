@@ -3,7 +3,7 @@ import { afterEach, describe, expect, it } from "vitest";
 import { renderAt } from "@/test/render";
 import { useUiStore } from "@/lib/store";
 import { Composer } from "./Composer";
-import { WorkflowStarters } from "./WorkflowStarters";
+import { ResearchWorkbench } from "@/components/research/ResearchWorkbench";
 
 // COPYCAT RULE: useUiStore is module-global; reset the locale after each test
 // so this suite never bleeds a non-English locale into other test files.
@@ -17,25 +17,24 @@ describe("Composer strings (i18n)", () => {
   });
 });
 
-describe("WorkflowStarters strings (i18n)", () => {
-  it("renders the welcome copy and a starter card's title/description in English", () => {
-    render(<WorkflowStarters onPick={() => {}} />);
-    expect(screen.getByText("What should we look into?")).toBeInTheDocument();
-    expect(screen.getByText("Run a demo analysis, end to end")).toBeInTheDocument();
+describe("ResearchWorkbench strings (i18n)", () => {
+  it("renders the research brief and a mission's title/description in English", () => {
+    render(<ResearchWorkbench onLaunch={() => {}} />);
+    expect(screen.getByText("Define the mission. Set the proof standard.")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Study launch/ })).toBeInTheDocument();
     expect(
-      screen.getByText("Simulate a dataset, fit a model, and produce a figure and a traceable report."),
+      screen.getByText(
+        "Map consensus, contradictions, and research gaps with a verified search trail.",
+      ),
     ).toBeInTheDocument();
   });
 });
 
 describe("LiveSessionPage strings (i18n)", () => {
-  it("renders the disconnected-runtime card in English (no Tauri sidecar in tests)", async () => {
+  it("keeps the research workbench primary while the executor is disconnected", async () => {
     renderAt("/live");
-    expect(await screen.findByText("OpenCode runtime")).toBeInTheDocument();
-    expect(
-      screen.getByText((_, node) =>
-        node?.textContent === "The desktop app runs a bundled OpenCode automatically. In the browser, start one with opencode serve and connect.",
-      ),
-    ).toBeInTheDocument();
+    expect(await screen.findByText("Define the mission. Set the proof standard.")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Launch research mission" })).toBeDisabled();
+    expect(screen.queryByText("OpenCode runtime")).not.toBeInTheDocument();
   });
 });

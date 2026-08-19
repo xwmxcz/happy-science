@@ -1,14 +1,13 @@
 cff-version: 1.2.0
-message: "If you use Open Science Desktop in your research, please cite it as below."
-title: "Open Science Desktop: a local-first, model-agnostic AI research workbench"
+message: "If you use Happy Science in your research, please cite it as below."
+title: "Happy Science: a local-first, model-agnostic AI research workbench"
 type: software
 authors:
-  - name: "The Open Science Desktop Contributors"
-repository-code: "https://github.com/ai4s-research/open-science"
-url: "https://openedscience.com"
+  - name: "The Happy Science Contributors"
+repository-code: "https://github.com/xwmxcz/happy-science"
+url: "https://github.com/xwmxcz/happy-science"
 license: MIT
 version: 0.5.0
-doi: 10.5281/zenodo.22004919
 date-released: "2026-08-19"
 keywords:
   - AI for science

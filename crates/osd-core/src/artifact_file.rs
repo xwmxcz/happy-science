@@ -1,7 +1,7 @@
 // Read/open files the agent produced in the workspace, for artifact previews.
 // Strictly sandboxed to the workspace root: a path that escapes it is rejected.
-use std::path::{Path, PathBuf};
 use crate::env::Env;
+use std::path::{Path, PathBuf};
 
 use crate::runtime::workspace_dir;
 
@@ -73,9 +73,19 @@ pub fn mime_for(ext: &str) -> (&'static str, bool) {
         // Binary phase diagram — JSON text, rendered by the native viewer.
         "phase" => ("application/json", true),
         "txt" => ("text/plain", true),
-        "docx" => ("application/vnd.openxmlformats-officedocument.wordprocessingml.document", false),
-        "xlsx" => ("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", false),
-        "pptx" => ("application/vnd.openxmlformats-officedocument.presentationml.presentation", false),
+        "docx" => (
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            false,
+        ),
+        "xlsx" => (
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            false,
+        ),
+        "pptx" => (
+            "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+            false,
+        ),
+        "zip" => ("application/zip", false),
         // Video — served over the local file server (with Range support) and
         // played inline by the webview's native <video> element.
         "mp4" | "m4v" => ("video/mp4", false),
@@ -143,7 +153,9 @@ pub fn locate_under(root: &Path, rel: &str) -> Option<String> {
     let mut stack = vec![(root.clone(), 0usize)];
     let mut seen = 0usize;
     while let Some((dir, depth)) = stack.pop() {
-        let Ok(entries) = std::fs::read_dir(&dir) else { continue };
+        let Ok(entries) = std::fs::read_dir(&dir) else {
+            continue;
+        };
         for entry in entries.flatten() {
             seen += 1;
             if seen > SEARCH_MAX_ENTRIES {
@@ -153,7 +165,10 @@ pub fn locate_under(root: &Path, rel: &str) -> Option<String> {
             let fname = entry.file_name();
             // Hidden files/dirs and dependency trees are never agent artifacts.
             let fname_str = fname.to_string_lossy();
-            if fname_str.starts_with('.') || fname_str == "node_modules" || fname_str == "__pycache__" {
+            if fname_str.starts_with('.')
+                || fname_str == "node_modules"
+                || fname_str == "__pycache__"
+            {
                 continue;
             }
             let Ok(ft) = entry.file_type() else { continue };
@@ -194,7 +209,11 @@ pub fn resolve_artifact(env: &Env, path: &str) -> Result<Option<String>, String>
 
 /// Read a workspace file for preview. Text types come back as UTF-8, binary as
 /// base64. `async`: previews read multi-MB files — never on the UI thread.
-pub fn read_artifact(env: &Env, path: String, root: Option<String>) -> Result<ArtifactFile, String> {
+pub fn read_artifact(
+    env: &Env,
+    path: String,
+    root: Option<String>,
+) -> Result<ArtifactFile, String> {
     let full = resolve_under(&scope_root(env, root.as_deref())?, &path)?;
     let ext = full
         .extension()
@@ -209,11 +228,20 @@ pub fn read_artifact(env: &Env, path: String, root: Option<String>) -> Result<Ar
         .map_err(|e| format!("read failed: {e}"))?
         .len();
     if exceeds_preview_cap(size) {
-        return Err(format!("file too large to preview (>{} MB)", PREVIEW_CAP_BYTES / (1024 * 1024)));
+        return Err(format!(
+            "file too large to preview (>{} MB)",
+            PREVIEW_CAP_BYTES / (1024 * 1024)
+        ));
     }
     let bytes = std::fs::read(&full).map_err(|e| format!("read failed: {e}"))?;
     let (mime, encoding, data) = encode_for_preview(mime, is_text, bytes);
-    Ok(ArtifactFile { path, mime: mime.to_string(), encoding, data, size })
+    Ok(ArtifactFile {
+        path,
+        mime: mime.to_string(),
+        encoding,
+        data,
+        size,
+    })
 }
 
 /// Decide how file bytes reach the frontend: known text types as UTF-8, known
@@ -291,7 +319,9 @@ pub fn list_notebooks(env: &Env, root: Option<String>) -> Result<Vec<NotebookEnt
     let mut stack = vec![(root.clone(), 0usize)];
     let mut seen = 0usize;
     while let Some((dir, depth)) = stack.pop() {
-        let Ok(entries) = std::fs::read_dir(&dir) else { continue };
+        let Ok(entries) = std::fs::read_dir(&dir) else {
+            continue;
+        };
         for entry in entries.flatten() {
             seen += 1;
             if seen > SEARCH_MAX_ENTRIES {
@@ -300,7 +330,10 @@ pub fn list_notebooks(env: &Env, root: Option<String>) -> Result<Vec<NotebookEnt
             }
             let fname = entry.file_name();
             let fname_str = fname.to_string_lossy();
-            if fname_str.starts_with('.') || fname_str == "node_modules" || fname_str == "__pycache__" {
+            if fname_str.starts_with('.')
+                || fname_str == "node_modules"
+                || fname_str == "__pycache__"
+            {
                 continue;
             }
             let Ok(ft) = entry.file_type() else { continue };
@@ -321,7 +354,10 @@ pub fn list_notebooks(env: &Env, root: Option<String>) -> Result<Vec<NotebookEnt
                         .components()
                         .map(|c| c.as_os_str().to_string_lossy().into_owned())
                         .collect();
-                    found.push(NotebookEntry { path: parts.join("/"), modified });
+                    found.push(NotebookEntry {
+                        path: parts.join("/"),
+                        modified,
+                    });
                 }
             }
         }
@@ -358,7 +394,10 @@ pub fn dir_entries(root: &Path, rel: &str) -> Result<Vec<DirEntry>, String> {
         return Err("not a directory".into());
     }
     let mut out = Vec::new();
-    for entry in std::fs::read_dir(&dir).map_err(|e| e.to_string())?.flatten() {
+    for entry in std::fs::read_dir(&dir)
+        .map_err(|e| e.to_string())?
+        .flatten()
+    {
         let fname = entry.file_name();
         let name = fname.to_string_lossy().into_owned();
         if name.starts_with('.') || name == "node_modules" || name == "__pycache__" {
@@ -384,7 +423,11 @@ pub fn dir_entries(root: &Path, rel: &str) -> Result<Vec<DirEntry>, String> {
             path: rel_path,
             name,
             is_dir: ft.is_dir(),
-            size: if ft.is_file() { meta.as_ref().map(|m| m.len()).unwrap_or(0) } else { 0 },
+            size: if ft.is_file() {
+                meta.as_ref().map(|m| m.len()).unwrap_or(0)
+            } else {
+                0
+            },
             modified,
         });
     }
@@ -432,7 +475,10 @@ pub fn write_workspace_file(
 /// Shared by both attach paths (native picker and drag-and-drop): they differ
 /// only in how they obtain the paths, and the last two bugs here were both this
 /// logic having been fixed in one of them and not the other.
-pub fn attach_paths(ws: &Path, srcs: impl IntoIterator<Item = PathBuf>) -> Result<Vec<String>, String> {
+pub fn attach_paths(
+    ws: &Path,
+    srcs: impl IntoIterator<Item = PathBuf>,
+) -> Result<Vec<String>, String> {
     // Canonicalize the workspace root once so we can tell whether a source path
     // already resolves to somewhere inside it (through symlinks / `..` / case).
     let ws_canon = ws.canonicalize().unwrap_or_else(|_| ws.to_path_buf());
@@ -448,7 +494,11 @@ pub fn attach_paths(ws: &Path, srcs: impl IntoIterator<Item = PathBuf>) -> Resul
             added.push(rel);
             continue;
         }
-        let name = src.file_name().ok_or("path has no file name")?.to_string_lossy().to_string();
+        let name = src
+            .file_name()
+            .ok_or("path has no file name")?
+            .to_string_lossy()
+            .to_string();
         let dst = unique_name(ws, &name);
         std::fs::copy(&src, ws.join(&dst)).map_err(|e| format!("copy failed: {e}"))?;
         added.push(dst);
@@ -579,12 +629,24 @@ fn base64_encode(input: &[u8]) -> String {
     const T: &[u8; 64] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
     let mut out = String::with_capacity(input.len().div_ceil(3) * 4);
     for chunk in input.chunks(3) {
-        let b = [chunk[0], *chunk.get(1).unwrap_or(&0), *chunk.get(2).unwrap_or(&0)];
+        let b = [
+            chunk[0],
+            *chunk.get(1).unwrap_or(&0),
+            *chunk.get(2).unwrap_or(&0),
+        ];
         let n = ((b[0] as u32) << 16) | ((b[1] as u32) << 8) | (b[2] as u32);
         out.push(T[((n >> 18) & 63) as usize] as char);
         out.push(T[((n >> 12) & 63) as usize] as char);
-        out.push(if chunk.len() > 1 { T[((n >> 6) & 63) as usize] as char } else { '=' });
-        out.push(if chunk.len() > 2 { T[(n & 63) as usize] as char } else { '=' });
+        out.push(if chunk.len() > 1 {
+            T[((n >> 6) & 63) as usize] as char
+        } else {
+            '='
+        });
+        out.push(if chunk.len() > 2 {
+            T[(n & 63) as usize] as char
+        } else {
+            '='
+        });
     }
     out
 }
@@ -614,7 +676,11 @@ mod tests {
         );
         // Already-plain paths, a POSIX path and a bare drive pass through untouched.
         for plain in [r"D:\work", r"\\server\share", "/home/u/work", r"C:\"] {
-            assert_eq!(strip_windows_verbatim(plain), plain, "{plain} must not change");
+            assert_eq!(
+                strip_windows_verbatim(plain),
+                plain,
+                "{plain} must not change"
+            );
         }
     }
 
@@ -703,7 +769,8 @@ mod tests {
     fn molecule_files_are_text() {
         // The 3D molecule viewer needs utf8, not base64 (3Dmol parses the source).
         for ext in [
-            "mol", "mol2", "sdf", "smi", "smiles", "cif", "mcif", "mmcif", "pdb", "pqr", "xyz", "cube",
+            "mol", "mol2", "sdf", "smi", "smiles", "cif", "mcif", "mmcif", "pdb", "pqr", "xyz",
+            "cube",
         ] {
             assert!(mime_for(ext).1, "{ext} must be a text type");
         }
@@ -742,16 +809,23 @@ mod tests {
         std::fs::write(root.join("results/foo/bar.png"), "x").unwrap();
         let ws = root.canonicalize().unwrap();
 
-        assert_eq!(workspace_relative(&ws, &root.join("top.png")).as_deref(), Some("top.png"));
+        assert_eq!(
+            workspace_relative(&ws, &root.join("top.png")).as_deref(),
+            Some("top.png")
+        );
         assert_eq!(
             workspace_relative(&ws, &root.join("results/foo/bar.png")).as_deref(),
             Some("results/foo/bar.png"),
         );
         // A file outside the workspace, and a non-existent path, are not in place.
-        let outside = std::env::temp_dir().join(format!("ai4s-wsrel-out-{}.png", std::process::id()));
+        let outside =
+            std::env::temp_dir().join(format!("ai4s-wsrel-out-{}.png", std::process::id()));
         std::fs::write(&outside, "x").unwrap();
         assert_eq!(workspace_relative(&ws, &outside), None);
-        assert_eq!(workspace_relative(&ws, Path::new("/no/such/file.png")), None);
+        assert_eq!(
+            workspace_relative(&ws, Path::new("/no/such/file.png")),
+            None
+        );
 
         let _ = std::fs::remove_file(&outside);
         let _ = std::fs::remove_dir_all(&root);
@@ -781,12 +855,24 @@ mod tests {
         ];
         let added = attach_paths(&ws, srcs).unwrap();
 
-        assert_eq!(added, vec!["results/foo/deep.csv", "outside.csv", "taken-1.csv"]);
+        assert_eq!(
+            added,
+            vec!["results/foo/deep.csv", "outside.csv", "taken-1.csv"]
+        );
         // The in-place file was referenced, not duplicated at the root.
         assert!(!ws.join("deep.csv").exists());
-        assert_eq!(std::fs::read_to_string(ws.join("outside.csv")).unwrap(), "out");
-        assert_eq!(std::fs::read_to_string(ws.join("taken.csv")).unwrap(), "already here");
-        assert_eq!(std::fs::read_to_string(ws.join("taken-1.csv")).unwrap(), "collides");
+        assert_eq!(
+            std::fs::read_to_string(ws.join("outside.csv")).unwrap(),
+            "out"
+        );
+        assert_eq!(
+            std::fs::read_to_string(ws.join("taken.csv")).unwrap(),
+            "already here"
+        );
+        assert_eq!(
+            std::fs::read_to_string(ws.join("taken-1.csv")).unwrap(),
+            "collides"
+        );
 
         let _ = std::fs::remove_dir_all(&base);
     }
@@ -839,13 +925,17 @@ mod tests {
 
     #[test]
     fn locate_prefers_the_newest_of_duplicate_basenames() {
-        let root = std::env::temp_dir().join(format!("ai4s-locate-dup-test-{}", std::process::id()));
+        let root =
+            std::env::temp_dir().join(format!("ai4s-locate-dup-test-{}", std::process::id()));
         std::fs::create_dir_all(root.join("old")).unwrap();
         std::fs::create_dir_all(root.join("new")).unwrap();
         std::fs::write(root.join("old/report.pdf"), b"x").unwrap();
         std::fs::write(root.join("new/report.pdf"), b"y").unwrap();
         let past = std::time::SystemTime::now() - std::time::Duration::from_secs(3600);
-        let f = std::fs::File::options().write(true).open(root.join("old/report.pdf")).unwrap();
+        let f = std::fs::File::options()
+            .write(true)
+            .open(root.join("old/report.pdf"))
+            .unwrap();
         f.set_modified(past).unwrap();
 
         assert_eq!(

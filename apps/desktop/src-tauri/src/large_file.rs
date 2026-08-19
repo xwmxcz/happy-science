@@ -25,9 +25,10 @@ fn probe_script(app: &AppHandle) -> Option<PathBuf> {
         candidates.push(p);
     }
     // Dev fallback: repo checkout relative to the crate.
-    candidates.push(PathBuf::from(env!("CARGO_MANIFEST_DIR")).join(
-        "../../../runtime/skills/core/large-file/large_file_probe.py",
-    ));
+    candidates.push(
+        PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+            .join("../../../runtime/skills/core/large-file/large_file_probe.py"),
+    );
     first_existing(&candidates)
 }
 
@@ -51,9 +52,14 @@ pub fn probe_large_file(
     cmd.arg(&script).arg(&full);
     // Same enriched PATH as the kernel/agent so a conda/homebrew python resolves.
     cmd.env("PATH", crate::runtime::enriched_path());
-    let out = cmd.output().map_err(|e| format!("probe failed to run: {e}"))?;
+    let out = cmd
+        .output()
+        .map_err(|e| format!("probe failed to run: {e}"))?;
     if !out.status.success() {
-        return Err(format!("probe error: {}", String::from_utf8_lossy(&out.stderr)));
+        return Err(format!(
+            "probe error: {}",
+            String::from_utf8_lossy(&out.stderr)
+        ));
     }
     Ok(String::from_utf8_lossy(&out.stdout).trim().to_string())
 }

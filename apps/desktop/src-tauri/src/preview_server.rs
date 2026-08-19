@@ -23,7 +23,9 @@ fn percent_decode(s: &str) -> String {
     while i < bytes.len() {
         match bytes[i] {
             b'%' => {
-                let hex = bytes.get(i + 1..i + 3).and_then(|h| std::str::from_utf8(h).ok());
+                let hex = bytes
+                    .get(i + 1..i + 3)
+                    .and_then(|h| std::str::from_utf8(h).ok());
                 if let Some(v) = hex.and_then(|h| u8::from_str_radix(h, 16).ok()) {
                     out.push(v);
                     i += 3;
@@ -99,10 +101,22 @@ fn handle<F: Fn(&str) -> Option<PathBuf>>(mut stream: TcpStream, token: &str, ro
     let raw_path = parts.next().unwrap_or("/");
     let head_only = method == "HEAD";
     if method != "GET" && method != "HEAD" {
-        write_response(&mut stream, "405 Method Not Allowed", "text/plain", b"method not allowed", false);
+        write_response(
+            &mut stream,
+            "405 Method Not Allowed",
+            "text/plain",
+            b"method not allowed",
+            false,
+        );
         return;
     }
-    let decoded = percent_decode(raw_path.split('?').next().unwrap_or("/").trim_start_matches('/'));
+    let decoded = percent_decode(
+        raw_path
+            .split('?')
+            .next()
+            .unwrap_or("/")
+            .trim_start_matches('/'),
+    );
     // The per-run token is the FIRST path segment (`/<token>/w/…`). A path
     // prefix — rather than a query param or cookie — so relative subresources
     // inside a previewed HTML file inherit it, and the sandboxed iframe
@@ -111,7 +125,13 @@ fn handle<F: Fn(&str) -> Option<PathBuf>>(mut stream: TcpStream, token: &str, ro
     let after_token = match decoded.split_once('/') {
         Some((tok, rest)) if tok == token => rest.to_string(),
         _ => {
-            write_response(&mut stream, "403 Forbidden", "text/plain", b"forbidden", head_only);
+            write_response(
+                &mut stream,
+                "403 Forbidden",
+                "text/plain",
+                b"forbidden",
+                head_only,
+            );
             return;
         }
     };
@@ -121,19 +141,37 @@ fn handle<F: Fn(&str) -> Option<PathBuf>>(mut stream: TcpStream, token: &str, ro
         Some((scope, rest)) if !rest.is_empty() => match root_of(scope) {
             Some(root) => (root, rest.to_string()),
             None => {
-                write_response(&mut stream, "404 Not Found", "text/plain", b"not found", head_only);
+                write_response(
+                    &mut stream,
+                    "404 Not Found",
+                    "text/plain",
+                    b"not found",
+                    head_only,
+                );
                 return;
             }
         },
         _ => {
-            write_response(&mut stream, "404 Not Found", "text/plain", b"not found", head_only);
+            write_response(
+                &mut stream,
+                "404 Not Found",
+                "text/plain",
+                b"not found",
+                head_only,
+            );
             return;
         }
     };
     let full = match resolve_under(&root, &rel) {
         Ok(p) if p.is_file() => p,
         _ => {
-            write_response(&mut stream, "404 Not Found", "text/plain", b"not found", head_only);
+            write_response(
+                &mut stream,
+                "404 Not Found",
+                "text/plain",
+                b"not found",
+                head_only,
+            );
             return;
         }
     };
@@ -163,8 +201,16 @@ fn parse_range(v: &str) -> Option<(Option<u64>, Option<u64>)> {
     if s.is_empty() && e.is_empty() {
         return None;
     }
-    let start = if s.is_empty() { None } else { Some(s.parse().ok()?) };
-    let end = if e.is_empty() { None } else { Some(e.parse().ok()?) };
+    let start = if s.is_empty() {
+        None
+    } else {
+        Some(s.parse().ok()?)
+    };
+    let end = if e.is_empty() {
+        None
+    } else {
+        Some(e.parse().ok()?)
+    };
     Some((start, end))
 }
 
@@ -203,7 +249,13 @@ fn serve_file(
     let total = match std::fs::metadata(path) {
         Ok(m) => m.len(),
         Err(_) => {
-            write_response(stream, "500 Internal Server Error", "text/plain", b"read failed", head_only);
+            write_response(
+                stream,
+                "500 Internal Server Error",
+                "text/plain",
+                b"read failed",
+                head_only,
+            );
             return;
         }
     };
@@ -232,7 +284,13 @@ fn serve_file(
         let mut file = match opened {
             Ok(f) => f,
             Err(_) => {
-                write_response(stream, "500 Internal Server Error", "text/plain", b"read failed", head_only);
+                write_response(
+                    stream,
+                    "500 Internal Server Error",
+                    "text/plain",
+                    b"read failed",
+                    head_only,
+                );
                 return;
             }
         };
@@ -249,7 +307,13 @@ fn serve_file(
     let mut file = match std::fs::File::open(path) {
         Ok(f) => f,
         Err(_) => {
-            write_response(stream, "500 Internal Server Error", "text/plain", b"read failed", head_only);
+            write_response(
+                stream,
+                "500 Internal Server Error",
+                "text/plain",
+                b"read failed",
+                head_only,
+            );
             return;
         }
     };
@@ -347,9 +411,15 @@ pub fn preview_url(
         "base" => "b",
         other => return Err(format!("unknown root scope: {other}")),
     };
-    let rel = relativize(&crate::artifact_file::scope_root(&app, root.as_deref())?, &path)?;
+    let rel = relativize(
+        &crate::artifact_file::scope_root(&app, root.as_deref())?,
+        &path,
+    )?;
     let encoded: Vec<String> = rel.split('/').map(encode_segment).collect();
-    Ok(format!("http://127.0.0.1:{port}/{token}/{scope}/{}", encoded.join("/")))
+    Ok(format!(
+        "http://127.0.0.1:{port}/{token}/{scope}/{}",
+        encoded.join("/")
+    ))
 }
 
 #[cfg(test)]
@@ -447,7 +517,11 @@ mod tests {
 
         // A slice that straddles a chunk boundary.
         let (start, end) = (CHUNK_BYTES - 10, CHUNK_BYTES + 10);
-        let (h, body) = get_with(port, "/tok/w/big.mp4", Some(&format!("bytes={start}-{end}")));
+        let (h, body) = get_with(
+            port,
+            "/tok/w/big.mp4",
+            Some(&format!("bytes={start}-{end}")),
+        );
         assert!(h.starts_with("HTTP/1.1 206"), "{h}");
         assert_eq!(body, data[start as usize..=end as usize]);
 
@@ -456,7 +530,8 @@ mod tests {
 
     #[test]
     fn relativize_maps_absolute_workspace_paths_and_rejects_escapes() {
-        let root = std::env::temp_dir().join(format!("ai4s-relativize-test-{}", std::process::id()));
+        let root =
+            std::env::temp_dir().join(format!("ai4s-relativize-test-{}", std::process::id()));
         std::fs::create_dir_all(root.join("sub")).unwrap();
         std::fs::write(root.join("sub/index.html"), b"<h1>hi</h1>").unwrap();
 
@@ -467,7 +542,10 @@ mod tests {
             Ok("sub/index.html")
         );
         // Relative paths pass through untouched.
-        assert_eq!(relativize(&root, "sub/index.html").as_deref(), Ok("sub/index.html"));
+        assert_eq!(
+            relativize(&root, "sub/index.html").as_deref(),
+            Ok("sub/index.html")
+        );
         // Absolute paths outside the workspace are rejected (sandbox).
         assert!(relativize(&root, "/etc/hosts").is_err());
 
@@ -476,10 +554,8 @@ mod tests {
 
     #[test]
     fn relativize_resolves_bare_preview_names_before_building_urls() {
-        let root = std::env::temp_dir().join(format!(
-            "ai4s-relativize-bare-test-{}",
-            std::process::id()
-        ));
+        let root =
+            std::env::temp_dir().join(format!("ai4s-relativize-bare-test-{}", std::process::id()));
         let nested = root.join("results").join("run-1");
         std::fs::create_dir_all(&nested).unwrap();
         std::fs::write(nested.join("humanoid_walk.gif"), b"GIF89a").unwrap();

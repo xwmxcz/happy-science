@@ -28,6 +28,17 @@
     "succeeded": "Réussi",
     "failed": "Échoué"
   },
+  "integrity": {
+    "section": "Intégrité de la recherche",
+    "attention": "{{count}} avertissement",
+    "attention_other": "{{count}} avertissements",
+    "attentionTitle": "L’exécution diffère du plan ou comporte un avertissement de reproductibilité.",
+    "aligned": "Conforme au plan",
+    "alignedTitle": "Aucun écart vérifié par rapport au plan de recherche.",
+    "no-plan": "Aucun plan",
+    "no-planTitle": "Aucun préenregistrement, plan d’analyse ou protocole de recherche trouvé.",
+    "plan": "Plan : {{path}}"
+  },
   "hardware": {
     "title": "Matériel sur lequel cette exécution s'est déroulée",
     "remoteTitle": "Matériel distant sur lequel cette exécution s'est déroulée",
@@ -40,7 +51,8 @@
   },
   "action": {
     "reproduce": "Reproduire",
-    "reproduceTitle": "Rédiger une invite qui relance cette commande et compare les sorties",
+    "reproducing": "Reproduction",
+    "reproduceTitle": "Exécuter cette commande et comparer entrées, code, environnement et résultats",
     "log": "Journal",
     "logTitle": "Afficher le stdout/stderr capturé",
     "openConversation": "Ouvrir la conversation",
@@ -51,8 +63,14 @@
   },
   "files": {
     "code": "Code",
+    "inputs": "Entrées",
     "outputs": "Sorties",
     "openTitle": "Ouvrir ce fichier de sortie"
+  },
+  "reproduction": {
+    "section": "Comparaison de reproduction", "baseline": "référence {{id}}", "notConnected": "Connectez l’exécuteur avant la reproduction.", "notStarted": "La commande de reproduction n’a pas démarré.", "completed": "Reproduction terminée ; la comparaison est enregistrée sur la nouvelle exécution.", "failed": "Échec de la reproduction : {{message}}", "matches": "Conforme", "differences": "{{count}} différences", "unverifiableFiles": "{{count}} invérifiables", "unavailable": "Non capturé",
+    "dimensions": { "inputs": "Entrées", "code": "Code", "environment": "Environnement", "outputs": "Résultats" },
+    "outcome": { "identical": "Identique", "different": "Différences trouvées", "unverifiable": "Partiellement invérifiable", "failed": "Commande échouée" }
   },
   "remote": {
     "hpcLabel": "un cluster HPC",

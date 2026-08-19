@@ -90,24 +90,29 @@ pub fn open_index(root: &Path) -> Result<Connection, String> {
         std::fs::create_dir_all(dir).map_err(|e| e.to_string())?;
     }
     let conn = Connection::open(&path).map_err(|e| e.to_string())?;
-    conn.pragma_update(None, "journal_mode", "WAL").map_err(|e| e.to_string())?;
-    conn.busy_timeout(std::time::Duration::from_secs(5)).map_err(|e| e.to_string())?;
+    conn.pragma_update(None, "journal_mode", "WAL")
+        .map_err(|e| e.to_string())?;
+    conn.busy_timeout(std::time::Duration::from_secs(5))
+        .map_err(|e| e.to_string())?;
     ensure_schema(&conn)?;
     Ok(conn)
 }
 
 fn ensure_schema(conn: &Connection) -> Result<(), String> {
-    conn.execute_batch(
-        "CREATE TABLE IF NOT EXISTS meta (key TEXT PRIMARY KEY, value INTEGER);",
-    )
-    .map_err(|e| e.to_string())?;
+    conn.execute_batch("CREATE TABLE IF NOT EXISTS meta (key TEXT PRIMARY KEY, value INTEGER);")
+        .map_err(|e| e.to_string())?;
     let ver: i64 = conn
-        .query_row("SELECT value FROM meta WHERE key='schema_version'", [], |r| r.get(0))
+        .query_row(
+            "SELECT value FROM meta WHERE key='schema_version'",
+            [],
+            |r| r.get(0),
+        )
         .optional()
         .map_err(|e| e.to_string())?
         .unwrap_or(0);
     if ver != SCHEMA_VERSION {
-        conn.execute_batch("DROP TABLE IF EXISTS runs;").map_err(|e| e.to_string())?;
+        conn.execute_batch("DROP TABLE IF EXISTS runs;")
+            .map_err(|e| e.to_string())?;
     }
     conn.execute_batch(
         "CREATE TABLE IF NOT EXISTS runs (
@@ -134,11 +139,13 @@ fn ensure_schema(conn: &Connection) -> Result<(), String> {
 }
 
 fn get_wm(conn: &Connection, key: &str) -> i64 {
-    conn.query_row("SELECT value FROM meta WHERE key=?1", params![key], |r| r.get(0))
-        .optional()
-        .ok()
-        .flatten()
-        .unwrap_or(0)
+    conn.query_row("SELECT value FROM meta WHERE key=?1", params![key], |r| {
+        r.get(0)
+    })
+    .optional()
+    .ok()
+    .flatten()
+    .unwrap_or(0)
 }
 
 /// Every runs log under the base folder: the base's own `.openscience/`, new
@@ -159,7 +166,12 @@ fn source_files(base: &Path) -> Vec<PathBuf> {
                 crate::runtime::PROJECTS_DIR_NAME | crate::runtime::SESSIONS_DIR_NAME
             ) {
                 if let Ok(children) = std::fs::read_dir(path) {
-                    dirs.extend(children.flatten().map(|child| child.path()).filter(|p| p.is_dir()));
+                    dirs.extend(
+                        children
+                            .flatten()
+                            .map(|child| child.path())
+                            .filter(|p| p.is_dir()),
+                    );
                 }
             } else {
                 // Compatibility: releases before the structured layout created
@@ -200,8 +212,10 @@ pub fn sync_index(conn: &Connection, base: &Path) -> Result<(), String> {
         size < get_wm(conn, &wm_key(p))
     });
     if shrank {
-        conn.execute("DELETE FROM runs", []).map_err(|e| e.to_string())?;
-        conn.execute("DELETE FROM meta WHERE key LIKE 'wm:%'", []).map_err(|e| e.to_string())?;
+        conn.execute("DELETE FROM runs", [])
+            .map_err(|e| e.to_string())?;
+        conn.execute("DELETE FROM meta WHERE key LIKE 'wm:%'", [])
+            .map_err(|e| e.to_string())?;
     }
     for p in &files {
         ingest_source(conn, p, &wm_key(p))?;
@@ -259,8 +273,11 @@ fn ingest_source(conn: &Connection, path: &Path, wm_key: &str) -> Result<(), Str
 }
 
 fn set_wm_tx(tx: &rusqlite::Transaction, key: &str, value: i64) -> Result<(), String> {
-    tx.execute("INSERT OR REPLACE INTO meta(key,value) VALUES(?1,?2)", params![key, value])
-        .map_err(|e| e.to_string())?;
+    tx.execute(
+        "INSERT OR REPLACE INTO meta(key,value) VALUES(?1,?2)",
+        params![key, value],
+    )
+    .map_err(|e| e.to_string())?;
     Ok(())
 }
 
@@ -284,7 +301,12 @@ fn where_clause(
 ) -> (String, Vec<Box<dyn rusqlite::ToSql>>) {
     let mut clauses: Vec<String> = Vec::new();
     let mut p: Vec<Box<dyn rusqlite::ToSql>> = Vec::new();
-    if let Some(s) = q.search.as_ref().map(|s| s.trim()).filter(|s| !s.is_empty()) {
+    if let Some(s) = q
+        .search
+        .as_ref()
+        .map(|s| s.trim())
+        .filter(|s| !s.is_empty())
+    {
         // command OR any path in the json (outputs/code) — a scan over an
         // indexed table; FTS5 is the future upgrade if this gets hot.
         clauses.push("(command LIKE ?  OR json LIKE ?)".into());
@@ -329,7 +351,12 @@ fn where_clause(
     (sql, p)
 }
 
-fn count_where(conn: &Connection, q: &RunQuery, inc_status: bool, inc_surface: bool) -> Result<u32, String> {
+fn count_where(
+    conn: &Connection,
+    q: &RunQuery,
+    inc_status: bool,
+    inc_surface: bool,
+) -> Result<u32, String> {
     let (w, p) = where_clause(q, inc_status, inc_surface, false);
     let sql = format!("SELECT COUNT(*) FROM runs{w}");
     conn.query_row(&sql, params_from_iter(p.iter()), |r| r.get::<_, i64>(0))
@@ -337,7 +364,13 @@ fn count_where(conn: &Connection, q: &RunQuery, inc_status: bool, inc_surface: b
         .map_err(|e| e.to_string())
 }
 
-fn facet(conn: &Connection, q: &RunQuery, column: &str, inc_status: bool, inc_surface: bool) -> Result<Vec<Facet>, String> {
+fn facet(
+    conn: &Connection,
+    q: &RunQuery,
+    column: &str,
+    inc_status: bool,
+    inc_surface: bool,
+) -> Result<Vec<Facet>, String> {
     let (w, p) = where_clause(q, inc_status, inc_surface, false);
     let sql = format!(
         "SELECT COALESCE({column},'') v, COUNT(*) c FROM runs{w} GROUP BY {column} ORDER BY c DESC"
@@ -345,10 +378,14 @@ fn facet(conn: &Connection, q: &RunQuery, column: &str, inc_status: bool, inc_su
     let mut stmt = conn.prepare(&sql).map_err(|e| e.to_string())?;
     let rows = stmt
         .query_map(params_from_iter(p.iter()), |r| {
-            Ok(Facet { value: r.get::<_, String>(0)?, count: r.get::<_, i64>(1)? as u32 })
+            Ok(Facet {
+                value: r.get::<_, String>(0)?,
+                count: r.get::<_, i64>(1)? as u32,
+            })
         })
         .map_err(|e| e.to_string())?;
-    rows.collect::<Result<Vec<_>, _>>().map_err(|e| e.to_string())
+    rows.collect::<Result<Vec<_>, _>>()
+        .map_err(|e| e.to_string())
 }
 
 /// Query a keyset-paginated, faceted page of runs.
@@ -356,11 +393,18 @@ pub fn query_runs(conn: &Connection, q: &RunQuery) -> Result<RunPage, String> {
     let limit = q.limit.unwrap_or(50).clamp(1, MAX_LIMIT);
     // Result rows: all filters + cursor.
     let (w, p) = where_clause(q, true, true, true);
-    let sql = format!("SELECT rowid, ts, json FROM runs{w} ORDER BY ts DESC, rowid DESC LIMIT {}", limit + 1);
+    let sql = format!(
+        "SELECT rowid, ts, json FROM runs{w} ORDER BY ts DESC, rowid DESC LIMIT {}",
+        limit + 1
+    );
     let mut stmt = conn.prepare(&sql).map_err(|e| e.to_string())?;
     let fetched = stmt
         .query_map(params_from_iter(p.iter()), |r| {
-            Ok((r.get::<_, i64>(0)?, r.get::<_, i64>(1)?, r.get::<_, String>(2)?))
+            Ok((
+                r.get::<_, i64>(0)?,
+                r.get::<_, i64>(1)?,
+                r.get::<_, String>(2)?,
+            ))
         })
         .map_err(|e| e.to_string())?
         .collect::<Result<Vec<_>, _>>()
@@ -370,7 +414,10 @@ pub fn query_runs(conn: &Connection, q: &RunQuery) -> Result<RunPage, String> {
     let has_more = fetched.len() as u32 > limit;
     let page = &fetched[..fetched.len().min(limit as usize)];
     let next = if has_more {
-        page.last().map(|(rowid, ts, _)| Cursor { ts: *ts, rowid: *rowid })
+        page.last().map(|(rowid, ts, _)| Cursor {
+            ts: *ts,
+            rowid: *rowid,
+        })
     } else {
         None
     };
@@ -426,14 +473,22 @@ mod tests {
     }
 
     fn rec(run_id: &str, ts: i64, status: &str, surface: Option<&str>, command: &str) -> String {
-        let surf = surface.map(|s| format!(r#","surface":"{s}""#)).unwrap_or_default();
-        format!(r#"{{"runId":"{run_id}","ts":{ts},"status":"{status}"{surf},"command":"{command}","code":[],"outputs":[]}}"#)
+        let surf = surface
+            .map(|s| format!(r#","surface":"{s}""#))
+            .unwrap_or_default();
+        format!(
+            r#"{{"runId":"{run_id}","ts":{ts},"status":"{status}"{surf},"command":"{command}","code":[],"outputs":[]}}"#
+        )
     }
 
     #[test]
     fn ingests_incrementally_by_watermark_and_is_idempotent() {
         let root = temp_root("wm");
-        write_log(&root, RUNS_FILE, &[&rec("r1", 100, "ok", None, "python a.py")]);
+        write_log(
+            &root,
+            RUNS_FILE,
+            &[&rec("r1", 100, "ok", None, "python a.py")],
+        );
         let conn = open_index(&root).unwrap();
         sync_index(&conn, &root).unwrap();
         assert_eq!(query_runs(&conn, &RunQuery::default()).unwrap().total, 1);
@@ -443,7 +498,14 @@ mod tests {
         assert_eq!(query_runs(&conn, &RunQuery::default()).unwrap().total, 1);
 
         // Append two more → only the new lines are ingested.
-        write_log(&root, RUNS_FILE, &[&rec("r2", 200, "failed", None, "python b.py"), &rec("r3", 300, "ok", None, "make train")]);
+        write_log(
+            &root,
+            RUNS_FILE,
+            &[
+                &rec("r2", 200, "failed", None, "python b.py"),
+                &rec("r3", 300, "ok", None, "make train"),
+            ],
+        );
         sync_index(&conn, &root).unwrap();
         let page = query_runs(&conn, &RunQuery::default()).unwrap();
         assert_eq!(page.total, 3);
@@ -457,11 +519,22 @@ mod tests {
     #[test]
     fn merges_remote_runs_and_a_partial_last_line_is_deferred() {
         let root = temp_root("remote");
-        write_log(&root, RUNS_FILE, &[&rec("local1", 100, "ok", None, "python a.py")]);
-        write_log(&root, REMOTE_RUNS_FILE, &[&rec("remote1", 250, "ok", Some("hpc"), "sbatch j.slurm")]);
+        write_log(
+            &root,
+            RUNS_FILE,
+            &[&rec("local1", 100, "ok", None, "python a.py")],
+        );
+        write_log(
+            &root,
+            REMOTE_RUNS_FILE,
+            &[&rec("remote1", 250, "ok", Some("hpc"), "sbatch j.slurm")],
+        );
         // A partial (newline-less) line mid-flight must NOT be ingested yet.
         use std::io::Write;
-        let mut f = std::fs::OpenOptions::new().append(true).open(root.join(".openscience").join(RUNS_FILE)).unwrap();
+        let mut f = std::fs::OpenOptions::new()
+            .append(true)
+            .open(root.join(".openscience").join(RUNS_FILE))
+            .unwrap();
         write!(f, "{}", rec("partial", 400, "ok", None, "python c.py")).unwrap(); // no trailing \n
 
         let conn = open_index(&root).unwrap();
@@ -494,30 +567,57 @@ mod tests {
         sync_index(&conn, &root).unwrap();
 
         // Search narrows to matching command.
-        let q = RunQuery { search: Some("train".into()), ..Default::default() };
+        let q = RunQuery {
+            search: Some("train".into()),
+            ..Default::default()
+        };
         assert_eq!(query_runs(&conn, &q).unwrap().total, 2);
 
         // Status filter.
-        let q = RunQuery { status: Some("failed".into()), ..Default::default() };
+        let q = RunQuery {
+            status: Some("failed".into()),
+            ..Default::default()
+        };
         let page = query_runs(&conn, &q).unwrap();
         assert_eq!(page.total, 1);
         assert_eq!(page.rows[0].run_id, "b");
 
         // Surface filter.
-        let q = RunQuery { surface: Some("hpc".into()), ..Default::default() };
+        let q = RunQuery {
+            surface: Some("hpc".into()),
+            ..Default::default()
+        };
         assert_eq!(query_runs(&conn, &q).unwrap().total, 1);
 
         // Time filter (since_ts) — and it composes with other filters (AND).
-        let q = RunQuery { since_ts: Some(200), ..Default::default() };
+        let q = RunQuery {
+            since_ts: Some(200),
+            ..Default::default()
+        };
         assert_eq!(query_runs(&conn, &q).unwrap().total, 2); // ts 200 and 300
-        let q = RunQuery { since_ts: Some(200), status: Some("ok".into()), ..Default::default() };
+        let q = RunQuery {
+            since_ts: Some(200),
+            status: Some("ok".into()),
+            ..Default::default()
+        };
         assert_eq!(query_runs(&conn, &q).unwrap().total, 1); // only ts=300 ok
 
         // Facets: status counts don't collapse when a status is selected.
-        let q = RunQuery { status: Some("ok".into()), ..Default::default() };
+        let q = RunQuery {
+            status: Some("ok".into()),
+            ..Default::default()
+        };
         let facets = query_runs(&conn, &q).unwrap().facets;
-        let ok = facets.status.iter().find(|f| f.value == "ok").map(|f| f.count);
-        let failed = facets.status.iter().find(|f| f.value == "failed").map(|f| f.count);
+        let ok = facets
+            .status
+            .iter()
+            .find(|f| f.value == "ok")
+            .map(|f| f.count);
+        let failed = facets
+            .status
+            .iter()
+            .find(|f| f.value == "failed")
+            .map(|f| f.count);
         assert_eq!(ok, Some(2));
         assert_eq!(failed, Some(1)); // still visible though status=ok is selected
 
@@ -539,7 +639,11 @@ mod tests {
                 r#"{{"runId":"run_{sess}","ts":{ts},"status":"ok","command":"python x.py","sessionId":"{sess}","code":[],"outputs":[]}}"#
             );
             use std::io::Write;
-            writeln!(std::fs::File::create(dir.join(RUNS_FILE)).unwrap(), "{line}").unwrap();
+            writeln!(
+                std::fs::File::create(dir.join(RUNS_FILE)).unwrap(),
+                "{line}"
+            )
+            .unwrap();
         }
         let conn = open_index(&root).unwrap();
         sync_index(&conn, &root).unwrap();
@@ -547,7 +651,10 @@ mod tests {
         // Global view: structured and legacy workspaces are all indexed.
         assert_eq!(query_runs(&conn, &RunQuery::default()).unwrap().total, 3);
         // Per-session view: only that session's runs.
-        let q = RunQuery { session_id: Some("ses_a".into()), ..Default::default() };
+        let q = RunQuery {
+            session_id: Some("ses_a".into()),
+            ..Default::default()
+        };
         let page = query_runs(&conn, &q).unwrap();
         assert_eq!(page.total, 1);
         assert_eq!(page.rows[0].run_id, "run_ses_a");
@@ -558,29 +665,70 @@ mod tests {
     #[test]
     fn keyset_pagination_walks_older_pages_without_gaps_or_repeats() {
         let root = temp_root("page");
-        let lines: Vec<String> = (0..5).map(|i| rec(&format!("r{i}"), 100 + i, "ok", None, "python x.py")).collect();
-        write_log(&root, RUNS_FILE, &lines.iter().map(|s| s.as_str()).collect::<Vec<_>>());
+        let lines: Vec<String> = (0..5)
+            .map(|i| rec(&format!("r{i}"), 100 + i, "ok", None, "python x.py"))
+            .collect();
+        write_log(
+            &root,
+            RUNS_FILE,
+            &lines.iter().map(|s| s.as_str()).collect::<Vec<_>>(),
+        );
         let conn = open_index(&root).unwrap();
         sync_index(&conn, &root).unwrap();
 
-        let p1 = query_runs(&conn, &RunQuery { limit: Some(2), ..Default::default() }).unwrap();
-        assert_eq!(p1.rows.iter().map(|r| r.run_id.as_str()).collect::<Vec<_>>(), vec!["r4", "r3"]);
+        let p1 = query_runs(
+            &conn,
+            &RunQuery {
+                limit: Some(2),
+                ..Default::default()
+            },
+        )
+        .unwrap();
+        assert_eq!(
+            p1.rows
+                .iter()
+                .map(|r| r.run_id.as_str())
+                .collect::<Vec<_>>(),
+            vec!["r4", "r3"]
+        );
         let cur = p1.next.expect("more pages");
 
         let p2 = query_runs(
             &conn,
-            &RunQuery { limit: Some(2), before_ts: Some(cur.ts), before_rowid: Some(cur.rowid), ..Default::default() },
+            &RunQuery {
+                limit: Some(2),
+                before_ts: Some(cur.ts),
+                before_rowid: Some(cur.rowid),
+                ..Default::default()
+            },
         )
         .unwrap();
-        assert_eq!(p2.rows.iter().map(|r| r.run_id.as_str()).collect::<Vec<_>>(), vec!["r2", "r1"]);
+        assert_eq!(
+            p2.rows
+                .iter()
+                .map(|r| r.run_id.as_str())
+                .collect::<Vec<_>>(),
+            vec!["r2", "r1"]
+        );
         let cur = p2.next.expect("one more");
 
         let p3 = query_runs(
             &conn,
-            &RunQuery { limit: Some(2), before_ts: Some(cur.ts), before_rowid: Some(cur.rowid), ..Default::default() },
+            &RunQuery {
+                limit: Some(2),
+                before_ts: Some(cur.ts),
+                before_rowid: Some(cur.rowid),
+                ..Default::default()
+            },
         )
         .unwrap();
-        assert_eq!(p3.rows.iter().map(|r| r.run_id.as_str()).collect::<Vec<_>>(), vec!["r0"]);
+        assert_eq!(
+            p3.rows
+                .iter()
+                .map(|r| r.run_id.as_str())
+                .collect::<Vec<_>>(),
+            vec!["r0"]
+        );
         assert!(p3.next.is_none()); // end
 
         let _ = std::fs::remove_dir_all(root);

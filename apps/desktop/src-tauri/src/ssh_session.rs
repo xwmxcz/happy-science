@@ -55,7 +55,7 @@ pub fn multiplexing_supported() -> bool {
 ///
 /// Deliberately NOT the app data dir: a ControlPath is a unix socket, and macOS
 /// caps socket paths at 104 bytes — "~/Library/Application Support/
-/// com.ai4s.workbench/runtime/ssh/" plus ssh's own 40-character `%C` hash
+/// com.happyscience.desktop/runtime/ssh/" plus ssh's own 40-character `%C` hash
 /// overruns that, and the failure mode is a cryptic bind error at connect time.
 ///
 /// The candidates below are tried longest-name-first and all live in the
@@ -68,7 +68,11 @@ pub fn control_dir() -> PathBuf {
     let tmp = std::env::temp_dir();
     // macOS's per-user temp dir is ~47 characters on its own, so the readable
     // name does not always fit; the short one always does.
-    for name in [format!("os-ssh-{tag}"), "os-ssh".to_string(), "oss".to_string()] {
+    for name in [
+        format!("os-ssh-{tag}"),
+        "os-ssh".to_string(),
+        "oss".to_string(),
+    ] {
         let candidate = tmp.join(name);
         if socket_path_fits(&candidate) {
             return candidate;
@@ -139,7 +143,7 @@ fn control_path_pattern(dir: &Path) -> String {
 /// clients read this same file, so they agree on whichever path won.
 pub fn managed_config(control_dir: &Path, user_config: Option<&Path>) -> String {
     let mut out = String::new();
-    out.push_str("# Managed by Open Science Desktop — regenerated on every start.\n");
+    out.push_str("# Managed by Happy Science — regenerated on every start.\n");
     out.push_str("# Edit ~/.ssh/config instead: it is included below and wins.\n\n");
     if let Some(user) = user_config {
         out.push_str(&format!("Include \"{}\"\n\n", user.to_string_lossy()));
@@ -148,7 +152,10 @@ pub fn managed_config(control_dir: &Path, user_config: Option<&Path>) -> String 
     out.push_str("# sign-in covers every later command on that host.\n");
     out.push_str("Host *\n");
     out.push_str("  ControlMaster no\n");
-    out.push_str(&format!("  ControlPath {}\n", control_path_pattern(control_dir)));
+    out.push_str(&format!(
+        "  ControlPath {}\n",
+        control_path_pattern(control_dir)
+    ));
     out
 }
 
@@ -322,7 +329,11 @@ pub fn pending_prompt(text: &str) -> Option<String> {
 /// sent"). Bounded to the last few lines — a 40-line motd is not context.
 fn notice_from(text: &str) -> Option<String> {
     let text = plain(text);
-    let mut lines: Vec<&str> = text.lines().map(str::trim).filter(|l| !l.is_empty()).collect();
+    let mut lines: Vec<&str> = text
+        .lines()
+        .map(str::trim)
+        .filter(|l| !l.is_empty())
+        .collect();
     // The last line is the prompt itself when one is pending.
     if pending_prompt(&text).is_some() {
         lines.pop();
@@ -382,7 +393,10 @@ fn spawn_pty(program: &str, args: &[String]) -> Result<Pty, String> {
             match reader.read(&mut buf) {
                 Ok(0) | Err(_) => break,
                 Ok(n) => {
-                    if tx.send(String::from_utf8_lossy(&buf[..n]).to_string()).is_err() {
+                    if tx
+                        .send(String::from_utf8_lossy(&buf[..n]).to_string())
+                        .is_err()
+                    {
                         break;
                     }
                 }
@@ -432,14 +446,7 @@ pub fn is_shared(app: &AppHandle, host: &str) -> bool {
         return false;
     };
     crate::runtime::quiet_command("ssh")
-        .args([
-            "-F",
-            &config.to_string_lossy(),
-            "-O",
-            "check",
-            "--",
-            host,
-        ])
+        .args(["-F", &config.to_string_lossy(), "-O", "check", "--", host])
         .stdin(std::process::Stdio::null())
         .stdout(std::process::Stdio::null())
         .stderr(std::process::Stdio::null())
@@ -496,7 +503,8 @@ pub fn ssh_connect(app: AppHandle, host: String) -> Result<(), String> {
         set_status(&app, &host, "connected", None);
         return Ok(());
     }
-    let started = ensure_config(&app).and_then(|config| spawn_pty("ssh", &master_args(&config, &host)));
+    let started =
+        ensure_config(&app).and_then(|config| spawn_pty("ssh", &master_args(&config, &host)));
     let Pty {
         writer,
         child,
@@ -566,7 +574,11 @@ fn watch_master(app: AppHandle, host: String, output: Receiver<String>) {
                         if s.prompt != prompt || s.notice != notice {
                             s.prompt = prompt.clone();
                             s.notice = notice;
-                            s.status = if prompt.is_some() { "prompt".into() } else { s.status.clone() };
+                            s.status = if prompt.is_some() {
+                                "prompt".into()
+                            } else {
+                                s.status.clone()
+                            };
                             changed = true;
                         }
                     }
@@ -589,7 +601,8 @@ fn watch_master(app: AppHandle, host: String, output: Receiver<String>) {
     }
     // Poller: `-O check` is the only honest answer to "is it up?".
     std::thread::spawn(move || {
-        let deadline = std::time::Instant::now() + std::time::Duration::from_secs(CONNECT_TIMEOUT_SECS);
+        let deadline =
+            std::time::Instant::now() + std::time::Duration::from_secs(CONNECT_TIMEOUT_SECS);
         loop {
             if is_shared(&app, &host) {
                 set_status(&app, &host, "connected", None);
@@ -616,7 +629,12 @@ fn watch_master(app: AppHandle, host: String, output: Receiver<String>) {
                         let map = state.sessions.lock().unwrap();
                         map.get(&host).and_then(|s| s.error.clone())
                     };
-                    set_status(&app, &host, "failed", Some(msg.unwrap_or_else(|| "sign-in failed".into())));
+                    set_status(
+                        &app,
+                        &host,
+                        "failed",
+                        Some(msg.unwrap_or_else(|| "sign-in failed".into())),
+                    );
                 }
                 return;
             }
@@ -711,7 +729,10 @@ mod tests {
 
     #[test]
     fn managed_config_lets_the_users_own_config_win() {
-        let cfg = managed_config(Path::new("/tmp/os-ssh-1"), Some(Path::new("/home/a/.ssh/config")));
+        let cfg = managed_config(
+            Path::new("/tmp/os-ssh-1"),
+            Some(Path::new("/home/a/.ssh/config")),
+        );
         let include = cfg.find("Include").expect("includes the user's config");
         let ours = cfg.find("Host *").expect("declares the fallback block");
         // ssh keeps the FIRST value it obtains, so the user's config must be
@@ -738,18 +759,27 @@ mod tests {
         // every sign-in.
         let tight = PathBuf::from(format!("/tmp/{}", "x".repeat(55)));
         assert_eq!(tight.as_os_str().len(), 60);
-        assert!(tight.as_os_str().len() + 1 + SOCKET_HASH_LEN < 104, "the final name fits");
-        assert!(!socket_path_fits(&tight), "but not the name ssh binds first");
+        assert!(
+            tight.as_os_str().len() + 1 + SOCKET_HASH_LEN < 104,
+            "the final name fits"
+        );
+        assert!(
+            !socket_path_fits(&tight),
+            "but not the name ssh binds first"
+        );
         // The real reason this check exists: the app data dir on macOS plus
         // ssh's 40-character hash overruns the 104-byte socket limit. So does
         // macOS's own per-user temp dir once a readable name is appended —
         // measured at 105 bytes on a real machine, which is why control_dir()
         // falls back to shorter names rather than trusting the first candidate.
         let deep = Path::new(
-            "/Users/somebody/Library/Application Support/com.ai4s.workbench/runtime/ssh/sockets",
+            "/Users/somebody/Library/Application Support/com.happyscience.desktop/runtime/ssh/sockets",
         );
         assert!(!socket_path_fits(deep));
-        assert!(socket_path_fits(&control_dir()), "the chosen dir must always fit");
+        assert!(
+            socket_path_fits(&control_dir()),
+            "the chosen dir must always fit"
+        );
     }
 
     /// The socket dir path is derivable, so on a shared machine it must be
@@ -815,7 +845,10 @@ mod tests {
         let text = "Duo two-factor login for asq\n\nEnter a passcode or select one of the following options:\n\n 1. Duo Push\n\nPasscode or option (1-3): ";
         let notice = notice_from(text).expect("has context");
         assert!(notice.contains("1. Duo Push"));
-        assert!(!notice.contains("Passcode or option"), "the prompt is not repeated in the notice");
+        assert!(
+            !notice.contains("Passcode or option"),
+            "the prompt is not repeated in the notice"
+        );
     }
 
     /// Read a session's output until it asks something (or time runs out).
@@ -826,7 +859,10 @@ mod tests {
             if let Some(p) = pending_prompt(seen) {
                 return Some(p);
             }
-            match pty.output.recv_timeout(std::time::Duration::from_millis(300)) {
+            match pty
+                .output
+                .recv_timeout(std::time::Duration::from_millis(300))
+            {
                 Ok(chunk) => seen.push_str(&chunk),
                 Err(std::sync::mpsc::RecvTimeoutError::Timeout) => continue,
                 Err(_) => break, // the child exited
@@ -857,10 +893,15 @@ mod tests {
 
         let keygen = std::process::Command::new("ssh-keygen")
             .args([
-                "-q", "-t", "ed25519",
-                "-f", &key.to_string_lossy(),
-                "-N", "correct-horse-battery",
-                "-C", "openscience-prompt-relay-test",
+                "-q",
+                "-t",
+                "ed25519",
+                "-f",
+                &key.to_string_lossy(),
+                "-N",
+                "correct-horse-battery",
+                "-C",
+                "openscience-prompt-relay-test",
             ])
             .status();
         let Ok(status) = keygen else {
@@ -900,7 +941,9 @@ mod tests {
                 prompt.to_lowercase().contains("passphrase") && prompt.ends_with(':'),
                 "relayed verbatim: {prompt:?}"
             );
-            pty.writer.write_all(format!("{answer}\r").as_bytes()).unwrap();
+            pty.writer
+                .write_all(format!("{answer}\r").as_bytes())
+                .unwrap();
             pty.writer.flush().unwrap();
             // A rejected passphrase makes ssh-add re-prompt rather than exit, so
             // stop at OpenSSH's verdict instead of waiting out the deadline.
@@ -912,7 +955,10 @@ mod tests {
             };
             let deadline = std::time::Instant::now() + std::time::Duration::from_secs(20);
             while std::time::Instant::now() < deadline && !verdict(&seen) {
-                match pty.output.recv_timeout(std::time::Duration::from_millis(300)) {
+                match pty
+                    .output
+                    .recv_timeout(std::time::Duration::from_millis(300))
+                {
                     Ok(chunk) => seen.push_str(&chunk),
                     Err(std::sync::mpsc::RecvTimeoutError::Timeout) => {
                         if pty.child.try_wait().ok().flatten().is_some() {
@@ -982,10 +1028,14 @@ mod tests {
     #[cfg(unix)]
     #[test]
     fn a_real_sshd_is_signed_in_to_once_and_then_shared() {
-        let sshd = ["/usr/sbin/sshd", "/usr/lib/ssh/sshd", "/usr/sbin/openssh-sshd"]
-            .iter()
-            .map(Path::new)
-            .find(|p| p.is_file());
+        let sshd = [
+            "/usr/sbin/sshd",
+            "/usr/lib/ssh/sshd",
+            "/usr/sbin/openssh-sshd",
+        ]
+        .iter()
+        .map(Path::new)
+        .find(|p| p.is_file());
         let Some(sshd) = sshd else {
             eprintln!("skipping: no sshd binary on this system");
             return;
@@ -1002,10 +1052,15 @@ mod tests {
         let keygen = |path: &Path, pass: &str| {
             std::process::Command::new("ssh-keygen")
                 .args([
-                    "-q", "-t", "ed25519",
-                    "-f", &path.to_string_lossy(),
-                    "-N", pass,
-                    "-C", "openscience-e2e",
+                    "-q",
+                    "-t",
+                    "ed25519",
+                    "-f",
+                    &path.to_string_lossy(),
+                    "-N",
+                    pass,
+                    "-C",
+                    "openscience-e2e",
                 ])
                 .status()
                 .map(|s| s.success())
@@ -1051,10 +1106,14 @@ mod tests {
         let host = "localhost".to_string();
         let common = |extra: Vec<&str>| -> Vec<String> {
             let mut v: Vec<String> = vec![
-                "-o".into(), proxy.clone(),
-                "-o".into(), "StrictHostKeyChecking=no".into(),
-                "-o".into(), format!("UserKnownHostsFile={}", known.display()),
-                "-o".into(), "IdentitiesOnly=yes".into(),
+                "-o".into(),
+                proxy.clone(),
+                "-o".into(),
+                "StrictHostKeyChecking=no".into(),
+                "-o".into(),
+                format!("UserKnownHostsFile={}", known.display()),
+                "-o".into(),
+                "IdentitiesOnly=yes".into(),
             ];
             v.extend(extra.into_iter().map(str::to_string));
             v
@@ -1064,11 +1123,17 @@ mod tests {
         // environment limit, not a regression, so skip rather than fail.
         let preflight = std::process::Command::new("ssh")
             .args(common(vec![
-                "-F", &cfg,
-                "-o", "BatchMode=yes",
-                "-o", "ConnectTimeout=8",
-                "-i", &client_key.to_string_lossy(),
-                "--", &host, "true",
+                "-F",
+                &cfg,
+                "-o",
+                "BatchMode=yes",
+                "-o",
+                "ConnectTimeout=8",
+                "-i",
+                &client_key.to_string_lossy(),
+                "--",
+                &host,
+                "true",
             ]))
             .output()
             .expect("runs ssh");
@@ -1095,7 +1160,10 @@ mod tests {
         let prompt = read_until_prompt(&mut pty, &mut seen, 25)
             .unwrap_or_else(|| panic!("the master asked nothing; it said: {seen:?}"));
         println!("the server's own words: {prompt:?}");
-        assert!(prompt.to_lowercase().contains("passphrase"), "relayed: {prompt:?}");
+        assert!(
+            prompt.to_lowercase().contains("passphrase"),
+            "relayed: {prompt:?}"
+        );
         pty.writer
             .write_all(format!("{PASSPHRASE}\r").as_bytes())
             .unwrap();
@@ -1112,7 +1180,10 @@ mod tests {
                 authenticated = true;
                 break;
             }
-            match pty.output.recv_timeout(std::time::Duration::from_millis(200)) {
+            match pty
+                .output
+                .recv_timeout(std::time::Duration::from_millis(200))
+            {
                 Ok(chunk) => seen.push_str(&chunk),
                 Err(std::sync::mpsc::RecvTimeoutError::Timeout) => continue,
                 Err(_) => break,
@@ -1141,7 +1212,9 @@ mod tests {
                 .unwrap_or(false)
         };
         let server_gave_up = || {
-            let log = std::fs::read_to_string(&sshd_log).unwrap_or_default().to_lowercase();
+            let log = std::fs::read_to_string(&sshd_log)
+                .unwrap_or_default()
+                .to_lowercase();
             log.contains("audit") || log.contains("session")
         };
         let deadline = std::time::Instant::now() + std::time::Duration::from_secs(15);
@@ -1153,7 +1226,10 @@ mod tests {
             if !up && server_gave_up() {
                 break;
             }
-            if let Ok(chunk) = pty.output.recv_timeout(std::time::Duration::from_millis(200)) {
+            if let Ok(chunk) = pty
+                .output
+                .recv_timeout(std::time::Duration::from_millis(200))
+            {
                 seen.push_str(&chunk);
             }
         }
@@ -1163,7 +1239,9 @@ mod tests {
             // right after authenticating and no master can persist. That is this
             // rig's limit, not the feature's: the sign-in above already ran end
             // to end against a real server. On Linux the rest runs for real.
-            let log = std::fs::read_to_string(&sshd_log).unwrap_or_default().to_lowercase();
+            let log = std::fs::read_to_string(&sshd_log)
+                .unwrap_or_default()
+                .to_lowercase();
             let hung_up = log.contains("audit")
                 || log.contains("session")
                 || seen.to_lowercase().contains("closed by remote host");
@@ -1188,11 +1266,17 @@ mod tests {
         //    authentication — only the master can be carrying it.
         let ride = std::process::Command::new("ssh")
             .args(common(vec![
-                "-F", &cfg,
-                "-o", "BatchMode=yes",
-                "-o", "IdentityFile=/dev/null",
-                "-o", "ConnectTimeout=8",
-                "--", &host, "echo shared-ok",
+                "-F",
+                &cfg,
+                "-o",
+                "BatchMode=yes",
+                "-o",
+                "IdentityFile=/dev/null",
+                "-o",
+                "ConnectTimeout=8",
+                "--",
+                &host,
+                "echo shared-ok",
             ]))
             .output()
             .expect("runs a second ssh");
@@ -1263,8 +1347,10 @@ mod tests {
         // Command-line options are first-wins, and these come before the ones
         // master_args sets, so a test host's key can be accepted.
         let mut prefix: Vec<String> = vec![
-            "-o".into(), "StrictHostKeyChecking=no".into(),
-            "-o".into(), format!("UserKnownHostsFile={}", known.display()),
+            "-o".into(),
+            "StrictHostKeyChecking=no".into(),
+            "-o".into(),
+            format!("UserKnownHostsFile={}", known.display()),
         ];
         if let Some(p) = &port {
             prefix.push("-p".into());
@@ -1289,8 +1375,8 @@ mod tests {
         };
         assert!(!check(), "no shared connection to {host} yet");
 
-        let mut pty = spawn_pty("ssh", &with_prefix(master_args(&config, &host)))
-            .expect("spawns the master");
+        let mut pty =
+            spawn_pty("ssh", &with_prefix(master_args(&config, &host))).expect("spawns the master");
         let mut seen = String::new();
         let deadline = std::time::Instant::now() + std::time::Duration::from_secs(90);
         let mut up = false;
@@ -1298,7 +1384,10 @@ mod tests {
         let mut answered: Option<String> = None;
         while std::time::Instant::now() < deadline && !up {
             up = check();
-            if let Ok(chunk) = pty.output.recv_timeout(std::time::Duration::from_millis(300)) {
+            if let Ok(chunk) = pty
+                .output
+                .recv_timeout(std::time::Duration::from_millis(300))
+            {
                 seen.push_str(&chunk);
                 // Whatever the host asks here is verbatim what the dialog shows,
                 // and answering it exercises the same relay the dialog uses.
@@ -1334,13 +1423,21 @@ mod tests {
         let ride = std::process::Command::new("ssh")
             .args(with_prefix(
                 [
-                    "-F", &cfg,
-                    "-o", "BatchMode=yes",
-                    "-o", "IdentityFile=/dev/null",
-                    "-o", "IdentitiesOnly=yes",
-                    "-o", "KbdInteractiveAuthentication=no",
-                    "-o", "ConnectTimeout=10",
-                    "--", &host, "echo shared-ok",
+                    "-F",
+                    &cfg,
+                    "-o",
+                    "BatchMode=yes",
+                    "-o",
+                    "IdentityFile=/dev/null",
+                    "-o",
+                    "IdentitiesOnly=yes",
+                    "-o",
+                    "KbdInteractiveAuthentication=no",
+                    "-o",
+                    "ConnectTimeout=10",
+                    "--",
+                    &host,
+                    "echo shared-ok",
                 ]
                 .iter()
                 .map(|s| s.to_string())
@@ -1359,9 +1456,13 @@ mod tests {
         // layer — a git host greets you, declines a shell, or rejects the command
         // as invalid. All of those come AFTER authentication, which is the point.
         let reached = out.contains("shared-ok")
-            || ["successfully authenticated", "does not provide shell access", "invalid command"]
-                .iter()
-                .any(|m| err.to_lowercase().contains(m));
+            || [
+                "successfully authenticated",
+                "does not provide shell access",
+                "invalid command",
+            ]
+            .iter()
+            .any(|m| err.to_lowercase().contains(m));
         assert!(
             reached,
             "the credential-less client reached the far side: out={out:?} err={err:?}"
@@ -1404,7 +1505,10 @@ mod tests {
         let mut seen = String::new();
         let deadline = std::time::Instant::now() + std::time::Duration::from_secs(10);
         while pending_prompt(&seen).is_none() && std::time::Instant::now() < deadline {
-            if let Ok(chunk) = pty.output.recv_timeout(std::time::Duration::from_millis(500)) {
+            if let Ok(chunk) = pty
+                .output
+                .recv_timeout(std::time::Duration::from_millis(500))
+            {
                 seen.push_str(&chunk);
             }
         }
@@ -1413,11 +1517,17 @@ mod tests {
         pty.writer.write_all(b"hunter2\r").unwrap();
         pty.writer.flush().unwrap();
         while !seen.contains("got:hunter2") && std::time::Instant::now() < deadline {
-            if let Ok(chunk) = pty.output.recv_timeout(std::time::Duration::from_millis(500)) {
+            if let Ok(chunk) = pty
+                .output
+                .recv_timeout(std::time::Duration::from_millis(500))
+            {
                 seen.push_str(&chunk);
             }
         }
-        assert!(seen.contains("got:hunter2"), "the answer reached the child: {seen:?}");
+        assert!(
+            seen.contains("got:hunter2"),
+            "the answer reached the child: {seen:?}"
+        );
         let _ = pty.child.kill();
     }
 }

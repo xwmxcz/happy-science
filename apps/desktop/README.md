@@ -1,6 +1,6 @@
 # apps/desktop
 
-The Tauri 2 + React + TypeScript + Vite desktop application — the AI4S Workbench shell.
+The Tauri 2 + React + TypeScript + Vite desktop application — the Happy Science shell.
 
 ## Layout
 

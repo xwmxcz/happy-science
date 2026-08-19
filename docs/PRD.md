@@ -1,4 +1,4 @@
-# AI4S Workbench Desktop — Product Requirements
+# Happy Science — Product Requirements
 
 > **Status (v0.1, 2026-07-02).** The runtime is **OpenCode**, bundled as an isolated
 > sidecar (one-click, auto-started, does not touch a user's own OpenCode). Built: the
@@ -8,7 +8,7 @@
 
 ## 1. Positioning
 
-**AI4S Workbench Desktop** is an open-source AI research workbench with macOS /
+**Happy Science** is an open-source AI research workbench with macOS /
 Windows installers, positioned as an **open-source alternative to Claude Science
 style products**.
 
@@ -52,7 +52,7 @@ offered as equals — installing one over the other registers the app twice.
 
 ### 2.2 Differentiation
 
-Versus ordinary AI paper tools, AI4S Workbench is different because it is:
+Versus ordinary AI paper tools, Happy Science is different because it is:
 
 1. A research workbench, not a chat box.
 2. A generator of traceable artifacts, not just text.
@@ -480,7 +480,7 @@ complete example results; clear license; separate note for third-party skill lic
 
 ## 11. One-liner
 
-**AI4S Workbench Desktop is an open-source research agent workbench with macOS and
+**Happy Science is an open-source research agent workbench with macOS and
 Windows installers that uses OpenCode, MCP, scientific skills, and a reproducible
 artifact system to weave literature, code, figures, reports, and review into one
 local-first scientific workflow.**

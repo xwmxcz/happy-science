@@ -1,6 +1,6 @@
 # runtime/opencode-profile
 
-The AI4S Workbench **OpenCode profile** — the config + skills the app ships and applies
+The Happy Science **OpenCode profile** — the config + skills the app ships and applies
 to the bundled OpenCode runtime (not a user's global OpenCode).
 
 The desktop app runs OpenCode with an app-private config/data dir (isolated via

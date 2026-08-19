@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Fetch the pinned OpenCode binary and place it as a Tauri sidecar
-# (apps/desktop/src-tauri/binaries/opencode-<target-triple>).
+# (apps/desktop/src-tauri/binaries/happy-science-opencode-<target-triple>).
 # Runs per-platform locally and in CI so the binary never lives in git.
 set -euo pipefail
 
@@ -43,11 +43,11 @@ esac
 
 # The archive contains an `opencode` (or opencode.exe) binary.
 if [ -f "$TMP/opencode.exe" ]; then
-  cp "$TMP/opencode.exe" "$OUT_DIR/opencode-$TRIPLE.exe"
+  cp "$TMP/opencode.exe" "$OUT_DIR/happy-science-opencode-$TRIPLE.exe"
 else
   BIN="$(find "$TMP" -type f -name opencode | head -1)"
-  cp "$BIN" "$OUT_DIR/opencode-$TRIPLE"
-  chmod +x "$OUT_DIR/opencode-$TRIPLE"
+  cp "$BIN" "$OUT_DIR/happy-science-opencode-$TRIPLE"
+  chmod +x "$OUT_DIR/happy-science-opencode-$TRIPLE"
 fi
 rm -rf "$TMP"
 echo "Placed sidecar for $TRIPLE in $OUT_DIR"

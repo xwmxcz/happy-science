@@ -15,8 +15,8 @@ Responsibilities:
 ## Runtime directory (per OS)
 
 ```text
-macOS:   ~/Library/Application Support/AI4S Workbench/
-Windows: %APPDATA%/AI4S Workbench/
+macOS:   ~/Library/Application Support/com.happyscience.desktop/
+Windows: %APPDATA%/com.happyscience.desktop/
 generic: ~/.ai4s-workbench/
   config/  runtime/{opencode,python,node}/  profiles/ai4s-workbench/
   workspaces/  logs/  cache/  secrets/

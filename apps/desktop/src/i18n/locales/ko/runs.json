@@ -28,6 +28,16 @@
     "succeeded": "성공",
     "failed": "실패"
   },
+  "integrity": {
+    "section": "연구 무결성",
+    "attention": "경고 {{count}}개",
+    "attentionTitle": "실행이 계획과 다르거나 재현성 경고가 있습니다.",
+    "aligned": "계획 일치",
+    "alignedTitle": "연구 계획에서 확인 대상 편차가 발견되지 않았습니다.",
+    "no-plan": "계획 없음",
+    "no-planTitle": "사전등록, 분석 계획 또는 연구 프로토콜을 찾지 못했습니다.",
+    "plan": "계획: {{path}}"
+  },
   "hardware": {
     "title": "이 실행이 수행된 하드웨어",
     "remoteTitle": "이 실행이 수행된 원격 하드웨어",
@@ -39,7 +49,8 @@
   },
   "action": {
     "reproduce": "재현",
-    "reproduceTitle": "이 명령을 재실행하고 결과를 비교하는 프롬프트 작성",
+    "reproducing": "재현 중",
+    "reproduceTitle": "같은 명령을 실행하고 입력, 코드, 환경 및 결과 비교",
     "log": "로그",
     "logTitle": "캡처된 stdout/stderr 보기",
     "openConversation": "대화 열기",
@@ -50,8 +61,14 @@
   },
   "files": {
     "code": "코드",
+    "inputs": "입력",
     "outputs": "결과물",
     "openTitle": "이 출력 파일 열기"
+  },
+  "reproduction": {
+    "section": "재현 비교", "baseline": "기준 {{id}}", "notConnected": "재현 전에 런타임을 연결하세요.", "notStarted": "재현 명령이 시작되지 않았습니다.", "completed": "재현이 완료되었고 비교 결과가 새 실행에 저장되었습니다.", "failed": "재현 실패: {{message}}", "matches": "일치", "differences": "차이 {{count}}개", "unverifiableFiles": "검증 불가 {{count}}개", "unavailable": "미수집",
+    "dimensions": { "inputs": "입력", "code": "코드", "environment": "환경", "outputs": "결과" },
+    "outcome": { "identical": "동일", "different": "차이 발견", "unverifiable": "일부 검증 불가", "failed": "명령 실패" }
   },
   "remote": {
     "hpcLabel": "HPC 클러스터",

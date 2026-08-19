@@ -68,11 +68,25 @@ competitors.
 - **Acceptance.** From a single natural-language request, produce at least one
   figure **and** one report artifact, each linked to the code that made them,
   without the user leaving the app.
-- **Status.** ✅ The empty session offers one-click workflow starters (demo
-  end-to-end analysis, analyze-my-data, audit-a-report, and the climate-trends
-  example on real bundled data); the demo starter verifiably produces code →
-  figure → report → stats in one turn, all files surfaced as artifacts with
-  provenance. Minor gap: bci-trends is still repo-only.
+- **Status.** ✅ Mission Control offers four research missions (study launch,
+  evidence sprint, reproduction challenge, and manuscript stress test). Their
+  versioned contracts, deliverables, rigor gates, lifecycle validation, and
+  append-only `.happy-science/missions.jsonl` record are owned by the headless
+  Rust mission kernel, not the React prompt catalogue or OpenCode. Desktop and
+  gateway clients call the same plan/start/check API; the deterministic check
+  refuses review readiness while any required deliverable is missing or empty.
+  Evidence, reproduction, and audit missions additionally require a strict,
+  mission-scoped Claim–Evidence Graph: each material claim preserves supporting,
+  contradicting, or qualifying evidence with DOI/URL, exact excerpt, and source
+  locator; malformed or untraceable rows fail the kernel gate. The kernel also
+  rejects claim/source identity drift and derives contested and qualified-only
+  claim sets without relying on the agent's narrative. Every evidence-bearing
+  mission also stores a source manifest and UTF-8 snapshots below
+  `evidence/snapshots/`; the kernel recomputes SHA-256 hashes and requires every
+  quoted excerpt to occur exactly in the declared snapshot. Data
+  analysis and the real-data climate benchmark remain quick tools. The analysis workflow produces
+  code → figure → report → stats in one turn, with files surfaced as artifacts
+  and provenance. Minor gap: bci-trends is still repo-only.
 
 ### P0-2 · Local data + local compute (restricted-environment friendly) — ✅ Done
 

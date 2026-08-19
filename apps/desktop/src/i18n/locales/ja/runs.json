@@ -28,6 +28,16 @@
     "succeeded": "成功",
     "failed": "失敗"
   },
+  "integrity": {
+    "section": "研究インテグリティ",
+    "attention": "警告 {{count}} 件",
+    "attentionTitle": "実行が計画と異なるか、再現性に関する警告があります。",
+    "aligned": "計画に準拠",
+    "alignedTitle": "研究計画からの検査対象の逸脱は見つかりませんでした。",
+    "no-plan": "計画なし",
+    "no-planTitle": "事前登録、分析計画、研究プロトコルが見つかりませんでした。",
+    "plan": "計画：{{path}}"
+  },
   "hardware": {
     "title": "この実行が使用したハードウェア",
     "remoteTitle": "この実行が使用したリモートハードウェア",
@@ -39,7 +49,8 @@
   },
   "action": {
     "reproduce": "再現",
-    "reproduceTitle": "このコマンドを再実行し、出力を比較するプロンプトを作成",
+    "reproducing": "再現中",
+    "reproduceTitle": "同じコマンドを実行し、入力・コード・環境・結果を比較",
     "log": "ログ",
     "logTitle": "キャプチャされた stdout/stderr を表示",
     "openConversation": "会話を開く",
@@ -50,8 +61,14 @@
   },
   "files": {
     "code": "コード",
+    "inputs": "入力",
     "outputs": "出力",
     "openTitle": "この出力ファイルを開く"
+  },
+  "reproduction": {
+    "section": "再現比較", "baseline": "基準 {{id}}", "notConnected": "再現前にランタイムへ接続してください。", "notStarted": "再現コマンドを開始できませんでした。", "completed": "再現が完了し、比較を新しい実行に保存しました。", "failed": "再現失敗：{{message}}", "matches": "一致", "differences": "差分 {{count}} 件", "unverifiableFiles": "検証不能 {{count}} 件", "unavailable": "未取得",
+    "dimensions": { "inputs": "入力", "code": "コード", "environment": "環境", "outputs": "結果" },
+    "outcome": { "identical": "同一", "different": "差分あり", "unverifiable": "一部検証不能", "failed": "コマンド失敗" }
   },
   "remote": {
     "hpcLabel": "HPC クラスター",

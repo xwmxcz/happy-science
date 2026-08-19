@@ -1,4 +1,4 @@
-// osd — Open Science Desktop from a terminal.
+// osd — Happy Science from a terminal.
 //
 // Two halves that share one core: `osd server` IS the workbench (workspace,
 // agent runtime, web client, gateway) with no window, and everything else is a
@@ -13,7 +13,7 @@ mod server;
 use args::Args;
 
 const USAGE: &str = "\
-osd — Open Science Desktop without a window
+osd — Happy Science without a window
 
   osd server [options]              serve the workbench (web UI + API) here
   osd login --gateway U --token T   remember a gateway to talk to

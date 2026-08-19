@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Open Science — PDF text + claim extractor for the traceability reviewer (P0-4).
+"""Happy Science — PDF text + claim extractor for the traceability reviewer (P0-4).
 
 The reviewer audits *traceability*: citations that resolve, numbers with a
 source, figures consistent with code. For a PDF manuscript it first needs the

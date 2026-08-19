@@ -1,12 +1,12 @@
 <div align="center">
 
-[![Open Science Desktop — Local-first AI research workbench](./docs/assets/banner.webp)](https://github.com/ai4s-research/open-science)
+<img src="docs/assets/happy-science-banner.svg" alt="Happy Science — local-first research agent" width="100%" />
 
-# Open Science Desktop
+# Happy Science
 
 **macOS、Windows & Linux 向けのローカルファースト、モデル非依存 AI 研究ワークベンチ。**
 
-Formerly Open Science. Claude Science などの AI-for-science ワークベンチに対するオープンソースのデスクトップ代替です。Tauri、MCP、agent skills、再現可能な成果物を基盤に、エージェント、ノートブック、ファイル、図、レポート、実行記録、レビューを 1 つの監査可能なデスクトップワークフローにまとめます。
+Happy Science は、MIT ライセンスの [Open Science Desktop](https://github.com/ai4s-research/open-science) を基盤にした独立した製品フォークです。Tauri、MCP、agent skills、再現可能な成果物を基盤に、エージェント、ノートブック、ファイル、図、レポート、実行記録、レビューを 1 つの監査可能なデスクトップワークフローにまとめます。
 
 <p>
   <a href="./README.md">English</a> ·
@@ -154,13 +154,13 @@ Formerly Open Science. Claude Science などの AI-for-science ワークベン�
 
 ## インストール
 
-[Releases](https://github.com/ai4s-research/open-science/releases/latest) から最新版をダウンロードしてください。
+[Releases](https://github.com/xwmxcz/happy-science/releases/latest) から最新版をダウンロードしてください。
 
-- **macOS**: `.dmg` / `.app`、Apple Silicon と Intel、macOS 13 Ventura 以降。
+- **macOS**: ソースからのビルドに対応していますが、このプレビューに署名済みインストーラーは含まれません。
 - **Windows**: NSIS `.exe`、Windows 10/11 x64 — ユーザーごとにインストールされ、管理者権限は不要です。IT 部門による一括配布向けに `.msi` も配布しています。どちらか一方に統一してください。
 - **Linux**: x86_64 Linux 向け `.deb` と `.rpm`。
 
-macOS パッケージは Developer ID 署名・Notarization・staple 済みで、そのまま開けます（`xattr` の回避策は不要）。Windows と Linux のビルドはまだ署名されていません。
+現在の Happy Science プレビューでは、未署名の Windows および Linux パッケージを公開しています。
 
 Windows では SmartScreen の **More info -> Run anyway** を選択します。
 
@@ -223,7 +223,7 @@ osd approval set full   # 一切尋ねない: コマンド・削除・インス�
 ```ini
 # /etc/systemd/system/osd.service
 [Unit]
-Description=Open Science Desktop (headless)
+Description=Happy Science (headless)
 After=network-online.target
 
 [Service]
@@ -248,8 +248,8 @@ WantedBy=multi-user.target
 ## ソースからビルド
 
 ```bash
-git clone https://github.com/ai4s-research/open-science
-cd open-science
+git clone https://github.com/xwmxcz/happy-science
+cd happy-science
 pnpm install
 bash scripts/dev/fetch-opencode.sh
 bash scripts/dev/fetch-uv.sh
@@ -290,22 +290,21 @@ pnpm lint
 
 ## 状態
 
-現在の実装ログは [`PROGRESS.md`](./PROGRESS.md) を参照してください。近い作業は Windows のコード署名、自動更新、Windows/Linux 検証の拡大、コネクタの堅牢化、再現性レビューの継続です。macOS リリースは署名・Notarization 済みです。議論には [Open Science Discord](https://discord.gg/fWNMDKcd5P) も使えます。
+現在の実装ログは [`PROGRESS.md`](./PROGRESS.md) を参照してください。近い作業は Windows のコード署名、自動更新、Windows/Linux 検証の拡大、コネクタの堅牢化、再現性レビュー、および最初の公開 macOS パッケージの署名です。議論には [Open Science Discord](https://discord.gg/fWNMDKcd5P) も使えます。
 
-[MIT](./LICENSE). Open Science Desktop は beta の研究ツールです。出力は草稿として扱い、公開や意思決定の前に数字、引用、コード、結論を検証してください。
+[MIT](./LICENSE). Happy Science は beta の研究ツールです。出力は草稿として扱い、公開や意思決定の前に数字、引用、コード、結論を検証してください。
 
 ## 引用
 
-研究で Open Science Desktop を使用した場合は、以下のように引用してください:
+研究で Happy Science を使用した場合は、以下のように引用してください:
 
 ```bibtex
-@software{open_science_desktop,
-  author  = {{The Open Science Desktop Contributors}},
-  title   = {Open Science Desktop: a local-first, model-agnostic AI research workbench},
+@software{happy_science,
+  author  = {{The Happy Science Contributors}},
+  title   = {Happy Science: a local-first, model-agnostic AI research workbench},
   year    = {2026},
   version = {0.5.0},
-  doi     = {10.5281/zenodo.22004919},
-  url     = {https://github.com/ai4s-research/open-science},
+  url     = {https://github.com/xwmxcz/happy-science},
   license = {MIT}
 }
 ```

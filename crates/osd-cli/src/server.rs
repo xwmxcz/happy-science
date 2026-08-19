@@ -40,7 +40,9 @@ pub fn run(args: &Args) -> Result<(), String> {
         let absolute = if path.is_absolute() {
             path
         } else {
-            std::env::current_dir().map_err(|e| e.to_string())?.join(path)
+            std::env::current_dir()
+                .map_err(|e| e.to_string())?
+                .join(path)
         };
         let requested = absolute.to_string_lossy().to_string();
         if let Some(live) = live_other_gateway(&env) {
@@ -79,7 +81,10 @@ pub fn run(args: &Args) -> Result<(), String> {
     persisted.mode = mode.clone();
     let requested_port = args
         .value("port")
-        .map(|p| p.parse::<u16>().map_err(|_| format!("invalid --port {p:?}")))
+        .map(|p| {
+            p.parse::<u16>()
+                .map_err(|_| format!("invalid --port {p:?}"))
+        })
         .transpose()?;
 
     // The desktop app and every `osd server` on this machine share one runtime
@@ -144,11 +149,14 @@ pub fn run(args: &Args) -> Result<(), String> {
     if assets::is_empty() {
         eprintln!("note: this build carries no web client; /v1 is served, / is not.");
     }
-    println!("Open Science Desktop — headless\n");
+    println!("Happy Science — headless\n");
     println!("  workspace   {}", workspace.display());
     println!("  runtime     {sidecar}");
     println!("  access      {mode}");
-    println!("  url         http://{}:{port}", if lan { "0.0.0.0" } else { "127.0.0.1" });
+    println!(
+        "  url         http://{}:{port}",
+        if lan { "0.0.0.0" } else { "127.0.0.1" }
+    );
     if lan {
         if let Some(ip) = local_ip() {
             println!("  on the LAN  http://{ip}:{port}/?token={token}");
@@ -232,4 +240,3 @@ fn local_ip() -> Option<String> {
     s.connect("8.8.8.8:80").ok()?;
     s.local_addr().ok().map(|a| a.ip().to_string())
 }
-

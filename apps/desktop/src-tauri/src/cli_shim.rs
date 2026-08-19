@@ -19,12 +19,12 @@ use std::path::{Path, PathBuf};
 
 use serde::Serialize;
 
-/// Marks a wrapper as ours, so a re-install overwrites our own file and never
-/// somebody else's `osd`.
+/// Stable legacy marker: existing Open Science wrappers must remain repairable
+/// after the Happy Science rebrand instead of being treated as foreign files.
 const SIGNATURE: &str = "Open Science Desktop CLI wrapper";
 
-/// Delimits the block appended to a shell profile, so it is found again and
-/// written exactly once.
+/// Stable legacy profile marker, retained so an upgrade never appends a second
+/// PATH block under the new product name.
 const PROFILE_MARKER: &str = "# Open Science Desktop: put the osd command on PATH";
 
 /// How `osd` became reachable.
@@ -136,7 +136,10 @@ const USER_BIN_DIRS: [&str; 2] = [".local/bin", "bin"];
 fn choose_shim_dir(path: &[PathBuf], home: &Path) -> PathBuf {
     let candidates: Vec<PathBuf> = USER_BIN_DIRS
         .iter()
-        .map(|rel| rel.split('/').fold(home.to_path_buf(), |p, part| p.join(part)))
+        .map(|rel| {
+            rel.split('/')
+                .fold(home.to_path_buf(), |p, part| p.join(part))
+        })
         .collect();
     candidates
         .iter()
@@ -168,14 +171,10 @@ fn writable(dir: &Path) -> bool {
     }
 }
 
-/// The bundled `osd`, when this build carries it. Tauri strips the target
-/// triple when it bundles an `externalBin`, so it sits under the plain name
-/// next to the app binary — the same place `osd` looks for `opencode`.
+/// The bundled `osd`, when this build carries it. The core runtime owns the
+/// product-prefixed sidecar naming contract used by every platform package.
 fn bundled_osd() -> Option<PathBuf> {
-    let exe = std::env::current_exe().ok()?;
-    let name = if cfg!(windows) { "osd.exe" } else { "osd" };
-    let path = exe.parent()?.join(name);
-    path.is_file().then_some(path)
+    crate::runtime::sidecar_bin("osd")
 }
 
 /// Is this a copy that will not be there tomorrow? A first-time user opens the
@@ -200,7 +199,7 @@ fn wrapper_script(binary: &Path) -> String {
              rem {SIGNATURE}. A wrapper, not a symlink: osd finds its sidecars\r\n\
              rem and bundled resources next to the real executable.\r\n\
              if not exist \"{path}\" (\r\n\
-             echo Open Science Desktop is no longer installed; removing this leftover osd command. 1>&2\r\n\
+             echo Happy Science is no longer installed; removing this leftover osd command. 1>&2\r\n\
              del \"%~f0\" >nul 2>&1\r\n\
              exit /b 127\r\n\
              )\r\n\
@@ -213,7 +212,7 @@ fn wrapper_script(binary: &Path) -> String {
              # bundled resources next to the real executable, and macOS does not\n\
              # resolve a symlink for current_exe().\n\
              if [ ! -x \"{path}\" ]; then\n\
-             \techo \"Open Science Desktop is no longer installed; removing this leftover osd command.\" >&2\n\
+             \techo \"Happy Science is no longer installed; removing this leftover osd command.\" >&2\n\
              \trm -f -- \"$0\"\n\
              \texit 127\n\
              fi\n\
@@ -367,7 +366,12 @@ fn query_user_environment(dir: &Path) -> bool {
         .unwrap_or(false)
 }
 
-fn status_for(binary: Option<PathBuf>, shim: &Path, route: PathRoute, profile: Option<PathBuf>) -> CliShimStatus {
+fn status_for(
+    binary: Option<PathBuf>,
+    shim: &Path,
+    route: PathRoute,
+    profile: Option<PathBuf>,
+) -> CliShimStatus {
     let existing = std::fs::read_to_string(shim).ok();
     let ours = existing.as_deref().is_some_and(|t| t.contains(SIGNATURE));
     let installed = match (&existing, &binary) {
@@ -419,9 +423,11 @@ fn ensure_reachable(dir: &Path) -> (PathRoute, Option<PathBuf>) {
 fn install() -> Result<CliShimStatus, String> {
     let binary = bundled_osd().ok_or("this build does not carry the osd command")?;
     if runs_from_removable_image(&binary) {
-        return Err("this copy is running from the disk image — drag Open Science into \
+        return Err(
+            "this copy is running from the disk image — drag Happy Science into \
                     Applications, open it from there, and the command installs itself"
-            .into());
+                .into(),
+        );
     }
     let dir = shim_dir()?;
     let shim = dir.join(shim_name());
@@ -487,10 +493,7 @@ pub fn cli_shim_status() -> Result<CliShimStatus, String> {
             let arranged = login_profiles()
                 .unwrap_or_default()
                 .iter()
-                .any(|p| {
-                    std::fs::read_to_string(p)
-                        .is_ok_and(|t| t.contains(PROFILE_MARKER))
-                });
+                .any(|p| std::fs::read_to_string(p).is_ok_and(|t| t.contains(PROFILE_MARKER)));
             if arranged {
                 PathRoute::ShellProfile
             } else {
@@ -529,16 +532,24 @@ mod tests {
 
     #[test]
     fn the_wrapper_execs_the_real_binary_and_never_symlinks_it() {
-        let script = wrapper_script(Path::new("/Applications/Open Science.app/Contents/MacOS/osd"));
-        assert!(script.contains("/Applications/Open Science.app/Contents/MacOS/osd"));
-        assert!(script.contains(SIGNATURE), "a re-install must recognise its own file");
+        let script = wrapper_script(Path::new(
+            "/Applications/Happy Science.app/Contents/MacOS/osd",
+        ));
+        assert!(script.contains("/Applications/Happy Science.app/Contents/MacOS/osd"));
+        assert!(
+            script.contains(SIGNATURE),
+            "a re-install must recognise its own file"
+        );
         if cfg!(windows) {
             assert!(script.starts_with("@echo off"), "{script}");
             assert!(script.contains("%*"), "arguments must reach osd: {script}");
         } else {
             assert!(script.starts_with("#!/bin/sh"), "{script}");
             assert!(script.contains("exec \""), "{script}");
-            assert!(script.contains("\"$@\""), "arguments must reach osd: {script}");
+            assert!(
+                script.contains("\"$@\""),
+                "arguments must reach osd: {script}"
+            );
         }
     }
 
@@ -554,7 +565,10 @@ mod tests {
             bin,
             "a user bin directory a terminal already searches wins"
         );
-        assert!(reachable(&terminal_path, &bin), "and nothing has to be arranged");
+        assert!(
+            reachable(&terminal_path, &bin),
+            "and nothing has to be arranged"
+        );
         std::fs::remove_dir_all(&home).unwrap();
     }
 
@@ -582,7 +596,10 @@ mod tests {
         for rel in [".cargo/bin", ".nvm/versions/node/v24/bin"] {
             std::fs::create_dir_all(home.join(rel)).unwrap();
         }
-        let path = vec![home.join(".cargo/bin"), home.join(".nvm/versions/node/v24/bin")];
+        let path = vec![
+            home.join(".cargo/bin"),
+            home.join(".nvm/versions/node/v24/bin"),
+        ];
         assert_eq!(
             choose_shim_dir(&path, &home),
             home.join(".local").join("bin"),
@@ -616,7 +633,10 @@ mod tests {
             after_first.starts_with("export EDITOR=vim\n"),
             "a file with no trailing newline must not get the block glued to its last line: {after_first}"
         );
-        assert!(after_first.contains(&dir.display().to_string()), "{after_first}");
+        assert!(
+            after_first.contains(&dir.display().to_string()),
+            "{after_first}"
+        );
 
         // Every later launch calls this again and must change nothing.
         extend_profile_file(&profile, &dir).unwrap();
@@ -630,6 +650,7 @@ mod tests {
         std::fs::remove_dir_all(&home).unwrap();
     }
 
+    #[cfg(unix)]
     #[test]
     fn a_wrapper_whose_app_is_gone_says_so_and_removes_itself() {
         // Uninstalling cannot reach a per-user file in $HOME, so the leftover
@@ -638,13 +659,21 @@ mod tests {
         // is reading the file is the part worth proving.
         use std::os::unix::fs::PermissionsExt;
         let dir = tmp("gone");
-        let missing = dir.join("Open Science.app/Contents/MacOS/osd");
+        let missing = dir.join("Happy Science.app/Contents/MacOS/osd");
         let shim = dir.join("osd");
         std::fs::write(&shim, wrapper_script(&missing)).unwrap();
         std::fs::set_permissions(&shim, std::fs::Permissions::from_mode(0o755)).unwrap();
 
-        let out = std::process::Command::new("sh").arg(&shim).arg("status").output().unwrap();
-        assert_eq!(out.status.code(), Some(127), "a missing app is not a success");
+        let out = std::process::Command::new("sh")
+            .arg(&shim)
+            .arg("status")
+            .output()
+            .unwrap();
+        assert_eq!(
+            out.status.code(),
+            Some(127),
+            "a missing app is not a success"
+        );
         let stderr = String::from_utf8_lossy(&out.stderr);
         assert!(stderr.contains("no longer installed"), "{stderr}");
         assert!(!shim.exists(), "the leftover command must delete itself");
@@ -683,7 +712,10 @@ mod tests {
             profiles_for(home, "/bin/bash"),
             vec![home.join(".bash_profile"), home.join(".bashrc")]
         );
-        assert_eq!(profiles_for(home, "/usr/local/bin/fish"), vec![home.join(".profile")]);
+        assert_eq!(
+            profiles_for(home, "/usr/local/bin/fish"),
+            vec![home.join(".profile")]
+        );
     }
 
     #[test]
@@ -703,7 +735,9 @@ mod tests {
             assert!(text.contains(&dir.display().to_string()));
         }
         assert!(
-            std::fs::read_to_string(&files[1]).unwrap().starts_with("alias ll='ls -la'\n"),
+            std::fs::read_to_string(&files[1])
+                .unwrap()
+                .starts_with("alias ll='ls -la'\n"),
             "an existing rc file keeps what it had"
         );
         std::fs::remove_dir_all(&home).unwrap();
@@ -739,12 +773,25 @@ mod tests {
     fn only_an_unreachable_install_offers_a_line_to_paste() {
         let dir = tmp("hint");
         let shim = dir.join(shim_name());
-        let arranged = status_for(None, &shim, PathRoute::ShellProfile, Some(dir.join(".zprofile")));
-        assert!(arranged.path_hint.is_none(), "PATH is handled — do not ask the user to");
+        let arranged = status_for(
+            None,
+            &shim,
+            PathRoute::ShellProfile,
+            Some(dir.join(".zprofile")),
+        );
+        assert!(
+            arranged.path_hint.is_none(),
+            "PATH is handled — do not ask the user to"
+        );
         let stuck = status_for(None, &shim, PathRoute::Unreachable, None);
-        let hint = stuck.path_hint.expect("a stuck install must say what to do");
+        let hint = stuck
+            .path_hint
+            .expect("a stuck install must say what to do");
         assert!(hint.contains(&dir.display().to_string()), "{hint}");
-        assert!(!hint.to_lowercase().contains("setx"), "setx truncates a long PATH: {hint}");
+        assert!(
+            !hint.to_lowercase().contains("setx"),
+            "setx truncates a long PATH: {hint}"
+        );
         std::fs::remove_dir_all(&dir).unwrap();
     }
 
@@ -754,11 +801,11 @@ mod tests {
         // installed and missing at the same time.
         if cfg!(target_os = "macos") {
             assert!(runs_from_removable_image(Path::new(
-                "/Volumes/Open Science/Open Science.app/Contents/MacOS/osd"
+                "/Volumes/Happy Science/Happy Science.app/Contents/MacOS/osd"
             )));
         }
         assert!(!runs_from_removable_image(Path::new(
-            "/Applications/Open Science.app/Contents/MacOS/osd"
+            "/Applications/Happy Science.app/Contents/MacOS/osd"
         )));
     }
 }

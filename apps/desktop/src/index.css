@@ -18,22 +18,22 @@
   --zoom: 1;
 }
 
-/* Warm — the original paper palette, and the default theme. */
+/* Warm — Happy Science's mineral-paper palette, and the default theme. */
 :root,
 [data-theme="warm"] {
-  --bg: #f7f5ef;
-  --surface: #ffffff;
-  --surface-2: #f2efe7;
-  --border: #e7e3da;
-  --border-faint: #efece5;
-  --text: #2a2723;
-  --muted: #8c877d;
-  --accent: #c15f3c;
+  --bg: #f3f6f3;
+  --surface: #fbfdfb;
+  --surface-2: #e9f0ec;
+  --border: #d4e0da;
+  --border-faint: #e4ebe7;
+  --text: #17302c;
+  --muted: #6e7f79;
+  --accent: #14796f;
   --accent-fg: #ffffff;
-  --link: #2a6fdb;
-  --warn: #c98a2b;
-  --ok: #4b8b5b;
-  --error: #c0564b;
+  --link: #166c9c;
+  --warn: #b7791f;
+  --ok: #287154;
+  --error: #b64f4a;
   /* Chart design system (P1-5) — validated categorical hues + chart chrome,
      the single source of truth shared with @ai4s/shared and the matplotlib
      style. Light surface = --surface (#ffffff). */
@@ -45,8 +45,8 @@
   --series-6: #e34948;
   --series-7: #e87ba4;
   --series-8: #eb6834;
-  --chart-grid: #e7e3da;
-  --chart-axis: #cbc6bb;
+  --chart-grid: #dbe5e0;
+  --chart-axis: #b9c9c2;
   /* Code highlighting (GitHub-light hues; see .hljs-* rules below). */
   --hl-keyword: #cf222e;
   --hl-entity: #8250df;
@@ -61,23 +61,22 @@
   --hl-deletion-bg: #ffebe9;
 }
 
-/* Light — clean white with neutral (cool) grays and a blue accent (the warm
-   terracotta belongs to the warm theme); same chart hues as warm since both
-   sit on a white chart surface. */
+/* Light — a clean lab surface with the same evidence-teal product accent;
+   chart hues stay independent because they encode categorical data. */
 [data-theme="light"] {
-  --bg: #ffffff;
+  --bg: #f8faf9;
   --surface: #ffffff;
-  --surface-2: #f4f4f6;
-  --border: #e6e6ea;
-  --border-faint: #f0f0f3;
-  --text: #1f1f24;
-  --muted: #8a8a93;
-  --accent: #2563eb;
+  --surface-2: #eef3f1;
+  --border: #dbe5e1;
+  --border-faint: #eaf0ed;
+  --text: #172824;
+  --muted: #71817b;
+  --accent: #0f766e;
   --accent-fg: #ffffff;
-  --link: #2a6fdb;
-  --warn: #c98a2b;
-  --ok: #4b8b5b;
-  --error: #c0564b;
+  --link: #116c92;
+  --warn: #b7791f;
+  --ok: #287154;
+  --error: #b64f4a;
   --series-1: #2a78d6;
   --series-2: #1baf7a;
   --series-3: #eda100;
@@ -86,8 +85,8 @@
   --series-6: #e34948;
   --series-7: #e87ba4;
   --series-8: #eb6834;
-  --chart-grid: #e6e6ea;
-  --chart-axis: #c9c9cf;
+  --chart-grid: #dbe5e1;
+  --chart-axis: #bccbc5;
   /* Code highlighting (GitHub-light hues; see .hljs-* rules below). */
   --hl-keyword: #cf222e;
   --hl-entity: #8250df;
@@ -102,22 +101,21 @@
   --hl-deletion-bg: #ffebe9;
 }
 
-/* Dark — neutral-cool like light, so it shares light's blue accent (stepped
-   up for the dark surface; dark text on the filled accent keeps contrast). */
+/* Dark — deep observatory green with a brighter mint accent for contrast. */
 [data-theme="dark"] {
-  --bg: #16151a;
-  --surface: #1e1d24;
-  --surface-2: #26252d;
-  --border: #33313c;
-  --border-faint: #25242b;
-  --text: #ece9e2;
-  --muted: #9a958c;
-  --accent: #4d9df6;
-  --accent-fg: #16151a;
-  --link: #7aa5f0;
-  --warn: #d7a24a;
-  --ok: #6bb07d;
-  --error: #d47a70;
+  --bg: #0e1a19;
+  --surface: #142422;
+  --surface-2: #1c2e2b;
+  --border: #2a423e;
+  --border-faint: #20332f;
+  --text: #ecf4f1;
+  --muted: #91a49e;
+  --accent: #67dfc1;
+  --accent-fg: #0b2f2d;
+  --link: #79cbd5;
+  --warn: #e3ad4d;
+  --ok: #75c49a;
+  --error: #e3867d;
   /* Same hues stepped for the dark chart surface (--surface #1e1d24). */
   --series-1: #3987e5;
   --series-2: #199e70;
@@ -127,8 +125,8 @@
   --series-6: #e66767;
   --series-7: #d55181;
   --series-8: #d95926;
-  --chart-grid: #33313c;
-  --chart-axis: #4a4753;
+  --chart-grid: #2a423e;
+  --chart-axis: #46615c;
   /* Code highlighting (GitHub-dark hues; see .hljs-* rules below). */
   --hl-keyword: #ff7b72;
   --hl-entity: #d2a8ff;
@@ -175,6 +173,650 @@ body {
   font-family: Inter, system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
+}
+
+/* The research launcher is a compact evidence instrument: a mineral-dark
+   readout above a quiet paper surface. The calibrated tick field and the
+   three-color beam encode traceable evidence instead of adding generic glow. */
+.research-workbench {
+  display: grid;
+  grid-template-rows: auto auto minmax(0, 1fr) auto;
+  isolation: isolate;
+  background: var(--surface);
+  container-type: inline-size;
+}
+
+.research-workbench-hero {
+  padding-block: clamp(14px, 2cqi, 24px) clamp(16px, 2.35cqi, 28px);
+  padding-inline: clamp(20px, 2.8cqi, 36px);
+  background-color: #153a34;
+  background-image:
+    radial-gradient(circle at 82% 8%, rgba(101, 212, 189, 0.16), transparent 31%),
+    linear-gradient(118deg, #102f2a 0%, #173f38 58%, #12342f 100%);
+}
+
+.research-workbench-title {
+  font-size: clamp(2rem, 4.2cqi, 3.45rem);
+}
+
+.research-workbench-hero-layout {
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+}
+
+.research-workbench-nav-label {
+  padding-inline: clamp(16px, 2.4cqi, 32px);
+  padding-block: clamp(5px, 0.65cqi, 8px);
+}
+
+.research-mission-choice {
+  min-height: clamp(52px, 5.5cqi, 66px);
+  padding-block: clamp(8px, 1cqi, 12px);
+}
+
+.research-mission-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.research-workbench-body {
+  min-height: 0;
+  grid-template-columns: minmax(0, 1fr) clamp(290px, 22cqi, 360px);
+}
+
+.research-workbench-primary,
+.research-workbench-sidebar {
+  padding-block: clamp(14px, 1.7cqi, 20px);
+}
+
+.research-workbench-primary {
+  border-right-width: 1px;
+  border-bottom-width: 0;
+}
+
+.research-contract-heading h3 {
+  font-size: clamp(21px, 2.2cqi, 25px);
+}
+
+.research-brief-panel {
+  margin-top: clamp(10px, 1.35cqi, 16px);
+}
+
+.research-brief-fields {
+  gap: clamp(8px, 1cqi, 12px);
+  padding: clamp(10px, 1.35cqi, 16px);
+}
+
+.research-study-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.research-workbench-sidebar .research-ledger-note {
+  grid-template-columns: minmax(0, 1fr);
+  align-items: start;
+}
+
+.research-workbench-footer {
+  grid-template-columns: 135px minmax(0, 1fr) minmax(0, 1fr);
+  align-items: stretch;
+}
+
+.research-workbench-footer > * {
+  padding-block: clamp(10px, 1.3cqi, 16px);
+}
+
+/* Height adaptation changes information density instead of shrinking the
+   complete interface. The brief keeps the wide work surface; secondary
+   outputs occupy the rigor column that would otherwise be empty. */
+.research-workbench[data-density="compact"] .research-workbench-hero {
+  padding-block: 14px 16px;
+}
+
+.research-workbench[data-density="compact"] .research-workbench-title {
+  margin-top: 8px;
+  font-size: clamp(2.1rem, 3.4cqi, 2.8rem);
+}
+
+.research-workbench[data-density="compact"] .research-workbench-hero p {
+  margin-top: 7px;
+}
+
+.research-workbench[data-density="compact"] .research-workbench-nav-label {
+  padding-block: 4px;
+}
+
+.research-workbench[data-density="compact"] .research-mission-choice {
+  min-height: 50px;
+  padding-block: 6px;
+}
+
+.research-workbench[data-density="compact"] .research-workbench-primary,
+.research-workbench[data-density="compact"] .research-workbench-sidebar {
+  padding-block: 12px;
+  padding-inline: 22px;
+}
+
+.research-workbench[data-density="compact"] .research-brief-panel {
+  margin-top: 10px;
+}
+
+.research-workbench[data-density="compact"] .research-brief-fields {
+  gap: 8px;
+  padding: 10px 12px;
+}
+
+.research-workbench[data-density="compact"] .research-rigor-options,
+.research-workbench[data-density="compact"] .research-rigor-description,
+.research-workbench[data-density="compact"] .research-launch-button {
+  margin-top: 10px;
+}
+
+.research-workbench[data-density="compact"] .research-rigor-description {
+  min-height: 0;
+  line-height: 1.5;
+}
+
+.research-workbench[data-density="compact"] .research-output-panel {
+  margin-top: 12px;
+  padding-top: 10px;
+}
+
+.research-workbench[data-density="compact"] .research-deliverables,
+.research-workbench[data-density="compact"] .research-ledger-note {
+  margin-top: 8px;
+}
+
+.research-workbench[data-density="compact"] .research-workbench-footer > * {
+  padding-block: 8px;
+}
+
+.research-workbench[data-density="short"] .research-workbench-hero {
+  padding-block: 10px 12px;
+  padding-inline: 24px;
+}
+
+.research-workbench[data-density="short"] .research-workbench-title {
+  margin-top: 6px;
+  font-size: clamp(1.9rem, 3cqi, 2.35rem);
+}
+
+.research-workbench[data-density="short"] .research-workbench-hero p {
+  margin-top: 5px;
+  line-height: 1.3;
+}
+
+.research-workbench[data-density="short"] .research-workbench-nav-label {
+  display: none;
+}
+
+.research-workbench[data-density="short"] .research-mission-choice {
+  min-height: 44px;
+  padding-block: 5px;
+}
+
+.research-workbench[data-density="short"] .research-mission-choice > span:first-child {
+  width: 28px;
+  height: 28px;
+}
+
+.research-workbench[data-density="short"] .research-workbench-primary,
+.research-workbench[data-density="short"] .research-workbench-sidebar {
+  padding-block: 9px;
+  padding-inline: 18px;
+}
+
+.research-workbench[data-density="short"] .research-contract-heading h3 {
+  font-size: 20px;
+}
+
+.research-workbench[data-density="short"] .research-contract-heading p {
+  line-height: 1.35;
+}
+
+.research-workbench[data-density="short"] .research-brief-panel {
+  margin-top: 8px;
+}
+
+.research-workbench[data-density="short"] .research-brief-panel > div:first-child {
+  padding-block: 6px;
+}
+
+.research-workbench[data-density="short"] .research-brief-fields {
+  gap: 6px;
+  padding: 8px 10px;
+}
+
+.research-workbench[data-density="short"] .research-brief-fields textarea {
+  min-height: 46px;
+}
+
+.research-workbench[data-density="short"] .research-brief-fields input:not([type="checkbox"]) {
+  height: 32px;
+}
+
+.research-workbench[data-density="short"] .research-rigor-options,
+.research-workbench[data-density="short"] .research-rigor-description,
+.research-workbench[data-density="short"] .research-launch-button {
+  margin-top: 8px;
+}
+
+.research-workbench[data-density="short"] .research-rigor-options button {
+  min-height: 30px;
+  padding-block: 5px;
+}
+
+.research-workbench[data-density="short"] .research-rigor-description {
+  min-height: 0;
+  line-height: 1.4;
+}
+
+.research-workbench[data-density="short"] .research-output-panel {
+  margin-top: 9px;
+  padding-top: 8px;
+}
+
+.research-workbench[data-density="short"] .research-deliverables,
+.research-workbench[data-density="short"] .research-ledger-note {
+  margin-top: 6px;
+}
+
+.research-workbench[data-density="short"] .research-deliverables li {
+  padding-bottom: 3px;
+}
+
+.research-workbench[data-density="short"] .research-ledger-note {
+  padding-block: 6px;
+}
+
+.research-workbench[data-density="short"] .research-workbench-footer > * {
+  padding-block: 7px;
+}
+
+/* Wide, tall workspaces need stronger type hierarchy than the compact
+   instrument view. Keep the short-density contract untouched so small windows
+   still reveal the complete launcher above the composer. */
+.research-workbench:not([data-density="short"]) .text-muted {
+  color: color-mix(in srgb, var(--text) 68%, var(--muted));
+}
+
+.research-workbench:not([data-density="short"])
+  .research-workbench-hero-layout
+  > div:first-child
+  > div:first-child {
+  font-size: 10px;
+  font-weight: 600;
+  color: rgb(255 255 255 / 0.76);
+}
+
+.research-workbench:not([data-density="short"]) .research-workbench-hero p {
+  font-size: 13.5px;
+  font-weight: 500;
+  color: rgb(255 255 255 / 0.76);
+}
+
+.research-workbench:not([data-density="short"]) .evidence-spectrum-legend,
+.research-workbench:not([data-density="short"]) .research-workbench-nav-label span:first-child {
+  font-size: 9px;
+  font-weight: 600;
+}
+
+.research-workbench:not([data-density="short"]) .research-mission-choice > span:last-child {
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+.research-workbench:not([data-density="short"])
+  .research-contract-heading
+  > div
+  > div:first-child {
+  font-size: 9px;
+  font-weight: 600;
+}
+
+.research-workbench:not([data-density="short"]) .research-contract-heading h3 {
+  font-size: clamp(23px, 2.35cqi, 27px);
+}
+
+.research-workbench:not([data-density="short"]) .research-contract-heading p {
+  font-size: 12.5px;
+  font-weight: 500;
+}
+
+.research-workbench:not([data-density="short"])
+  .research-brief-panel
+  > div:first-child
+  > * {
+  font-size: 9px;
+  font-weight: 600;
+}
+
+.research-workbench:not([data-density="short"]) .research-brief-fields label > span {
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.research-workbench:not([data-density="short"]) .research-brief-fields textarea {
+  font-size: 12.5px;
+}
+
+.research-workbench:not([data-density="short"])
+  .research-brief-fields
+  :is(input, textarea)::placeholder {
+  color: color-mix(in srgb, var(--text) 42%, var(--muted));
+  opacity: 1;
+}
+
+.research-workbench:not([data-density="short"])
+  .research-brief-fields
+  input:not([type="checkbox"]) {
+  font-size: 11.5px;
+}
+
+.research-workbench:not([data-density="short"])
+  .research-brief-fields
+  label:last-child
+  > span {
+  font-size: 10.75px;
+  font-weight: 500;
+  line-height: 1.5;
+}
+
+.research-workbench:not([data-density="short"]) .research-rigor-header > * {
+  font-size: 9px;
+  font-weight: 600;
+}
+
+.research-workbench:not([data-density="short"]) .research-rigor-options button {
+  font-size: 10.5px;
+  font-weight: 500;
+}
+
+.research-workbench:not([data-density="short"]) .research-rigor-description {
+  font-size: 11.5px;
+  font-weight: 500;
+}
+
+.research-workbench:not([data-density="short"]) .research-launch-button {
+  font-size: 11.5px;
+}
+
+.research-workbench:not([data-density="short"]) .research-launch-hint {
+  font-size: 10px;
+  font-weight: 500;
+}
+
+.research-workbench:not([data-density="short"]) .research-deliverables-label {
+  font-size: 9px;
+  font-weight: 600;
+}
+
+.research-workbench:not([data-density="short"]) .research-deliverables li > div {
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.research-workbench:not([data-density="short"])
+  .research-deliverables
+  li
+  > div
+  > span {
+  font-size: 8.5px;
+}
+
+.research-workbench:not([data-density="short"])
+  .research-ledger-note
+  > div:first-child {
+  font-size: 9px;
+  font-weight: 600;
+}
+
+.research-workbench:not([data-density="short"]) .research-ledger-note p {
+  font-size: 10.5px;
+  font-weight: 500;
+}
+
+.research-workbench:not([data-density="short"])
+  .research-workbench-footer
+  > div:first-child {
+  font-size: 9px;
+  font-weight: 600;
+}
+
+.research-workbench:not([data-density="short"])
+  .research-workbench-footer
+  button
+  span.min-w-0
+  > span:first-child {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.research-workbench:not([data-density="short"])
+  .research-workbench-footer
+  button
+  span.min-w-0
+  > span:last-child {
+  font-size: 10.25px;
+  font-weight: 500;
+}
+
+.research-workbench[data-layout="wide"]:is(
+    [data-density="compact"],
+    [data-density="short"]
+  )
+  .research-workbench-body {
+  grid-template-columns: minmax(0, 1fr) clamp(500px, 44cqi, 620px);
+}
+
+.research-workbench[data-layout="wide"]:is(
+    [data-density="compact"],
+    [data-density="short"]
+  )
+  .research-workbench-sidebar {
+  display: grid;
+  grid-template-columns: minmax(190px, 0.9fr) minmax(220px, 1.1fr);
+  gap: 14px;
+  align-items: start;
+  padding-inline: 16px;
+}
+
+.research-workbench[data-layout="wide"]:is(
+    [data-density="compact"],
+    [data-density="short"]
+  )
+  .research-output-panel {
+  margin-top: 0;
+  padding-top: 0;
+  padding-left: 14px;
+  border-top-width: 0;
+  border-left-width: 1px;
+}
+
+/* Research panels live inside resizable panes, so viewport breakpoints are the
+   wrong signal: a half-width pane in a wide desktop must still behave like a
+   compact instrument. ResearchWorkbench measures its own box and owns this
+   data-layout contract. Height is filled, never scaled: short panes scroll and
+   tall panes give the contract body the extra working room. */
+.research-workbench:not([data-layout="wide"]) .research-workbench-hero-layout,
+.research-workbench:not([data-layout="wide"]) .research-workbench-body {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.research-workbench:not([data-layout="wide"]) .research-workbench-hero-layout {
+  align-items: start;
+}
+
+.research-workbench:not([data-layout="wide"]) .research-workbench-primary {
+  border-right-width: 0;
+  border-bottom-width: 1px;
+}
+
+.research-workbench:not([data-layout="wide"]) .research-workbench-sidebar {
+  padding-inline: clamp(20px, 3.2cqi, 28px);
+}
+
+.research-workbench:is([data-layout="compact"], [data-layout="small"], [data-layout="narrow"])
+  .research-mission-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.research-workbench:is([data-layout="compact"], [data-layout="small"], [data-layout="narrow"])
+  .research-workbench-primary {
+  padding-inline: clamp(16px, 3.8cqi, 28px);
+}
+
+.research-workbench:is([data-layout="compact"], [data-layout="small"])
+  .research-workbench-footer {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.research-workbench:is([data-layout="compact"], [data-layout="small"])
+  .research-workbench-footer
+  > :first-child {
+  grid-column: 1 / -1;
+  padding-inline: clamp(16px, 3.8cqi, 24px);
+  padding-block: 7px;
+}
+
+.research-workbench:is([data-layout="small"], [data-layout="narrow"]) .research-study-grid,
+.research-workbench:is([data-layout="small"], [data-layout="narrow"])
+  .research-ledger-note {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.research-workbench:is([data-layout="small"], [data-layout="narrow"])
+  .research-workbench-hero-layout {
+  gap: 12px;
+}
+
+.research-workbench:is([data-layout="small"], [data-layout="narrow"])
+  .research-workbench-title {
+  line-height: 1.02;
+}
+
+.research-workbench[data-layout="narrow"] {
+  border-radius: 14px;
+}
+
+.research-workbench[data-layout="narrow"] .research-mission-grid,
+.research-workbench[data-layout="narrow"] .research-workbench-footer {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.research-workbench[data-layout="narrow"] .research-workbench-footer > :first-child {
+  grid-column: auto;
+}
+
+.research-workbench[data-layout="narrow"] .research-mission-choice {
+  min-height: 50px;
+}
+
+.research-workbench-hero::after {
+  position: absolute;
+  inset: 0;
+  content: "";
+  pointer-events: none;
+  opacity: 0.18;
+  background-image:
+    repeating-linear-gradient(
+      90deg,
+      transparent 0,
+      transparent 39px,
+      rgba(255, 255, 255, 0.22) 40px,
+      transparent 41px
+    ),
+    linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.08) 50%, transparent 100%);
+  mask-image: linear-gradient(to bottom, transparent, black 35%, black);
+}
+
+[data-theme="dark"] .research-workbench-hero {
+  background-color: #0b2420;
+  background-image:
+    radial-gradient(circle at 82% 8%, rgba(103, 223, 193, 0.14), transparent 31%),
+    linear-gradient(118deg, #081c19 0%, #10312b 58%, #0a211e 100%);
+}
+
+.evidence-spectrum-beam span:nth-child(1) {
+  background: #65d4bd;
+  box-shadow: 0 0 14px rgba(101, 212, 189, 0.55);
+}
+
+.evidence-spectrum-beam span:nth-child(2) {
+  background: #ed7777;
+  box-shadow: 0 0 14px rgba(237, 119, 119, 0.45);
+}
+
+.evidence-spectrum-beam span:nth-child(3) {
+  background: #d8ad5d;
+  box-shadow: 0 0 14px rgba(216, 173, 93, 0.42);
+}
+
+.research-mission-choice::after {
+  position: absolute;
+  right: 18px;
+  bottom: 0;
+  left: 18px;
+  height: 2px;
+  content: "";
+  background: var(--accent);
+  opacity: 0;
+  transform: scaleX(0.35);
+  transition: opacity 180ms ease, transform 180ms ease;
+}
+
+.research-mission-choice.is-active {
+  background: color-mix(in srgb, var(--surface) 88%, var(--accent) 12%);
+}
+
+.research-mission-choice.is-active::after {
+  opacity: 1;
+  transform: scaleX(1);
+}
+
+.research-contract {
+  animation: research-contract-reveal 220ms ease-out both;
+}
+
+@keyframes research-contract-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.research-ledger-note {
+  position: relative;
+  overflow: hidden;
+}
+
+.research-ledger-note::before {
+  position: absolute;
+  inset-block: 0;
+  left: 0;
+  width: 3px;
+  content: "";
+  background: linear-gradient(to bottom, #65d4bd 0 52%, #ed7777 52% 72%, #d8ad5d 72% 100%);
+}
+
+/* A single continuous rail makes the required outputs read as an evidence
+   production sequence rather than a generic checklist of feature cards. */
+.evidence-track > li:not(:last-child)::before {
+  position: absolute;
+  top: 19px;
+  bottom: -1px;
+  left: 9px;
+  width: 1px;
+  content: "";
+  background: color-mix(in srgb, var(--accent) 45%, var(--border));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .research-contract {
+    animation: none;
+  }
 }
 
 /* A subagent's transcript is a NESTED, secondary read inside a narrow panel.

@@ -21,7 +21,7 @@ import type {
   SkillInfo,
   ToolCallStatus,
 } from "./types";
-import type { MessageUsage } from "@ai4s/shared";
+import { PRODUCT_NAME, type MessageUsage } from "@ai4s/shared";
 import { DEFAULT_OPENCODE_URL } from "./types";
 import type { AgentRuntime } from "./runtime";
 import { BaseAgentRuntime } from "./base-runtime";
@@ -57,7 +57,7 @@ const LEGACY_BLIND_CONTEXT = 128_000;
  *  description alone is not reliable enough: models sometimes mistake reading
  *  a file or linking its path for displaying it. Attach this concise reminder
  *  to every normal prompt so presentation requests produce a real UI event. */
-const ARTIFACT_PRESENTATION_SYSTEM = `Open Science Desktop can display workspace files through the present_artifact tool.
+const ARTIFACT_PRESENTATION_SYSTEM = `${PRODUCT_NAME} can display workspace files through the present_artifact tool.
 - If the user asks to show, display, render, preview, or open an artifact in the chat/conversation, call present_artifact with display="inline".
 - If the user asks for a panel or side-by-side view in the current Screen, call present_artifact with display="panel", target="current-screen", and the placement they asked for: placement="bottom" for below/underneath/a bottom panel, otherwise placement="right".
 - If the artifact is already shown in a panel and the user asks to move it, call present_artifact again with the new placement; the host moves the open panel.

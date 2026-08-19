@@ -43,7 +43,12 @@ impl Kernel {
         let stdout = BufReader::new(child.stdout.take().ok_or("no kernel stdout")?);
         Ok(Kernel {
             child: Mutex::new(child),
-            io: Mutex::new(KernelIo { stdin, stdout, seq: 0, code_file }),
+            io: Mutex::new(KernelIo {
+                stdin,
+                stdout,
+                seq: 0,
+                code_file,
+            }),
         })
     }
 }
@@ -113,11 +118,17 @@ fn materialize(app: &AppHandle, name: &str, src: &str) -> Result<PathBuf, String
 #[cfg(windows)]
 fn python_candidates() -> Vec<String> {
     // `py` (the launcher) and `python` are what Windows installers register.
-    let mut c = vec!["py".to_string(), "python".to_string(), "python3".to_string()];
+    let mut c = vec![
+        "py".to_string(),
+        "python".to_string(),
+        "python3".to_string(),
+    ];
     if let Ok(profile) = std::env::var("USERPROFILE") {
         c.push(format!("{profile}\\anaconda3\\python.exe"));
         c.push(format!("{profile}\\miniconda3\\python.exe"));
-        c.push(format!("{profile}\\AppData\\Local\\Programs\\Python\\python.exe"));
+        c.push(format!(
+            "{profile}\\AppData\\Local\\Programs\\Python\\python.exe"
+        ));
     }
     // "All users" conda installs (Anaconda's default is ProgramData; C:\ is a
     // common manual choice). Anaconda does NOT add itself to PATH, so a bare
@@ -138,7 +149,9 @@ fn python_candidates() -> Vec<String> {
     }
     roots.push(std::path::PathBuf::from("C:\\Program Files"));
     for root in roots {
-        let Ok(entries) = std::fs::read_dir(&root) else { continue };
+        let Ok(entries) = std::fs::read_dir(&root) else {
+            continue;
+        };
         let mut vers: Vec<std::path::PathBuf> = entries
             .flatten()
             .map(|e| e.path())
@@ -222,10 +235,7 @@ fn python_candidates() -> Vec<String> {
 #[cfg(windows)]
 fn rscript_candidates() -> Vec<String> {
     let mut c = vec!["Rscript".to_string(), "Rscript.exe".to_string()];
-    for base in [
-        "C:\\Program Files\\R",
-        "C:\\Program Files (x86)\\R",
-    ] {
+    for base in ["C:\\Program Files\\R", "C:\\Program Files (x86)\\R"] {
         // Newest install layout: <base>\R-x.y.z\bin\Rscript.exe — probed via PATH first,
         // this literal fallback covers the common single-version install.
         c.push(format!("{base}\\bin\\Rscript.exe"));
@@ -264,7 +274,11 @@ fn python_path_env(python: &str) -> String {
     #[cfg(windows)]
     if let Some(home) = std::path::Path::new(python).parent() {
         if !home.as_os_str().is_empty() {
-            let extras = [home.to_path_buf(), home.join("Scripts"), home.join("Library").join("bin")];
+            let extras = [
+                home.to_path_buf(),
+                home.join("Scripts"),
+                home.join("Library").join("bin"),
+            ];
             let mut parts: Vec<String> = extras
                 .iter()
                 .filter(|p| p.is_dir())
@@ -336,9 +350,11 @@ fn resolve_python(
     if let Some(p) = candidates.into_iter().find(|b| interpreter_ok(b)) {
         return Ok((p, "system"));
     }
-    Err("no Python found — install Python 3, set an interpreter path in Settings, \
+    Err(
+        "no Python found — install Python 3, set an interpreter path in Settings, \
          or set up Jupyter in Settings (its environment includes one)"
-        .into())
+            .into(),
+    )
 }
 
 /// The interpreter local Python kernels run on, with where it came from
@@ -352,7 +368,9 @@ pub(crate) fn python_bin(app: &AppHandle) -> Result<(String, &'static str), Stri
 }
 
 pub(crate) fn rscript_bin() -> Option<String> {
-    rscript_candidates().into_iter().find(|bin| interpreter_ok(bin))
+    rscript_candidates()
+        .into_iter()
+        .find(|bin| interpreter_ok(bin))
 }
 
 #[derive(serde::Serialize)]
@@ -376,7 +394,12 @@ pub fn python_interpreter(app: AppHandle) -> PythonInterpreter {
             source: Some(source),
             error: None,
         },
-        Err(e) => PythonInterpreter { configured, resolved: None, source: None, error: Some(e) },
+        Err(e) => PythonInterpreter {
+            configured,
+            resolved: None,
+            source: None,
+            error: Some(e),
+        },
     }
 }
 
@@ -398,7 +421,9 @@ pub fn set_python_path(
             return Err("enter an absolute path to a Python executable".into());
         }
         if !interpreter_ok(trimmed) {
-            return Err(format!("{trimmed} did not run `--version` successfully — check the path"));
+            return Err(format!(
+                "{trimmed} did not run `--version` successfully — check the path"
+            ));
         }
         if let Some(dir) = file.parent() {
             std::fs::create_dir_all(dir).map_err(|e| e.to_string())?;
@@ -409,7 +434,12 @@ pub fn set_python_path(
     Ok(())
 }
 
-fn spawn_kernel(app: &AppHandle, lang: &str, cwd: &std::path::Path, key: &str) -> Result<Kernel, String> {
+fn spawn_kernel(
+    app: &AppHandle,
+    lang: &str,
+    cwd: &std::path::Path,
+    key: &str,
+) -> Result<Kernel, String> {
     let (mut cmd, code_file) = match lang {
         "python" => {
             let script = materialize(app, "kernel_bridge.py", PY_BRIDGE_SRC)?;
@@ -427,9 +457,8 @@ fn spawn_kernel(app: &AppHandle, lang: &str, cwd: &std::path::Path, key: &str) -
         }
         "r" => {
             let script = materialize(app, "kernel_bridge.R", R_BRIDGE_SRC)?;
-            let rscript = rscript_bin().ok_or(
-                "no R found — install R (r-project.org) to run R notebooks",
-            )?;
+            let rscript =
+                rscript_bin().ok_or("no R found — install R (r-project.org) to run R notebooks")?;
             // One code file per kernel — concurrent R notebooks must not share it.
             let code_file = kernel_dir(app)?.join(format!("r_cell_{}.R", key_hash(key)));
             std::fs::write(&code_file, "").map_err(|e| e.to_string())?;
@@ -466,7 +495,9 @@ fn exec_on(k: &mut KernelIo, code: &str) -> Result<ExecResult, String> {
             writeln!(k.stdin, "{req}").map_err(|e| format!("kernel write failed: {e}"))?;
         }
     }
-    k.stdin.flush().map_err(|e| format!("kernel flush failed: {e}"))?;
+    k.stdin
+        .flush()
+        .map_err(|e| format!("kernel flush failed: {e}"))?;
 
     let mut line = String::new();
     let n = k
@@ -480,7 +511,11 @@ fn exec_on(k: &mut KernelIo, code: &str) -> Result<ExecResult, String> {
         serde_json::from_str(line.trim()).map_err(|e| format!("bad kernel response: {e}"))?;
     Ok(ExecResult {
         ok: v.get("ok").and_then(|x| x.as_bool()).unwrap_or(false),
-        stdout: v.get("stdout").and_then(|x| x.as_str()).unwrap_or("").to_string(),
+        stdout: v
+            .get("stdout")
+            .and_then(|x| x.as_str())
+            .unwrap_or("")
+            .to_string(),
         result: v.get("result").and_then(|x| x.as_str()).map(str::to_string),
         error: v.get("error").and_then(|x| x.as_str()).map(str::to_string),
     })
@@ -522,7 +557,10 @@ where
             // unless a reset already removed (or replaced) the entry.
             reap(&kernel);
             let mut map = state.0.lock().unwrap();
-            if map.get(key).is_some_and(|cur| std::sync::Arc::ptr_eq(cur, &kernel)) {
+            if map
+                .get(key)
+                .is_some_and(|cur| std::sync::Arc::ptr_eq(cur, &kernel))
+            {
                 map.remove(key);
             }
             Err(e)
@@ -662,7 +700,11 @@ mod tests {
         let dir = std::env::temp_dir().join(format!("os-fake-python-{}", std::process::id()));
         std::fs::create_dir_all(&dir).unwrap();
         let fake = dir.join("fake-python");
-        std::fs::write(&fake, "#!/bin/sh\necho 'Python was not found' >&2\nexit 9\n").unwrap();
+        std::fs::write(
+            &fake,
+            "#!/bin/sh\necho 'Python was not found' >&2\nexit 9\n",
+        )
+        .unwrap();
         std::fs::set_permissions(&fake, std::fs::Permissions::from_mode(0o755)).unwrap();
         assert!(
             !interpreter_ok(fake.to_str().unwrap()),
@@ -684,7 +726,11 @@ mod tests {
         std::fs::create_dir_all(&dir).unwrap();
         let mk = |name: &str, ok: bool| -> String {
             let path = dir.join(name);
-            let body = if ok { "#!/bin/sh\nexit 0\n" } else { "#!/bin/sh\nexit 9\n" };
+            let body = if ok {
+                "#!/bin/sh\nexit 0\n"
+            } else {
+                "#!/bin/sh\nexit 9\n"
+            };
             std::fs::write(&path, body).unwrap();
             std::fs::set_permissions(&path, std::fs::Permissions::from_mode(0o755)).unwrap();
             path.to_string_lossy().to_string()
@@ -695,11 +741,22 @@ mod tests {
         let system = mk("system-python", true);
 
         // Override wins over everything.
-        let r = resolve_python(Some(good_override.clone()), Some(jupyter_env.clone()), vec![system.clone()]);
+        let r = resolve_python(
+            Some(good_override.clone()),
+            Some(jupyter_env.clone()),
+            vec![system.clone()],
+        );
         assert_eq!(r.unwrap(), (good_override.clone(), "manual"));
         // A broken override errors loudly instead of silently using another python.
-        let e = resolve_python(Some(bad_override.clone()), Some(jupyter_env.clone()), vec![system.clone()]);
-        assert!(e.as_ref().unwrap_err().contains("broken-python"), "got: {e:?}");
+        let e = resolve_python(
+            Some(bad_override.clone()),
+            Some(jupyter_env.clone()),
+            vec![system.clone()],
+        );
+        assert!(
+            e.as_ref().unwrap_err().contains("broken-python"),
+            "got: {e:?}"
+        );
         // No override: the Jupyter env is the default, chosen over system installs,
         // so the app's Run button and the agent's MCP share one Python.
         let r = resolve_python(None, Some(jupyter_env.clone()), vec![system.clone()]);
@@ -735,7 +792,10 @@ mod tests {
             eprintln!("skipping: no python found");
             return;
         };
-        let script = concat!(env!("CARGO_MANIFEST_DIR"), "/../../../runtime/kernel/kernel_bridge.py");
+        let script = concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/../../../runtime/kernel/kernel_bridge.py"
+        );
         let state = Arc::new(KernelState::default());
         let key = "python:@hung-test";
 
@@ -757,7 +817,10 @@ mod tests {
         // it a beat to enter the blocking read.
         let start = Instant::now();
         while state.0.lock().unwrap().is_empty() {
-            assert!(start.elapsed() < Duration::from_secs(10), "kernel never registered");
+            assert!(
+                start.elapsed() < Duration::from_secs(10),
+                "kernel never registered"
+            );
             std::thread::sleep(Duration::from_millis(20));
         }
         std::thread::sleep(Duration::from_millis(300));
@@ -790,7 +853,10 @@ mod tests {
             eprintln!("skipping: no python found");
             return;
         };
-        let script = concat!(env!("CARGO_MANIFEST_DIR"), "/../../../runtime/kernel/kernel_bridge.py");
+        let script = concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/../../../runtime/kernel/kernel_bridge.py"
+        );
         let mut child = Command::new(python)
             .arg(script)
             .stdin(Stdio::piped())
@@ -801,7 +867,12 @@ mod tests {
         let mut stdin = child.stdin.take().unwrap();
         let mut stdout = BufReader::new(child.stdout.take().unwrap());
 
-        writeln!(stdin, "{}", serde_json::json!({"id":"1","code":"a=41\na+1"})).unwrap();
+        writeln!(
+            stdin,
+            "{}",
+            serde_json::json!({"id":"1","code":"a=41\na+1"})
+        )
+        .unwrap();
         stdin.flush().unwrap();
         let r1 = read(&mut stdout);
         assert_eq!(r1["ok"], true);
@@ -831,7 +902,10 @@ mod tests {
             eprintln!("skipping: no Rscript found");
             return;
         };
-        let script = concat!(env!("CARGO_MANIFEST_DIR"), "/../../../runtime/kernel/kernel_bridge.R");
+        let script = concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/../../../runtime/kernel/kernel_bridge.R"
+        );
         let dir = std::env::temp_dir().join("os_r_kernel_test");
         std::fs::create_dir_all(&dir).unwrap();
         let code_file = dir.join("r_cell.R");

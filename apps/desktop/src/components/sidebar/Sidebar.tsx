@@ -21,7 +21,7 @@ import {
   Settings,
   Trash2,
 } from "lucide-react";
-import type { Project } from "@ai4s/shared";
+import { PRODUCT_NAME, type Project } from "@ai4s/shared";
 import { cn } from "@/lib/cn";
 import { draftKeyFor, rootSessionOf, useRuntimeStore } from "@/lib/runtime";
 import {
@@ -56,7 +56,7 @@ import {
   ContextMenuSeparator,
   ContextMenuSub,
 } from "@/components/ui/ContextMenu";
-import logo from "@/assets/logo.webp";
+import logo from "@/assets/happy-science-mark.svg";
 
 interface Row {
   id: string;
@@ -590,18 +590,18 @@ export function Sidebar({ project }: { project: Project }) {
         {!inSettings && (
         <>
         <div className={cn("px-4 pb-3", overlayTitlebar ? "pt-1" : "pt-4")}>
-          <div className="flex min-w-0 items-baseline gap-1.5">
+          <div className="flex min-w-0 items-center gap-2">
             {/* Brand = home: clicking the logo/name returns to the main page. */}
             <button
               onClick={() => navigate("/live")}
               aria-label={t("sidebar.home")}
               title={t("sidebar.home")}
-              className="flex min-w-0 items-baseline gap-1.5 outline-none"
+              className="flex min-w-0 items-center gap-2 rounded-sm outline-none focus-visible:ring-2 focus-visible:ring-accent"
             >
-              <img src={logo} alt="" className="h-[18px] w-auto shrink-0 self-center" />
+              <img src={logo} alt="" className="h-6 w-6 shrink-0" />
               {/* eslint-disable-next-line i18next/no-literal-string -- product brand name, not translated across locales (see AGENTS.md) */}
               <div className="truncate font-serif text-[17px] font-semibold leading-none tracking-tight text-text">
-                Open Science
+                {PRODUCT_NAME}
               </div>
             </button>
             {!overlayTitlebar && (

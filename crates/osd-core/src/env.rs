@@ -14,7 +14,12 @@ use crate::runtime::RuntimeState;
 /// the same string as `tauri.conf.json`'s `identifier`, and it MUST stay that
 /// way: `osd` and the desktop app share one runtime root, so a session started
 /// in one is visible in the other.
-pub const IDENTIFIER: &str = "com.ai4s.workbench";
+pub const IDENTIFIER: &str = "com.happyscience.desktop";
+
+/// Previous bundle ids whose app-private data should follow Happy Science on
+/// first launch. Keep this narrow: only identifiers shipped by this codebase
+/// belong here.
+const LEGACY_IDENTIFIERS: &[&str] = &["com.ai4s.workbench"];
 
 struct Inner {
     data_dir: PathBuf,
@@ -50,14 +55,20 @@ impl Env {
     /// `osd`, `opencode`, `resources/` — so a compute node needs no installer.
     pub fn headless(resource_dir: Option<PathBuf>, version: String) -> Result<Self, String> {
         let data_dir = platform_data_dir()?;
+        migrate_legacy_data_dir(&data_dir)?;
         let resource_dir = match resource_dir {
             Some(d) => d,
             None => default_resource_dir()?,
         };
-        Ok(Env::new(data_dir, resource_dir, platform_document_dir(), version))
+        Ok(Env::new(
+            data_dir,
+            resource_dir,
+            platform_document_dir(),
+            version,
+        ))
     }
 
-    /// `<data dir>` — e.g. `~/Library/Application Support/com.ai4s.workbench`.
+    /// `<data dir>` — e.g. `~/Library/Application Support/com.happyscience.desktop`.
     pub fn data_dir(&self) -> &Path {
         &self.0.data_dir
     }
@@ -91,6 +102,49 @@ impl Env {
     }
 }
 
+/// Move an existing app-private data directory to the current bundle id on the
+/// first launch after a rebrand. A non-empty destination always wins so a newer
+/// profile is never overwritten; an empty directory Tauri created eagerly is
+/// removed before the same-volume rename.
+pub fn migrate_legacy_data_dir(data_dir: &Path) -> Result<(), String> {
+    if data_dir.is_dir() {
+        let mut entries = std::fs::read_dir(data_dir).map_err(|e| e.to_string())?;
+        if entries.next().is_some() {
+            return Ok(());
+        }
+    } else if data_dir.exists() {
+        return Err(format!(
+            "app data path is not a directory: {}",
+            data_dir.display()
+        ));
+    }
+
+    let Some(parent) = data_dir.parent() else {
+        return Err(format!(
+            "app data path has no parent: {}",
+            data_dir.display()
+        ));
+    };
+    let Some(legacy) = LEGACY_IDENTIFIERS
+        .iter()
+        .map(|identifier| parent.join(identifier))
+        .find(|path| path.is_dir())
+    else {
+        return Ok(());
+    };
+
+    if data_dir.is_dir() {
+        std::fs::remove_dir(data_dir).map_err(|e| e.to_string())?;
+    }
+    std::fs::rename(&legacy, data_dir).map_err(|e| {
+        format!(
+            "could not migrate app data from {} to {}: {e}",
+            legacy.display(),
+            data_dir.display()
+        )
+    })
+}
+
 /// The per-user application data directory, matching what Tauri's
 /// `app_data_dir()` resolves to on each platform — the desktop app and `osd`
 /// must land on the SAME directory or they would each keep their own sessions.
@@ -113,18 +167,19 @@ fn platform_data_dir() -> Result<PathBuf, String> {
 fn platform_document_dir() -> Option<PathBuf> {
     #[cfg(windows)]
     {
-        return windows_documents_dir()
-            .or_else(|| std::env::var_os("USERPROFILE").map(|p| PathBuf::from(p).join("Documents")));
+        return windows_documents_dir().or_else(|| {
+            std::env::var_os("USERPROFILE").map(|p| PathBuf::from(p).join("Documents"))
+        });
     }
     #[cfg(not(windows))]
     {
-    // XDG's Documents entry when the user configured one, else the usual name.
-    // No new dependency: this is two lines of ini, and being wrong only costs
-    // the default workspace a less pretty location.
-    if let Some(dir) = xdg_documents_dir() {
-        return Some(dir);
-    }
-    home().ok().map(|h| h.join("Documents"))
+        // XDG's Documents entry when the user configured one, else the usual name.
+        // No new dependency: this is two lines of ini, and being wrong only costs
+        // the default workspace a less pretty location.
+        if let Some(dir) = xdg_documents_dir() {
+            return Some(dir);
+        }
+        home().ok().map(|h| h.join("Documents"))
     }
 }
 
@@ -162,7 +217,9 @@ fn registry_value(text: &str, name: &str) -> Option<String> {
     text.lines()
         .filter(|l| l.trim_start().starts_with(name))
         .find_map(|line| {
-            let (_, rest) = line.split_once("REG_EXPAND_SZ").or_else(|| line.split_once("REG_SZ"))?;
+            let (_, rest) = line
+                .split_once("REG_EXPAND_SZ")
+                .or_else(|| line.split_once("REG_SZ"))?;
             let value = rest.trim();
             (!value.is_empty()).then(|| value.to_string())
         })
@@ -257,7 +314,11 @@ fn resource_root_near(dir: &Path) -> Option<PathBuf> {
     // 1. The osd archive: `resources/` beside the binary.
     // 2. A macOS .app: `Contents/MacOS/osd` with `Contents/Resources`.
     // 3. A Windows install: the binaries and the resources share one directory.
-    for candidate in [dir.join("resources"), dir.join("../Resources"), dir.to_path_buf()] {
+    for candidate in [
+        dir.join("resources"),
+        dir.join("../Resources"),
+        dir.to_path_buf(),
+    ] {
         if holds_resources(&candidate) {
             return Some(candidate);
         }
@@ -298,9 +359,9 @@ mod tests {
         assert_eq!(resource_root_near(&archive), Some(archive_resources));
 
         // 2. macOS .app — the binary in Contents/MacOS, resources in Contents/Resources.
-        let macos = root.join("Open Science.app/Contents/MacOS");
+        let macos = root.join("Happy Science.app/Contents/MacOS");
         std::fs::create_dir_all(&macos).unwrap();
-        let app_resources = root.join("Open Science.app/Contents/Resources");
+        let app_resources = root.join("Happy Science.app/Contents/Resources");
         marker(&app_resources);
         assert_eq!(
             resource_root_near(&macos).map(|p| std::fs::canonicalize(p).unwrap()),
@@ -317,7 +378,7 @@ mod tests {
         let usr = root.join("usr");
         let bin = usr.join("bin");
         std::fs::create_dir_all(&bin).unwrap();
-        let product = usr.join("lib").join("Open Science");
+        let product = usr.join("lib").join("Happy Science");
         marker(&product);
         // A sibling that is NOT a resource root must not be picked.
         std::fs::create_dir_all(usr.join("lib").join("something-else")).unwrap();
@@ -337,7 +398,19 @@ mod tests {
     #[test]
     fn data_dir_is_identifier_scoped() {
         let dir = platform_data_dir().expect("a home directory in the test env");
-        assert!(dir.ends_with(IDENTIFIER), "{dir:?} must be the app's own directory");
+        assert!(
+            dir.ends_with(IDENTIFIER),
+            "{dir:?} must be the app's own directory"
+        );
+    }
+
+    #[test]
+    fn headless_and_desktop_bundle_identifiers_match() {
+        let config: serde_json::Value = serde_json::from_str(include_str!(
+            "../../../apps/desktop/src-tauri/tauri.conf.json"
+        ))
+        .unwrap();
+        assert_eq!(config["identifier"], IDENTIFIER);
     }
 
     #[test]
@@ -352,7 +425,8 @@ mod tests {
             Some("%USERPROFILE%\\Documents")
         );
         // A redirected path keeps its spaces.
-        let onedrive = "    Personal    REG_SZ    C:\\Users\\a\\OneDrive - Contoso Ltd\\Documents\r\n";
+        let onedrive =
+            "    Personal    REG_SZ    C:\\Users\\a\\OneDrive - Contoso Ltd\\Documents\r\n";
         assert_eq!(
             registry_value(onedrive, "Personal").as_deref(),
             Some("C:\\Users\\a\\OneDrive - Contoso Ltd\\Documents")
@@ -360,7 +434,10 @@ mod tests {
         assert_eq!(registry_value("nothing here", "Personal"), None);
 
         std::env::set_var("OSD_TEST_PROFILE", "C:\\Users\\a");
-        assert_eq!(expand_env_vars("%OSD_TEST_PROFILE%\\Documents"), "C:\\Users\\a\\Documents");
+        assert_eq!(
+            expand_env_vars("%OSD_TEST_PROFILE%\\Documents"),
+            "C:\\Users\\a\\Documents"
+        );
         // An unset variable stays visible instead of silently vanishing.
         assert_eq!(expand_env_vars("%OSD_NOT_SET%\\x"), "%OSD_NOT_SET%\\x");
         assert_eq!(expand_env_vars("no vars here"), "no vars here");
@@ -376,5 +453,36 @@ mod tests {
             "0.0.0".into(),
         );
         assert_eq!(env.resource("skills-core"), None);
+    }
+
+    #[test]
+    fn legacy_data_moves_only_when_the_destination_is_empty() {
+        let root = std::env::temp_dir().join(format!(
+            "happy-science-env-migration-{}",
+            std::process::id()
+        ));
+        let _ = std::fs::remove_dir_all(&root);
+        let legacy = root.join(LEGACY_IDENTIFIERS[0]);
+        let current = root.join(IDENTIFIER);
+        std::fs::create_dir_all(&legacy).unwrap();
+        std::fs::write(legacy.join("session.db"), "legacy").unwrap();
+
+        migrate_legacy_data_dir(&current).unwrap();
+        assert_eq!(
+            std::fs::read_to_string(current.join("session.db")).unwrap(),
+            "legacy"
+        );
+        assert!(!legacy.exists());
+
+        std::fs::create_dir_all(&legacy).unwrap();
+        std::fs::write(legacy.join("session.db"), "stale").unwrap();
+        migrate_legacy_data_dir(&current).unwrap();
+        assert_eq!(
+            std::fs::read_to_string(current.join("session.db")).unwrap(),
+            "legacy"
+        );
+        assert!(legacy.exists());
+
+        std::fs::remove_dir_all(root).unwrap();
     }
 }

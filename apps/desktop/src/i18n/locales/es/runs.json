@@ -28,6 +28,17 @@
     "succeeded": "Correcta",
     "failed": "Fallida"
   },
+  "integrity": {
+    "section": "Integridad de la investigación",
+    "attention": "{{count}} aviso",
+    "attention_other": "{{count}} avisos",
+    "attentionTitle": "La ejecución difiere del plan o tiene un aviso de reproducibilidad.",
+    "aligned": "Alineada con el plan",
+    "alignedTitle": "No se encontraron desviaciones comprobadas del plan de investigación.",
+    "no-plan": "Sin plan",
+    "no-planTitle": "No se encontró prerregistro, plan de análisis ni protocolo de investigación.",
+    "plan": "Plan: {{path}}"
+  },
   "hardware": {
     "title": "Hardware en el que se ejecutó esta ejecución",
     "remoteTitle": "Hardware remoto en el que se ejecutó esta ejecución",
@@ -40,7 +51,8 @@
   },
   "action": {
     "reproduce": "Reproducir",
-    "reproduceTitle": "Redactar un prompt que vuelva a ejecutar este comando y compare las salidas",
+    "reproducing": "Reproduciendo",
+    "reproduceTitle": "Ejecutar el mismo comando y comparar entradas, código, entorno y resultados",
     "log": "Registro",
     "logTitle": "Ver el stdout/stderr capturado",
     "openConversation": "Abrir conversación",
@@ -51,8 +63,14 @@
   },
   "files": {
     "code": "Código",
+    "inputs": "Entradas",
     "outputs": "Salidas",
     "openTitle": "Abrir este archivo de salida"
+  },
+  "reproduction": {
+    "section": "Comparación de reproducción", "baseline": "base {{id}}", "notConnected": "Conecta el runtime antes de reproducir.", "notStarted": "El comando de reproducción no se inició.", "completed": "Reproducción terminada; la comparación se guardó en la nueva ejecución.", "failed": "Falló la reproducción: {{message}}", "matches": "Coincide", "differences": "{{count}} diferencias", "unverifiableFiles": "{{count}} no verificables", "unavailable": "No capturado",
+    "dimensions": { "inputs": "Entradas", "code": "Código", "environment": "Entorno", "outputs": "Resultados" },
+    "outcome": { "identical": "Idéntica", "different": "Hay diferencias", "unverifiable": "Parcialmente no verificable", "failed": "Falló el comando" }
   },
   "remote": {
     "hpcLabel": "un clúster HPC",

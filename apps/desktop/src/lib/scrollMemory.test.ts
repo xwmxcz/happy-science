@@ -97,6 +97,23 @@ describe("useScrollMemory", () => {
 });
 
 describe("useChatScroll", () => {
+  it("can open an empty launcher at the top instead of the latest position", () => {
+    const el = document.createElement("div");
+    Object.defineProperties(el, {
+      scrollHeight: { value: 1_000, configurable: true },
+      clientHeight: { value: 200, configurable: true },
+    });
+    el.scrollTop = 500;
+
+    const hook = renderHook(() => {
+      const ref = useRef<HTMLElement | null>(el);
+      return useChatScroll(ref, "chat:draft", true, "top");
+    });
+
+    expect(el.scrollTop).toBe(0);
+    expect(hook.result.current.atLatest).toBe(false);
+  });
+
   it("shows that older messages are being read and jumps back to the latest", () => {
     const el = document.createElement("div");
     Object.defineProperties(el, {

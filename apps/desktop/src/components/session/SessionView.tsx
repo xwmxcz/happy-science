@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import {
@@ -13,11 +13,13 @@ import {
   PanelLeft,
   PanelRight,
   PlugZap,
+  RotateCcw,
   X,
 } from "lucide-react";
 import type { RuntimeStatus } from "@ai4s/shared";
 import {
   contextLimitFor,
+  datedWorkspaceName,
   draftKeyFor,
   inheritedDraftFolder,
   rootSessionOf,
@@ -34,6 +36,31 @@ import { useCompactWidth } from "@/lib/useCompactWidth";
 import { fileInspectorFromBlock } from "@/lib/artifacts";
 import { useChatScroll } from "@/lib/scrollMemory";
 import { useWheelChain } from "@/lib/wheelChain";
+import {
+  approveProtocol,
+  checkMission,
+  captureLiterature,
+  createResearchRelease,
+  decideEvidence,
+  listMissions,
+  planMission,
+  recordResearchDecision,
+  searchLiterature,
+  startMission,
+  transitionMission,
+  type DecisionLogCheck,
+  type MissionCheck,
+  type MissionAction,
+  type MissionRecord,
+  type LiteratureImportResult,
+  type LiteratureSearchResult,
+  type LiteratureWork,
+  type ResearchRelease,
+  type EvidenceReviewCheck,
+  type EvidenceVerdict,
+  type NewResearchDecision,
+} from "@/lib/missions";
+import { toast } from "@/lib/toast";
 import { BlockList, type BlockHandlers } from "@/components/thread/BlockList";
 import { SubagentPane } from "@/components/thread/SubagentPane";
 import { SelectionActions } from "@/components/thread/SelectionActions";
@@ -42,7 +69,12 @@ import { Composer } from "@/components/thread/Composer";
 import { GoalPill } from "@/components/thread/GoalPill";
 import { GOAL_RESUME_NUDGE } from "@/lib/goalPrompts";
 import { baseName } from "@/components/thread/WorkspaceChip";
-import { WorkflowStarters } from "@/components/thread/WorkflowStarters";
+import {
+  missionPromptWithBrief,
+  missionResumePrompt,
+  type ResearchLaunch,
+  type ResearchMissionId,
+} from "@/lib/researchActions";
 import { SplitMenu } from "@/components/session/SplitMenu";
 import { InteractionPrompt } from "@/components/thread/InteractionPrompt";
 import { InspectorShell } from "@/components/inspector/InspectorShell";
@@ -50,6 +82,13 @@ import { MaximizePaneButton, RightPane } from "@/components/inspector/RightPane"
 import { SessionFilesPane } from "@/app/routes/FilesPage";
 import { RunsPane } from "@/app/routes/RunsPage";
 import { cn } from "@/lib/cn";
+
+const ResearchWorkbench = lazy(() =>
+  import("@/components/research/ResearchWorkbench").then((module) => ({ default: module.ResearchWorkbench })),
+);
+const ResearchWorkspaceStatus = lazy(() =>
+  import("@/components/research/ResearchWorkspaceStatus").then((module) => ({ default: module.ResearchWorkspaceStatus })),
+);
 
 type ThreadBlocks = NonNullable<ReturnType<typeof useRuntimeStore.getState>["threads"][string]>["blocks"];
 type ToolCallBlock = Extract<ThreadBlocks[number], { kind: "tool-call" }>;
@@ -73,6 +112,11 @@ function findLastRunningTool(blocks?: ThreadBlocks): ToolCallBlock | undefined {
  */
 /** Header width below which the tool buttons show icons without their labels. */
 const HEADER_LABEL_MIN_PX = 620;
+/** Mission Control shares the composer's transparent fade-in gutter, while
+ *  ordinary transcripts reserve the full floating composer height. */
+const MISSION_COMPOSER_OVERLAP_PX = 32;
+const COMPOSER_CLEARANCE_PX = 12;
+const CHAT_CONTENT_TOP_PX = 24;
 
 /** Sessions already known to have (or not have) runs. The Runs toggle used to
  *  appear one async query after mount, and every header control that appears
@@ -193,11 +237,16 @@ export function SessionView({
   const setAgentMode = useRuntimeStore((s) => s.setAgentMode);
   const bindSession = useLayoutStore((s) => s.bindSession);
   const aimDraft = useRuntimeStore((s) => s.aimDraft);
+  const switchWorkspace = useRuntimeStore((s) => s.switchWorkspace);
   const dockSession = useLayoutStore((s) => s.dockSession);
   const setLeafZoom = useLayoutStore((s) => s.setLeafZoom);
   // Any real interaction with a tentative (preview) screen pins it (#3).
   const pinEphemeral = useLayoutStore((s) => s.pinEphemeral);
   const navigate = useNavigate();
+  const location = useLocation();
+  const requestedMissionId = (
+    location.state as { researchMissionId?: ResearchMissionId } | null
+  )?.researchMissionId;
   const isMobile = useIsMobile();
   // Split buttons/drag only make sense where tiling works (desktop, not web).
   const canSplit = !isGatewayWeb && !isMobile;
@@ -205,6 +254,48 @@ export function SessionView({
   const connected = status === "ready" || switching;
   const connecting = status === "connecting" && !switching;
   const displayStatus = switching ? "ready" : status;
+  const [activeMission, setActiveMission] = useState<MissionRecord | null>(null);
+  const [missionCheck, setMissionCheck] = useState<MissionCheck | null>(null);
+  const [missionChecking, setMissionChecking] = useState(false);
+  const activeMissionId = activeMission?.missionId ?? null;
+  const activeMissionIdRef = useRef(activeMissionId);
+  activeMissionIdRef.current = activeMissionId;
+  const missionCheckingRef = useRef(false);
+  const missionTransitioningRef = useRef(false);
+  const missionWasRunning = useRef(false);
+
+  // Mission identity is persisted by the Happy Science kernel, not by this
+  // component. Resolve it by session when a real, visible pane becomes focused;
+  // background panes never change the process-wide workspace just to decorate UI.
+  useEffect(() => {
+    if (!eid) {
+      setActiveMission(null);
+      setMissionCheck(null);
+      return;
+    }
+    if (!focused || !visible) return;
+    let cancelled = false;
+    void listMissions()
+      .then((records) => {
+        if (cancelled) return;
+        const found = records
+          .filter((record) => record.sessionId === eid)
+          .sort((a, b) => b.updatedAt - a.updatedAt)[0] ?? null;
+        setActiveMission((current) => current?.sessionId === eid && !found ? current : found);
+      })
+      .catch(() => {
+        // No mission store is a normal state for ordinary agent conversations.
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [eid, focused, visible, workspace]);
+
+  useEffect(() => {
+    setMissionCheck((current) =>
+      current?.mission.missionId === activeMissionId ? current : null,
+    );
+  }, [activeMissionId]);
 
   // A newly-created session (draft's first send) binds onto this leaf; the
   // wrapper then follows it into the URL and opens its folder.
@@ -226,8 +317,264 @@ export function SessionView({
   };
   const onSend = async (text: string, attachments?: string[]) => {
     pinEphemeral();
-    bindIfCreated(await sendPrompt(text, sid ?? undefined, draftKey, attachments));
+    if (
+      activeMission &&
+      [
+        "waiting-for-input",
+        "waiting-for-approval",
+        "paused",
+        "interrupted",
+        "review-ready",
+      ].includes(activeMission.status)
+    ) {
+      const resumed = await transitionMission(
+        activeMission.missionId,
+        "resume",
+        "Researcher continued the mission",
+      );
+      setActiveMission(resumed);
+    }
+    const created = await sendPrompt(text, sid ?? undefined, draftKey, attachments);
+    bindIfCreated(created);
+    return created;
   };
+  const onResearchLaunch = async (launch: ResearchLaunch) => {
+    try {
+      if (launch.kind === "prompt") {
+        await onSend(launch.prompt);
+        return;
+      }
+      // Mission records and their deliverables must share one workspace. A
+      // plain draft normally materializes its dated folder inside sendPrompt,
+      // which would be too late because planning already persists the record.
+      if (!isGatewayWeb) {
+        const intended = sid
+          ? sessions.find((session) => session.id === sid)?.directory
+          : draftWorkspaces[draftKey];
+        if (intended && intended !== workspace) {
+          await switchWorkspace({ path: intended, key: draftKey });
+        } else if (!sid && !intended) {
+          await switchWorkspace({ dated: datedWorkspaceName(), key: draftKey });
+        }
+        if (!sid && !useRuntimeStore.getState().draftWorkspaces[draftKey]) {
+          throw new Error("The mission workspace could not be created");
+        }
+      }
+      const plan = await planMission(launch.mission, launch.rigor);
+      const created = await onSend(missionPromptWithBrief(plan.prompt, launch.brief));
+      if (created) {
+        const started = await startMission(plan.mission.missionId, created);
+        setActiveMission(started);
+        setMissionCheck(null);
+      }
+    } catch (missionError) {
+      toast.error(
+        t("starters.error.mission", {
+          message: missionError instanceof Error ? missionError.message : String(missionError),
+        }),
+      );
+    }
+  };
+  const runMissionCheck = useCallback(async () => {
+    if (!activeMissionId || missionCheckingRef.current) return null;
+    const checkedMissionId = activeMissionId;
+    missionCheckingRef.current = true;
+    setMissionChecking(true);
+    try {
+      const check = await checkMission(checkedMissionId);
+      if (activeMissionIdRef.current === checkedMissionId) {
+        setMissionCheck(check);
+        setActiveMission(check.mission);
+      }
+      return check;
+    } finally {
+      missionCheckingRef.current = false;
+      setMissionChecking(false);
+    }
+  }, [activeMissionId]);
+
+  // A mission panel should open with kernel truth, not a stale persisted count.
+  // This also migrates older gate contracts as soon as an idle session is viewed.
+  useEffect(() => {
+    if (
+      !activeMissionId ||
+      !focused ||
+      !visible ||
+      running ||
+      missionCheck ||
+      missionCheckingRef.current
+    )
+      return;
+    void runMissionCheck().catch(() => {
+      // Manual "Check status" remains available with the surfaced error path.
+    });
+  }, [activeMissionId, focused, missionCheck, runMissionCheck, running, visible]);
+
+  const lastAutoCheckedStep = useRef<{ missionId: string | null; step: number }>({
+    missionId: null,
+    step: -1,
+  });
+  useEffect(() => {
+    if (!activeMissionId || step < 1) return;
+    const previous = lastAutoCheckedStep.current;
+    if (previous.missionId === activeMissionId && previous.step === step) return;
+    lastAutoCheckedStep.current = { missionId: activeMissionId, step };
+    const timer = window.setTimeout(() => {
+      void runMissionCheck().catch(() => {
+        // A later step or the end-of-turn check retries transient partial writes.
+      });
+    }, 700);
+    return () => window.clearTimeout(timer);
+  }, [activeMissionId, runMissionCheck, step]);
+
+  const refreshMissionStatus = () => {
+    void runMissionCheck().catch((checkError) => {
+      toast.error(
+        t("starters.error.mission", {
+          message: checkError instanceof Error ? checkError.message : String(checkError),
+        }),
+      );
+    });
+  };
+
+  const onEvidenceDecision = useCallback(
+    async (
+      evidenceId: string,
+      verdict: EvidenceVerdict,
+      note: string,
+    ): Promise<EvidenceReviewCheck> => {
+      if (!activeMissionId) throw new Error(t("researchWorkspace.noActiveMission"));
+      const reviewedMissionId = activeMissionId;
+      const result = await decideEvidence(reviewedMissionId, evidenceId, verdict, note);
+      if (activeMissionIdRef.current === reviewedMissionId) {
+        setMissionCheck((current) =>
+          current?.mission.missionId === reviewedMissionId
+            ? {
+                ...current,
+                evidenceReview: result.review,
+                claimPassports: result.claimPassports,
+              }
+            : current,
+        );
+      }
+      const refreshed = await runMissionCheck();
+      return refreshed?.evidenceReview ?? result.review;
+    },
+    [activeMissionId, runMissionCheck, t],
+  );
+
+  const onCreateResearchRelease = useCallback(async (): Promise<ResearchRelease> => {
+    if (!activeMissionId) throw new Error(t("researchWorkspace.noActiveMission"));
+    return createResearchRelease(activeMissionId);
+  }, [activeMissionId, t]);
+
+  const onMissionTransition = useCallback(
+    async (action: MissionAction, reason?: string): Promise<MissionRecord> => {
+      if (!activeMissionId) throw new Error(t("researchWorkspace.noActiveMission"));
+      const record = await transitionMission(activeMissionId, action, reason);
+      if (activeMissionIdRef.current === record.missionId) {
+        setActiveMission(record);
+        if (action === "resume") setMissionCheck(null);
+      }
+      return record;
+    },
+    [activeMissionId, t],
+  );
+
+  const onApproveProtocol = useCallback(async (): Promise<MissionCheck> => {
+    if (!activeMissionId) throw new Error(t("researchWorkspace.noActiveMission"));
+    const approvedMissionId = activeMissionId;
+    const result = await approveProtocol(approvedMissionId);
+    if (activeMissionIdRef.current === approvedMissionId) {
+      setActiveMission(result.mission);
+      setMissionCheck(result);
+    }
+    return result;
+  }, [activeMissionId, t]);
+
+  const onResearchDecision = useCallback(
+    async (decision: NewResearchDecision): Promise<DecisionLogCheck> => {
+      if (!activeMissionId) throw new Error(t("researchWorkspace.noActiveMission"));
+      const decidedMissionId = activeMissionId;
+      const decisionLog = await recordResearchDecision(decidedMissionId, decision);
+      if (activeMissionIdRef.current === decidedMissionId) {
+        setMissionCheck((current) =>
+          current?.mission.missionId === decidedMissionId
+            ? { ...current, decisionLog }
+            : current,
+        );
+      }
+      const refreshed = await runMissionCheck();
+      return refreshed?.decisionLog ?? decisionLog;
+    },
+    [activeMissionId, runMissionCheck, t],
+  );
+
+  const onLiteratureSearch = useCallback(
+    async (query: string): Promise<LiteratureSearchResult> => {
+      if (!activeMissionId) throw new Error(t("researchWorkspace.noActiveMission"));
+      return searchLiterature(activeMissionId, query);
+    },
+    [activeMissionId, t],
+  );
+
+  const onLiteratureCapture = useCallback(
+    async (work: LiteratureWork): Promise<LiteratureImportResult> => {
+      if (!activeMissionId) throw new Error(t("researchWorkspace.noActiveMission"));
+      const capturedMissionId = activeMissionId;
+      const result = await captureLiterature(capturedMissionId, work);
+      if (activeMissionIdRef.current === capturedMissionId) {
+        setMissionCheck((current) =>
+          current?.mission.missionId === capturedMissionId
+            ? {
+                ...current,
+                literatureCorpus: result.corpus,
+                sourceManifest: result.sourceManifest,
+              }
+            : current,
+        );
+      }
+      await runMissionCheck();
+      return result;
+    },
+    [activeMissionId, runMissionCheck, t],
+  );
+
+  useEffect(() => {
+    if (running) {
+      missionWasRunning.current = true;
+      return;
+    }
+    if (!missionWasRunning.current || !activeMissionId) return;
+    missionWasRunning.current = false;
+    void runMissionCheck()
+      .then((check) => {
+        if (!check) return;
+        if (!check.readyForReview) {
+          toast.error(
+            t("starters.error.incomplete", {
+              files: check.issues.join("; "),
+            }),
+          );
+        } else if (check.evidenceLedger) {
+          toast.success(
+            t("starters.ledger.ready", {
+              claims: check.evidenceLedger.claims,
+              sources: check.evidenceLedger.sources,
+              contested: check.evidenceLedger.contestedClaimIds.length,
+              quotes: check.sourceManifest?.quoteMatches ?? 0,
+            }),
+          );
+        }
+      })
+      .catch((checkError) => {
+        toast.error(
+          t("starters.error.mission", {
+            message: checkError instanceof Error ? checkError.message : String(checkError),
+          }),
+        );
+      });
+  }, [activeMissionId, runMissionCheck, running, t]);
   const onRunShell = async (command: string) => {
     pinEphemeral();
     bindIfCreated(await runShell(command, sid ?? undefined, draftKey));
@@ -284,6 +631,11 @@ export function SessionView({
   // every render of a live pane, allocating a fresh array per streamed token.
   const currentTool = working ? findLastRunningTool(thread?.blocks) : undefined;
   const lastBlock = thread?.blocks[thread.blocks.length - 1];
+  const missionInterrupted =
+    !!activeMission &&
+    !working &&
+    lastBlock?.kind === "status-line" &&
+    lastBlock.interrupted === true;
   const liveReasoningIndex =
     running && thread && lastBlock?.kind === "reasoning" ? thread.blocks.length - 1 : undefined;
 
@@ -310,6 +662,47 @@ export function SessionView({
     activeRequest && activeRequest.sessionId !== eid
       ? (sessions.find((s) => s.id === activeRequest.sessionId)?.title ?? t("live.subagentFallback"))
       : undefined;
+
+  useEffect(() => {
+    if (!activeMission || missionTransitioningRef.current) return;
+    let action: MissionAction | null = null;
+    let reason: string | undefined;
+    if (
+      missionInterrupted &&
+      ["running", "waiting-for-input", "waiting-for-approval", "review-ready"].includes(
+        activeMission.status,
+      )
+    ) {
+      action = "interrupt";
+      reason = "The agent turn was interrupted before mission completion";
+    } else if (activePermission && activeMission.status === "running") {
+      action = "wait-for-approval";
+      reason = "The agent is waiting for a permission decision";
+    } else if (activeQuestion && activeMission.status === "running") {
+      action = "wait-for-input";
+      reason = "The agent is waiting for researcher input";
+    } else if (
+      running &&
+      !activeRequest &&
+      ["waiting-for-input", "waiting-for-approval", "interrupted"].includes(activeMission.status)
+    ) {
+      action = "resume";
+      reason = "The agent resumed execution";
+    }
+    if (!action) return;
+
+    missionTransitioningRef.current = true;
+    void transitionMission(activeMission.missionId, action, reason)
+      .then((record) => {
+        if (activeMissionIdRef.current === record.missionId) setActiveMission(record);
+      })
+      .catch(() => {
+        // The next kernel refresh reconciles transient gateway/runtime failures.
+      })
+      .finally(() => {
+        missionTransitioningRef.current = false;
+      });
+  }, [activeMission, activePermission, activeQuestion, activeRequest, missionInterrupted, running]);
 
   // Derived from the block list, so recompute only when the blocks change — not
   // on every unrelated re-render of a live pane.
@@ -382,6 +775,8 @@ export function SessionView({
   }, [eid, visible]);
 
   const chatRef = useRef<HTMLDivElement>(null);
+  const [chatViewportH, setChatViewportH] = useState(0);
+  const missionControlVisible = isEmpty && !eid && !webReadOnly;
 
   const {
     contentRef: chatContentRef,
@@ -392,7 +787,12 @@ export function SessionView({
     // would overwrite where the reader actually was; standing down also means
     // the position is restored on the way back. A screen that keeps its layout
     // keeps its scroll too, and must not be disturbed.
-  } = useChatScroll(chatRef, `chat:${key}`, laidOut && !historyLoading && !inspectorFillsPane);
+  } = useChatScroll(
+    chatRef,
+    missionControlVisible ? `mission-control:${key}` : `chat:${key}`,
+    laidOut && !historyLoading && !inspectorFillsPane,
+    missionControlVisible ? "top" : "bottom",
+  );
   // Take back the vertical trackpad gestures WebKit latches onto a wide table
   // or code block inside the conversation.
   useWheelChain(chatRef);
@@ -415,6 +815,36 @@ export function SessionView({
     ro.observe(el);
     return () => ro.disconnect();
   }, [inspectorFillsPane]);
+
+  useEffect(() => {
+    const el = chatRef.current;
+    if (!el) return;
+    const measure = () => setChatViewportH((height) => el.clientHeight || height);
+    measure();
+    if (typeof ResizeObserver === "undefined") return;
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [inspectorFillsPane]);
+
+  // The empty research screen can occupy the composer's transparent top fade.
+  // Use the same reservation for both the scroller and workbench height so the
+  // 32px overlap is not counted twice and does not create a phantom scrollbar.
+  const composerReservedHeight = missionControlVisible
+    ? Math.max(0, composerH - MISSION_COMPOSER_OVERLAP_PX)
+    : composerH;
+  const chatBottomPadding = composerReservedHeight + COMPOSER_CLEARANCE_PX;
+
+  // Mission Control fills the remaining pane without shrinking its controls.
+  // Short or narrow panes keep their natural content height and really scroll.
+  const researchWorkbenchAvailableHeight =
+    missionControlVisible && chatViewportH > 0
+      ? Math.max(
+          320,
+          (chatViewportH - chatBottomPadding) / Math.max(zoom, 0.1) -
+            CHAT_CONTENT_TOP_PX,
+        )
+      : undefined;
 
   const autoOpened = useRef(new Set<string>());
   useEffect(() => {
@@ -711,9 +1141,10 @@ export function SessionView({
         <div
           ref={chatRef}
           onScroll={onChatScroll}
-          // Bottom padding (real px, outside the zoom) = the measured floating
-          // composer height, so the last message always clears it at any zoom.
-          style={{ paddingBottom: composerH + 12 }}
+          // Ordinary transcripts clear the complete composer. Mission Control
+          // reuses its transparent top gutter, matching the height calculation
+          // above so a fitting empty screen has no artificial scroll range.
+          style={{ paddingBottom: chatBottomPadding }}
           // `overflow-x-hidden` is deliberate: `overflow-y-auto` alone promotes
           // the other axis to `auto`, so one over-wide message (an unbreakable
           // path, a wide card) let the ENTIRE conversation be dragged sideways.
@@ -728,9 +1159,16 @@ export function SessionView({
             // own menu (Copy, Look Up, Translate) — see lib/nativeMenu.
             data-native-menu
             style={zoom !== 1 ? { zoom } : undefined}
-            className="mx-auto flex max-w-[760px] flex-col gap-4 px-8 pt-6"
+            className={cn(
+              "mx-auto flex w-full flex-col gap-4 pt-6",
+              missionControlVisible
+                ? "max-w-none px-2.5 sm:px-4 lg:px-5"
+                : activeMission
+                  ? "max-w-[980px] px-4 sm:px-6"
+                  : "max-w-[760px] px-8",
+            )}
           >
-            {!connected && !connecting && (
+            {!connected && !connecting && !missionControlVisible && (
               <div className="rounded-card border border-border bg-surface p-5 shadow-card">
                 <div className="text-sm font-medium text-text">{t("live.runtime.title")}</div>
                 <p className="mt-1 text-sm text-muted">
@@ -749,8 +1187,64 @@ export function SessionView({
                 {error}
               </div>
             )}
-            {connected && isEmpty && !eid && !webReadOnly && (
-              <WorkflowStarters onPick={(p) => void onSend(p)} />
+            {missionControlVisible && (
+              <Suspense fallback={<LazyPaneFallback />}>
+                <ResearchWorkbench
+                  initialMissionId={requestedMissionId}
+                  disabled={!connected}
+                  availableHeight={researchWorkbenchAvailableHeight}
+                  onLaunch={(launch) => void onResearchLaunch(launch)}
+                />
+              </Suspense>
+            )}
+            {activeMission && (
+              <Suspense fallback={<LazyPaneFallback />}>
+                <ResearchWorkspaceStatus
+                  mission={activeMission}
+                  check={missionCheck}
+                  checking={missionChecking}
+                  onRefresh={refreshMissionStatus}
+                  onEvidenceDecision={onEvidenceDecision}
+                  onResearchDecision={onResearchDecision}
+                  onApproveProtocol={onApproveProtocol}
+                  onLiteratureSearch={onLiteratureSearch}
+                  onLiteratureCapture={onLiteratureCapture}
+                  onCreateRelease={onCreateResearchRelease}
+                  onTransition={onMissionTransition}
+                />
+              </Suspense>
+            )}
+            {activeMission && (
+              <div className="flex items-center gap-3 pt-1 font-mono text-[9px] uppercase tracking-[0.16em] text-muted">
+                <span>{t("researchWorkspace.executor")}</span>
+                <span className="h-px flex-1 bg-border" aria-hidden />
+              </div>
+            )}
+            {missionInterrupted && activeMission && (
+              <div
+                role="status"
+                className="flex flex-col gap-3 rounded-card border border-warn/30 bg-warn/5 px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
+              >
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2 text-sm font-medium text-text">
+                    <RotateCcw size={14} className="shrink-0 text-warn" />
+                    <span>{t("researchWorkspace.recovery.title")}</span>
+                  </div>
+                  <p className="mt-1 text-xs leading-relaxed text-muted">
+                    {t("researchWorkspace.recovery.description")}
+                  </p>
+                </div>
+                {!webReadOnly && (
+                  <button
+                    type="button"
+                    disabled={!connected}
+                    onClick={() => void onSend(missionResumePrompt(activeMission.missionId))}
+                    className="shrink-0 rounded-input bg-accent px-3 py-2 text-xs font-medium text-accent-fg transition-opacity hover:opacity-90 disabled:opacity-40"
+                  >
+                    {t("researchWorkspace.recovery.resume")}
+                  </button>
+                )}
+              </div>
             )}
             {historyLoading && <ThreadSkeleton />}
             {!historyLoading && thread && (
@@ -824,7 +1318,7 @@ export function SessionView({
           </div>
         </div>
 
-        {!atLatest && (
+        {!isEmpty && !atLatest && (
           <div
             className="pointer-events-none absolute inset-x-0 z-20 flex justify-center"
             style={{ bottom: composerH + 18 }}
@@ -852,7 +1346,9 @@ export function SessionView({
           ref={composerRef}
           className={cn(
             "pointer-events-none absolute inset-x-0 bottom-0 z-10",
-            solo ? "px-8 pb-5 pt-8" : "px-2.5 pb-3 pt-7",
+            solo
+              ? "px-3 pb-3 pt-7 sm:px-6 sm:pb-4 lg:px-8 lg:pb-5 lg:pt-8"
+              : "px-2.5 pb-3 pt-7",
           )}
         >
           {/* Frosted-glass layer BEHIND the input: a light tint + blur that both
@@ -877,7 +1373,7 @@ export function SessionView({
             style={zoom !== 1 ? { zoom } : undefined}
             className={cn(
               "pointer-events-auto relative mx-auto space-y-3",
-              solo ? "max-w-[760px]" : "w-[94%]",
+              solo ? "w-full max-w-[760px]" : "w-[94%]",
             )}
           >
             {activeRequest && (
@@ -961,6 +1457,15 @@ export function SessionView({
           {inspectorNode}
         </RightPane>
       )}
+    </div>
+  );
+}
+
+/** Lightweight placeholder while an infrequently used pane is downloaded. */
+function LazyPaneFallback() {
+  return (
+    <div className="flex min-h-24 items-center justify-center text-muted" aria-hidden>
+      <Loader2 size={16} className="animate-spin" />
     </div>
   );
 }

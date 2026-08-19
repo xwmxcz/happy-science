@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Open Science — domain-correctness gates (P0-5).
+"""Happy Science — domain-correctness gates (P0-5).
 
 A deterministic, pluggable validator layer: one rule set per scientific field
 that intercepts that field's classic error classes — code that *runs* but is

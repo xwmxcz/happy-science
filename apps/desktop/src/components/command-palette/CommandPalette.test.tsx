@@ -21,4 +21,15 @@ describe("CommandPalette", () => {
     expect(screen.getByText("Audit a report (traceability review)")).toBeInTheDocument();
     expect(screen.queryByText("Open notebooks")).not.toBeInTheDocument();
   });
+
+  it("exposes the research planning, literature, and reproduction workflows", async () => {
+    const user = userEvent.setup();
+    renderAt("/skills");
+
+    await user.keyboard("{Meta>}k{/Meta}");
+    expect(await screen.findByText("Plan a study before analysis")).toBeInTheDocument();
+    expect(screen.getByText("Build a literature evidence map")).toBeInTheDocument();
+    expect(screen.getByText("Reproduce a quantitative result")).toBeInTheDocument();
+  });
+
 });

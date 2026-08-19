@@ -34,7 +34,16 @@ pub fn record_provenance(
     // Writes are authored, not runs — no run_id here (runs.rs sets it for
     // files produced by executing code).
     let record = append_record(
-        &root, &path, &tool, session_id, model, content, diff, log, Some(env), None,
+        &root,
+        &path,
+        &tool,
+        session_id,
+        model,
+        content,
+        diff,
+        log,
+        Some(env),
+        None,
     )?;
     drop(_guard);
     osd_core::git_snapshot::commit_best_effort(&root, &format!("Record {}", record.path));

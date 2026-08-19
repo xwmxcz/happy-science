@@ -123,7 +123,7 @@ describe.skipIf(!built)("the shipped agent, against the official ACP client libr
       clientCapabilities: { fs: { readTextFile: false, writeTextFile: false }, terminal: false },
     });
     expect(init.protocolVersion).toBe(PROTOCOL_VERSION);
-    expect(init.agentInfo?.title).toBe("Open Science");
+    expect(init.agentInfo?.title).toBe("Happy Science");
     expect(init.agentCapabilities?.loadSession).toBe(true);
 
     const created = await connection.newSession({

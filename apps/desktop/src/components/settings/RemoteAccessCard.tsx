@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Copy, Eye, EyeOff, Globe, Laptop, Plug, RefreshCw, ShieldAlert } from "lucide-react";
+import { PRODUCT_NAME } from "@ai4s/shared";
 import { Row, Section, Switch } from "@/components/settings/Section";
 import { chipCls } from "@/components/settings/inputCls";
 import { toast } from "@/lib/toast";
@@ -245,7 +246,7 @@ function acpAgentEntry(script: string, url: string, token: string): string {
   return JSON.stringify(
     {
       agent_servers: {
-        "Open Science": {
+        [PRODUCT_NAME]: {
           command: "node",
           args: [script, "--url", url],
           env: { OPENSCIENCE_GATEWAY_TOKEN: token },

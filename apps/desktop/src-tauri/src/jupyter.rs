@@ -5,7 +5,7 @@
 use std::path::PathBuf;
 use std::sync::Mutex;
 use tauri::{AppHandle, Manager, State};
-use tauri_plugin_shell::process::CommandChild;
+use tauri_plugin_shell::process::{CommandChild, CommandEvent};
 use tauri_plugin_shell::ShellExt;
 
 use crate::runtime::{free_port, workspace_dir};
@@ -28,6 +28,7 @@ const PIP_SPEC: &[&str] = &[
 #[derive(Default)]
 pub struct JupyterState {
     child: Mutex<Option<CommandChild>>,
+    pid: Mutex<Option<u32>>,
     running: Mutex<bool>,
     /// Serializes start / re-root so overlapping workspace switches can never
     /// leave two jupyter-lab processes fighting over the fixed port.
@@ -64,7 +65,9 @@ fn kill_orphan_jupyter(app: &AppHandle) {
     #[cfg(unix)]
     if let Ok(dir) = env_dir(app) {
         let pattern = format!("{}/bin/jupyter-lab", dir.to_string_lossy());
-        let _ = crate::runtime::quiet_command("pkill").args(["-9", "-f", &pattern]).output();
+        let _ = crate::runtime::quiet_command("pkill")
+            .args(["-9", "-f", &pattern])
+            .output();
         std::thread::sleep(std::time::Duration::from_millis(400));
     }
     // Windows: taskkill the recorded PID, filtered to python.exe so a recycled
@@ -138,19 +141,38 @@ pub struct JupyterStatus {
 }
 
 fn status_of(app: &AppHandle, state: &JupyterState) -> JupyterStatus {
-    let installed = env_bin(app, "jupyter-lab").map(|p| p.exists()).unwrap_or(false);
+    let installed = env_bin(app, "jupyter-lab")
+        .map(|p| p.exists())
+        .unwrap_or(false);
     let running = *state.running.lock().unwrap();
     let meta = load_meta(app);
     JupyterStatus {
         installed,
         running,
-        url: meta.as_ref().map(|m| format!("http://127.0.0.1:{}", m.port)),
+        url: meta
+            .as_ref()
+            .map(|m| format!("http://127.0.0.1:{}", m.port)),
         token: meta.map(|m| m.token),
         mcp_command: env_bin(app, "jupyter-mcp-server")
             .ok()
             .filter(|p| p.exists())
             .map(|p| p.to_string_lossy().to_string()),
     }
+}
+
+/// Clear the managed state only when the terminating PID is still the active
+/// Jupyter process. A late event from a replaced process must not mark its
+/// successor stopped.
+fn mark_terminated(state: &JupyterState, pid: u32) -> bool {
+    let mut current_pid = state.pid.lock().unwrap();
+    if *current_pid != Some(pid) {
+        return false;
+    }
+    *current_pid = None;
+    drop(current_pid);
+    state.child.lock().unwrap().take();
+    *state.running.lock().unwrap() = false;
+    true
 }
 
 #[tauri::command]
@@ -187,7 +209,10 @@ pub async fn setup_jupyter(app: AppHandle) -> Result<(), String> {
 
     // Fix port + token once so the MCP config entry stays valid.
     if load_meta(&app).is_none() {
-        let meta = ServerMeta { port: free_port(), token: random_token() };
+        let meta = ServerMeta {
+            port: free_port(),
+            token: random_token(),
+        };
         std::fs::write(
             server_meta_path(&app)?,
             serde_json::to_string(&meta).map_err(|e| e.to_string())?,
@@ -201,7 +226,10 @@ pub async fn setup_jupyter(app: AppHandle) -> Result<(), String> {
 /// so the agent and the app's Notebooks page see the same files. `async`: the
 /// orphan cleanup alone (taskkill + settle delay) would freeze the UI thread.
 #[tauri::command(async)]
-pub fn start_jupyter(app: AppHandle, state: State<'_, JupyterState>) -> Result<JupyterStatus, String> {
+pub fn start_jupyter(
+    app: AppHandle,
+    state: State<'_, JupyterState>,
+) -> Result<JupyterStatus, String> {
     let _guard = state.lifecycle.lock().unwrap();
     if *state.running.lock().unwrap() {
         return Ok(status_of(&app, &state));
@@ -234,14 +262,47 @@ fn spawn_lab(app: &AppHandle, state: &JupyterState) -> Result<JupyterStatus, Str
             format!("--ServerApp.root_dir={}", workspace.to_string_lossy()),
         ])
         .current_dir(workspace);
-    let (mut rx, child) = cmd.spawn().map_err(|e| format!("failed to start jupyter: {e}"))?;
-    tauri::async_runtime::spawn(async move { while rx.recv().await.is_some() {} });
+    let (mut rx, child) = cmd
+        .spawn()
+        .map_err(|e| format!("failed to start jupyter: {e}"))?;
+    let pid = child.pid();
     // Record the PID so a future run can kill this process if it is orphaned.
     if let Ok(path) = pid_path(app) {
-        let _ = std::fs::write(path, child.pid().to_string());
+        let _ = std::fs::write(path, pid.to_string());
     }
     *state.child.lock().unwrap() = Some(child);
+    *state.pid.lock().unwrap() = Some(pid);
     *state.running.lock().unwrap() = true;
+    let exit_app = app.clone();
+    tauri::async_runtime::spawn(async move {
+        while let Some(event) = rx.recv().await {
+            match event {
+                CommandEvent::Error(error) => {
+                    osd_core::debug_log::append(
+                        &crate::env_of(&exit_app),
+                        &format!("[jupyter] process error: {error}"),
+                    );
+                }
+                CommandEvent::Terminated(status) => {
+                    let state = exit_app.state::<JupyterState>();
+                    if mark_terminated(&state, pid) {
+                        if let Ok(path) = pid_path(&exit_app) {
+                            let _ = std::fs::remove_file(path);
+                        }
+                        osd_core::debug_log::append(
+                            &crate::env_of(&exit_app),
+                            &format!(
+                                "[jupyter] terminated: code={:?} signal={:?}",
+                                status.code, status.signal
+                            ),
+                        );
+                    }
+                    break;
+                }
+                _ => {}
+            }
+        }
+    });
     Ok(status_of(app, state))
 }
 
@@ -270,5 +331,26 @@ pub fn kill_jupyter(state: &JupyterState) {
     if let Some(child) = state.child.lock().unwrap().take() {
         let _ = child.kill();
     }
+    *state.pid.lock().unwrap() = None;
     *state.running.lock().unwrap() = false;
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn a_late_exit_cannot_clear_a_replacement_jupyter_process() {
+        let state = JupyterState::default();
+        *state.pid.lock().unwrap() = Some(22);
+        *state.running.lock().unwrap() = true;
+
+        assert!(!mark_terminated(&state, 11));
+        assert_eq!(*state.pid.lock().unwrap(), Some(22));
+        assert!(*state.running.lock().unwrap());
+
+        assert!(mark_terminated(&state, 22));
+        assert_eq!(*state.pid.lock().unwrap(), None);
+        assert!(!*state.running.lock().unwrap());
+    }
 }

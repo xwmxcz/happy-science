@@ -32,7 +32,6 @@ impl Client {
         self.base.clone()
     }
 
-
     /// Resolve a gateway, in order of how explicit the answer is:
     ///
     /// 1. `--gateway` / `--token`
@@ -49,7 +48,12 @@ impl Client {
             .timeout(Duration::from_secs(120))
             .build()
             .map_err(|e| e.to_string())?;
-        Ok(Client { base: base.trim_end_matches('/').to_string(), token, http, origin })
+        Ok(Client {
+            base: base.trim_end_matches('/').to_string(),
+            token,
+            http,
+            origin,
+        })
     }
 
     pub fn get(&self, path: &str) -> Result<Value, String> {
@@ -101,7 +105,10 @@ impl Client {
     }
 
     fn json(&self, req: reqwest::blocking::RequestBuilder) -> Result<Value, String> {
-        let res = req.bearer_auth(&self.token).send().map_err(|e| self.unreachable(e))?;
+        let res = req
+            .bearer_auth(&self.token)
+            .send()
+            .map_err(|e| self.unreachable(e))?;
         let status = res.status();
         let bytes = res.bytes().map_err(|e| e.to_string())?.to_vec();
         if !status.is_success() {
@@ -161,14 +168,20 @@ fn resolve(args: &Args) -> Result<(String, String, String), String> {
         return Ok((base, token, "--gateway/OSD_GATEWAY".into()));
     }
     if let Some((base, token)) = stored() {
-        return Ok((check_url(&base)?, token, format!("{}", config_file().display())));
+        return Ok((
+            check_url(&base)?,
+            token,
+            format!("{}", config_file().display()),
+        ));
     }
     if let Some((base, token)) = local_gateway() {
         return Ok((base, token, "a gateway running on this machine".into()));
     }
-    Err("no gateway found. Start one with `osd server`, or point at one with \
+    Err(
+        "no gateway found. Start one with `osd server`, or point at one with \
          `osd login --gateway <url> --token <token>`."
-        .into())
+            .into(),
+    )
 }
 
 fn env_var(name: &str) -> Option<String> {

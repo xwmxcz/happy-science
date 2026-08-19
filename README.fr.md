@@ -1,12 +1,12 @@
 <div align="center">
 
-[![Open Science Desktop — Local-first AI research workbench](./docs/assets/banner.webp)](https://github.com/ai4s-research/open-science)
+<img src="docs/assets/happy-science-banner.svg" alt="Happy Science — local-first research agent" width="100%" />
 
-# Open Science Desktop
+# Happy Science
 
 **Atelier de recherche IA local-first et agnostique au modèle pour macOS, Windows & Linux.**
 
-Formerly Open Science. Une alternative desktop open source à Claude Science et aux workbenches AI-for-science similaires, construite avec Tauri, MCP, agent skills et des artefacts reproductibles. Elle relie agents, notebooks, fichiers, figures, rapports, exécutions et revue dans un flux desktop auditable.
+Happy Science est un produit dérivé indépendant basé sur [Open Science Desktop](https://github.com/ai4s-research/open-science), sous licence MIT. Construit avec Tauri, MCP, agent skills et des artefacts reproductibles, il relie agents, notebooks, fichiers, figures, rapports, exécutions et revue dans un flux auditable.
 
 <p>
   <a href="./README.md">English</a> ·
@@ -154,13 +154,13 @@ Connecteurs MCP scientifiques en un clic : recherche bibliographique, bases biom
 
 ## Installation
 
-Téléchargez la dernière version depuis [Releases](https://github.com/ai4s-research/open-science/releases/latest).
+Téléchargez la dernière version depuis [Releases](https://github.com/xwmxcz/happy-science/releases/latest).
 
-- **macOS** : `.dmg` / `.app`, Apple Silicon et Intel, macOS 13 Ventura ou plus récent.
+- **macOS** : les builds depuis les sources sont pris en charge ; cette préversion ne fournit pas encore d'installateur signé.
 - **Windows** : `.exe` NSIS, Windows 10/11 x64 — installation par utilisateur, sans droits administrateur. Un `.msi` est aussi publié pour les déploiements gérés par la DSI ; choisissez un format et conservez-le.
 - **Linux** : `.deb` et `.rpm` pour x86_64.
 
-Les paquets macOS sont signés avec un Developer ID, notarisés et agrafés : ils s'ouvrent normalement, sans passer par `xattr`. Les builds Windows et Linux ne sont pas encore signés.
+La préversion actuelle de Happy Science publie des paquets Windows et Linux non signés.
 
 Sous Windows, choisissez **More info -> Run anyway** dans SmartScreen.
 
@@ -252,7 +252,7 @@ plantage, arrêt :
 ```ini
 # /etc/systemd/system/osd.service
 [Unit]
-Description=Open Science Desktop (headless)
+Description=Happy Science (headless)
 After=network-online.target
 
 [Service]
@@ -280,8 +280,8 @@ Ce qui *manque* sans bureau : les kernels Jupyter locaux, les dialogues de fichi
 ## Construire depuis le code source
 
 ```bash
-git clone https://github.com/ai4s-research/open-science
-cd open-science
+git clone https://github.com/xwmxcz/happy-science
+cd happy-science
 pnpm install
 bash scripts/dev/fetch-opencode.sh
 bash scripts/dev/fetch-uv.sh
@@ -322,22 +322,21 @@ Les fichiers du workspace, données brutes, historique, provenance, notebooks et
 
 ## État
 
-Le journal d'implémentation le plus fiable est [`PROGRESS.md`](./PROGRESS.md). Les prochains travaux portent sur la signature de code Windows, l'auto-update, une vérification Windows/Linux plus large, le durcissement des connecteurs et la revue de reproductibilité. Les releases macOS sont déjà signées et notarisées. Pour discuter du projet, rejoignez le [Discord Open Science](https://discord.gg/fWNMDKcd5P).
+Le journal d'implémentation le plus fiable est [`PROGRESS.md`](./PROGRESS.md). Les prochains travaux portent sur la signature de code Windows, l'auto-update, une vérification Windows/Linux plus large, le durcissement des connecteurs, la revue de reproductibilité et la signature du premier paquet macOS public. Pour discuter du projet, rejoignez le [Discord Open Science](https://discord.gg/fWNMDKcd5P).
 
-[MIT](./LICENSE). Open Science Desktop est un outil de recherche beta : traitez les sorties comme des brouillons et vérifiez nombres, citations, code et conclusions avant publication ou décision.
+[MIT](./LICENSE). Happy Science est un outil de recherche beta : traitez les sorties comme des brouillons et vérifiez nombres, citations, code et conclusions avant publication ou décision.
 
 ## Citation
 
-Si vous utilisez Open Science Desktop dans vos recherches, merci de le citer ainsi :
+Si vous utilisez Happy Science dans vos recherches, merci de le citer ainsi :
 
 ```bibtex
-@software{open_science_desktop,
-  author  = {{The Open Science Desktop Contributors}},
-  title   = {Open Science Desktop: a local-first, model-agnostic AI research workbench},
+@software{happy_science,
+  author  = {{The Happy Science Contributors}},
+  title   = {Happy Science: a local-first, model-agnostic AI research workbench},
   year    = {2026},
   version = {0.5.0},
-  doi     = {10.5281/zenodo.22004919},
-  url     = {https://github.com/ai4s-research/open-science},
+  url     = {https://github.com/xwmxcz/happy-science},
   license = {MIT}
 }
 ```

@@ -34,7 +34,7 @@ pub struct RuntimeState {
     lifecycle: Mutex<RuntimeLifecycle>,
 }
 
-/// App-private runtime root, e.g. ~/Library/Application Support/com.ai4s.workbench/runtime
+/// App-private runtime root, e.g. ~/Library/Application Support/com.happyscience.desktop/runtime
 pub fn runtime_root(env: &Env) -> Result<PathBuf, String> {
     Ok(env.data_dir().join("runtime"))
 }
@@ -73,7 +73,7 @@ pub const SESSIONS_DIR_NAME: &str = "sessions";
 /// Keep the user-visible workspace root predictable:
 ///
 /// ```text
-/// OpenScience/
+/// HappyScience/
 ///   projects/
 ///   sessions/
 ///   .openscience/
@@ -109,7 +109,7 @@ fn persisted_path(raw: &str) -> String {
 }
 
 /// The active workspace folder OpenCode / the kernel / previews / provenance all
-/// operate in. Defaults to the base folder (`~/Documents/OpenScience`) until the
+/// operate in. Defaults to the base folder (`~/Documents/HappyScience`) until the
 /// user opens or creates another one; the choice persists across restarts.
 pub fn workspace_dir(env: &Env) -> Result<PathBuf, String> {
     if let Ok(f) = active_workspace_file(env) {
@@ -126,7 +126,7 @@ pub fn workspace_dir(env: &Env) -> Result<PathBuf, String> {
 }
 
 /// The workspace root containing the `projects/` and `sessions/` collections.
-/// A folder the user picked in Settings wins; the default is `~/Documents/OpenScience`
+/// A folder the user picked in Settings wins; the default is `~/Documents/HappyScience`
 /// (no space — the agent runs shell commands against this path, and unquoted
 /// spaces break them), falling back to `$HOME/Documents`.
 pub fn base_workspace_dir(env: &Env) -> Result<PathBuf, String> {
@@ -147,12 +147,23 @@ pub fn base_workspace_dir(env: &Env) -> Result<PathBuf, String> {
             PathBuf::from(home).join("Documents")
         }
     };
-    let dir = docs.join("OpenScience");
+    let dir = docs.join("HappyScience");
 
-    // One-time migrations, oldest name last. A failed rename (e.g. cross-volume)
-    // keeps the existing location rather than splitting the user's files.
+    // Keep the last shipped default in place: OpenCode stores absolute session
+    // directories, so renaming OpenScience would orphan history. Fresh installs
+    // use HappyScience; existing installs continue from their stable path.
     if !dir.exists() {
-        for old in [docs.join("Open Science"), runtime_root(env)?.join("workspace")] {
+        let stable_legacy = docs.join("OpenScience");
+        if stable_legacy.is_dir() {
+            return ensure_base_layout(stable_legacy);
+        }
+
+        // Older pre-session layouts can still move. A failed rename (for
+        // example cross-volume) keeps the existing location instead.
+        for old in [
+            docs.join("Open Science"),
+            runtime_root(env)?.join("workspace"),
+        ] {
             if old.is_dir() {
                 if std::fs::rename(&old, &dir).is_ok() {
                     break;
@@ -206,7 +217,10 @@ pub fn import_opencode_login(env: &Env) -> Result<bool, String> {
     let Some(src) = user_auth_source() else {
         return Ok(false);
     };
-    let dst = runtime_root(env)?.join("xdg-data").join("opencode").join("auth.json");
+    let dst = runtime_root(env)?
+        .join("xdg-data")
+        .join("opencode")
+        .join("auth.json");
     if let Some(parent) = dst.parent() {
         std::fs::create_dir_all(parent).map_err(|e| e.to_string())?;
     }
@@ -251,7 +265,8 @@ fn deploy_bundled_skills(env: &Env) {
         Ok(cfg) => cfg.join("opencode").join("skills"),
         Err(_) => return,
     };
-    let mut bundled: std::collections::HashSet<std::ffi::OsString> = std::collections::HashSet::new();
+    let mut bundled: std::collections::HashSet<std::ffi::OsString> =
+        std::collections::HashSet::new();
     let mut all_ok = true;
     for resource in [
         "skills",
@@ -280,6 +295,13 @@ fn deploy_bundled_skills(env: &Env) {
     // incomplete and wrongly delete valid skills.
     if all_ok {
         prune_stale_skills(&dst, &bundled);
+        let missing = crate::capabilities::missing_skill_manifests(&dst);
+        if !missing.is_empty() {
+            eprintln!(
+                "bundled research capability audit failed; missing skills: {}",
+                missing.join(", ")
+            );
+        }
     }
 }
 
@@ -305,7 +327,9 @@ fn package_dependency_version(path: &Path, package: &str) -> Option<String> {
 /// nothing. Only a range that pins THIS version counts as a match; anything
 /// wider or different is a genuine mismatch and still refuses.
 fn dependency_pins(spec: &str, version: &str) -> bool {
-    spec.trim().trim_start_matches(['^', '~', '=', '>', '<', 'v', ' ']) == version
+    spec.trim()
+        .trim_start_matches(['^', '~', '=', '>', '<', 'v', ' '])
+        == version
 }
 
 /// Bring the app's OWN dependency line in step with the runtime it bundles.
@@ -340,7 +364,10 @@ fn adopt_bundled_plugin_dependency(package_json: &Path, bundled_spec: &str) -> R
             {
                 return Ok(());
             }
-            dependencies.insert(OPENCODE_PLUGIN_PACKAGE.into(), serde_json::json!(bundled_spec));
+            dependencies.insert(
+                OPENCODE_PLUGIN_PACKAGE.into(),
+                serde_json::json!(bundled_spec),
+            );
         }
         Some(_) => {
             return Err(format!(
@@ -372,10 +399,14 @@ fn lock_resolves_nothing_else(package_lock: &Path) -> bool {
     let Ok(doc) = serde_json::from_str::<serde_json::Value>(&text) else {
         return false;
     };
-    match doc.get("packages").and_then(|p| p.get("")).map(|root| root.get("dependencies")) {
-        Some(Some(serde_json::Value::Object(dependencies))) => {
-            dependencies.keys().all(|name| name == OPENCODE_PLUGIN_PACKAGE)
-        }
+    match doc
+        .get("packages")
+        .and_then(|p| p.get(""))
+        .map(|root| root.get("dependencies"))
+    {
+        Some(Some(serde_json::Value::Object(dependencies))) => dependencies
+            .keys()
+            .all(|name| name == OPENCODE_PLUGIN_PACKAGE),
         // A lockfile with no root dependencies at all has nothing of the
         // user's in it to preserve.
         Some(None) | None => true,
@@ -569,7 +600,9 @@ fn deploy_profile_prompts(env: &Env) {
             if !path.is_file() || path.extension() != Some(std::ffi::OsStr::new("md")) {
                 continue;
             }
-            let Some(name) = path.file_name() else { continue };
+            let Some(name) = path.file_name() else {
+                continue;
+            };
             if let Err(e) = std::fs::copy(&path, dst.join(name)) {
                 eprintln!("failed to deploy profile {dir} {}: {e}", path.display());
             }
@@ -581,15 +614,15 @@ fn deploy_profile_prompts(env: &Env) {
 /// `bundled` (the set just deployed). Non-skill directories — including the
 /// reserved `user/` tree of installed skills — are left untouched.
 fn prune_stale_skills(dst: &Path, bundled: &std::collections::HashSet<std::ffi::OsString>) {
-    let Ok(entries) = std::fs::read_dir(dst) else { return };
+    let Ok(entries) = std::fs::read_dir(dst) else {
+        return;
+    };
     for entry in entries.flatten() {
         let path = entry.path();
         if entry.file_name() == std::ffi::OsStr::new(USER_SKILLS_DIR) {
             continue;
         }
-        if path.is_dir()
-            && path.join("SKILL.md").is_file()
-            && !bundled.contains(&entry.file_name())
+        if path.is_dir() && path.join("SKILL.md").is_file() && !bundled.contains(&entry.file_name())
         {
             let _ = std::fs::remove_dir_all(&path);
         }
@@ -699,10 +732,7 @@ fn dir_name(path: &Path) -> Option<&str> {
 /// Install a pasted SKILL.md straight into the profile's user skills dir — no
 /// model turn, no provider needed — and restart the sidecar so OpenCode
 /// rediscovers it (discovery is cached per instance). Returns the skill's name.
-pub fn install_skill_markdown(
-    env: &Env,
-    text: String,
-) -> Result<String, String> {
+pub fn install_skill_markdown(env: &Env, text: String) -> Result<String, String> {
     let name = skill_name_from_markdown(&text)
         .ok_or_else(|| "not a skill file: it needs YAML frontmatter with a `name:`".to_string())?;
     // A bundled pack owns its name: two skills sharing one name make OpenCode
@@ -738,10 +768,7 @@ pub fn workspace_skill_names(env: &Env) -> Result<Vec<String>, String> {
 /// The workspace copy is dropped once the profile copy is in place: leaving both
 /// would give OpenCode two skills with the same name, and it then picks whichever
 /// it scanned last. Restarts the sidecar when anything moved; returns the names.
-pub fn adopt_workspace_skills(
-    env: &Env,
-    known: Vec<String>,
-) -> Result<Vec<String>, String> {
+pub fn adopt_workspace_skills(env: &Env, known: Vec<String>) -> Result<Vec<String>, String> {
     let dst_root = user_skills_dir(env)?;
     let mut adopted = Vec::new();
     for src in workspace_skill_dirs(&workspace_dir(env)?) {
@@ -833,15 +860,17 @@ pub fn enriched_path() -> String {
     roots.push("C:\\ProgramData\\miniconda3".into());
     let mut extras: Vec<String> = Vec::new();
     for root in roots {
-        for dir in [root.clone(), format!("{root}\\Scripts"), format!("{root}\\Library\\bin")] {
+        for dir in [
+            root.clone(),
+            format!("{root}\\Scripts"),
+            format!("{root}\\Library\\bin"),
+        ] {
             extras.push(dir);
         }
     }
     let mut parts: Vec<String> = extras
         .into_iter()
-        .filter(|p| {
-            !base.split(';').any(|b| b.eq_ignore_ascii_case(p)) && Path::new(p).is_dir()
-        })
+        .filter(|p| !base.split(';').any(|b| b.eq_ignore_ascii_case(p)) && Path::new(p).is_dir())
         .collect();
     if !base.is_empty() {
         parts.push(base);
@@ -849,13 +878,24 @@ pub fn enriched_path() -> String {
     parts.join(";")
 }
 
+const BUNDLED_SIDECAR_PREFIX: &str = "happy-science-";
+
+fn sidecar_filename(name: &str) -> String {
+    let name = format!("{BUNDLED_SIDECAR_PREFIX}{name}");
+    if cfg!(windows) {
+        format!("{name}.exe")
+    } else {
+        name
+    }
+}
+
 /// On-disk path of a bundled sidecar (`externalBin`), if it is there. Tauri
 /// places them next to the app executable with the target-triple suffix
-/// stripped. Needed whenever something other than `ShellExt::sidecar` has to
-/// reach one: OpenCode spawning an MCP server by path, or a synchronous probe.
+/// stripped. The product prefix prevents Linux packages from claiming common
+/// global commands such as `uv` and `opencode` under `/usr/bin`.
 pub fn sidecar_bin(name: &str) -> Option<PathBuf> {
     let exe = std::env::current_exe().ok()?;
-    let file = if cfg!(windows) { format!("{name}.exe") } else { name.to_string() };
+    let file = sidecar_filename(name);
     let bin = exe.parent()?.join(file);
     bin.exists().then_some(bin)
 }
@@ -1177,8 +1217,11 @@ fn system_proxy_url() -> Option<String> {
 fn parse_scutil_proxy(text: &str) -> Option<String> {
     let get = |key: &str| -> Option<String> {
         let prefix = format!("{key} : ");
-        text.lines()
-            .find_map(|l| l.trim().strip_prefix(prefix.as_str()).map(|v| v.trim().to_string()))
+        text.lines().find_map(|l| {
+            l.trim()
+                .strip_prefix(prefix.as_str())
+                .map(|v| v.trim().to_string())
+        })
     };
     let enabled = |key: &str| get(key).as_deref() == Some("1");
     for (en, host, port, scheme) in [
@@ -1260,8 +1303,7 @@ fn spawn_sidecar(env: &Env, port: u16, generation: u64) -> Result<Child, String>
     // Rename the legacy browser MCP id, then hide the incompatible user skill
     // with that old name while the official connector is configured.
     let existing = std::fs::read_to_string(&cfg_file).unwrap_or_default();
-    let close_legacy_browser =
-        crate::opencode_config::browser_uses_legacy_namespace(&existing);
+    let close_legacy_browser = crate::opencode_config::browser_uses_legacy_namespace(&existing);
     if let Some(migrated) = crate::opencode_config::migrate_browser_integration(&existing) {
         std::fs::write(&cfg_file, migrated).map_err(|e| e.to_string())?;
         if close_legacy_browser {
@@ -1293,7 +1335,9 @@ fn spawn_sidecar(env: &Env, port: u16, generation: u64) -> Result<Child, String>
         if let Some(updated) = crate::opencode_config::seed_compaction(&existing) {
             std::fs::write(&cfg_file, updated).map_err(|e| e.to_string())?;
         }
-        let global_memory = global_memory_file(env)?.to_string_lossy().replace('\\', "/");
+        let global_memory = global_memory_file(env)?
+            .to_string_lossy()
+            .replace('\\', "/");
         let existing = std::fs::read_to_string(&cfg_file).unwrap_or_default();
         // Absent `instructions` means a fresh profile: switch memory on. A
         // config that already lists instructions is the user's, left alone.
@@ -1341,37 +1385,46 @@ fn spawn_sidecar(env: &Env, port: u16, generation: u64) -> Result<Child, String>
         .ok_or_else(|| "bundled OpenCode binary not found next to the executable".to_string())?;
 
     let mut cmd = quiet_command(bin);
-    cmd.args(["serve", "--hostname", "127.0.0.1", "--port", port_str.as_str()])
-        // Require auth on every request (P0-7): without a password the server
-        // trusts ANY localhost-origin page (verified in the 1.17.13 source —
-        // its CORS allowlist admits http://localhost:*/127.0.0.1:* wholesale,
-        // and `--cors "*"` was only ever an exact-match literal, not a
-        // wildcard). The webview authenticates via the SDK; nothing else may.
-        .env("OPENCODE_SERVER_PASSWORD", server_password())
-        // App-private dirs: OpenCode never touches the user's ~/.config/opencode.
-        .env("XDG_CONFIG_HOME", cfg.to_string_lossy().to_string())
-        .env("XDG_DATA_HOME", data.to_string_lossy().to_string())
-        .env("XDG_CACHE_HOME", cache.to_string_lossy().to_string())
-        .env("XDG_STATE_HOME", state_dir.to_string_lossy().to_string())
-        .env("HOME", home)
-        // Lets bundled skill helpers (e.g. remote-compute's record_run.py) stamp
-        // the recording app version into provenance — they run outside the app
-        // and can't otherwise know it.
-        .env("OPENSCIENCE_APP_VERSION", env.version())
-        // GUI-launched apps get a minimal PATH; give the agent the user's real tools.
-        .env("PATH", enriched_path())
-        .current_dir(workspace)
-        // OpenCode keeps its own log file (xdg-data/opencode/log/opencode.log),
-        // so its stdout carries nothing worth a pipe — and an undrained pipe
-        // would eventually block the process. stderr IS drained, below.
-        .stdout(std::process::Stdio::null())
-        .stderr(std::process::Stdio::piped());
+    cmd.args([
+        "serve",
+        "--hostname",
+        "127.0.0.1",
+        "--port",
+        port_str.as_str(),
+    ])
+    // Require auth on every request (P0-7): without a password the server
+    // trusts ANY localhost-origin page (verified in the 1.17.13 source —
+    // its CORS allowlist admits http://localhost:*/127.0.0.1:* wholesale,
+    // and `--cors "*"` was only ever an exact-match literal, not a
+    // wildcard). The webview authenticates via the SDK; nothing else may.
+    .env("OPENCODE_SERVER_PASSWORD", server_password())
+    // App-private dirs: OpenCode never touches the user's ~/.config/opencode.
+    .env("XDG_CONFIG_HOME", cfg.to_string_lossy().to_string())
+    .env("XDG_DATA_HOME", data.to_string_lossy().to_string())
+    .env("XDG_CACHE_HOME", cache.to_string_lossy().to_string())
+    .env("XDG_STATE_HOME", state_dir.to_string_lossy().to_string())
+    .env("HOME", home)
+    // Lets bundled skill helpers (e.g. remote-compute's record_run.py) stamp
+    // the recording app version into provenance — they run outside the app
+    // and can't otherwise know it.
+    .env("OPENSCIENCE_APP_VERSION", env.version())
+    // GUI-launched apps get a minimal PATH; give the agent the user's real tools.
+    .env("PATH", enriched_path())
+    .current_dir(workspace)
+    // OpenCode keeps its own log file (xdg-data/opencode/log/opencode.log),
+    // so its stdout carries nothing worth a pipe — and an undrained pipe
+    // would eventually block the process. stderr IS drained, below.
+    .stdout(std::process::Stdio::null())
+    .stderr(std::process::Stdio::piped());
     // The agent's own `ssh`/`rsync`/`sbatch` calls ride the app's shared
     // connection through this config, so a host the user signed in to once needs
     // no further password or one-time code (#73). The bundled remote-compute
     // skill and the ssh_connect tool both pass `-F "$OPENSCIENCE_SSH_CONFIG"`.
     if let Some(ssh_config) = ssh_config_path(env) {
-        cmd.env("OPENSCIENCE_SSH_CONFIG", ssh_config.to_string_lossy().to_string());
+        cmd.env(
+            "OPENSCIENCE_SSH_CONFIG",
+            ssh_config.to_string_lossy().to_string(),
+        );
     }
     // Apply the network-proxy setting so provider logins and API calls work
     // where direct connections are blocked (see resolve_proxy_env).
@@ -1380,8 +1433,8 @@ fn spawn_sidecar(env: &Env, port: u16, generation: u64) -> Result<Child, String>
         cmd.env(k, v);
     }
 
-    let mut child = spawn_tied_to_our_lifetime(cmd)
-        .map_err(|e| format!("failed to spawn opencode: {e}"))?;
+    let mut child =
+        spawn_tied_to_our_lifetime(cmd).map_err(|e| format!("failed to spawn opencode: {e}"))?;
     // Drain stderr so the child's pipe never fills, AND record the failure
     // signals we used to discard. When the ad-hoc-signed sidecar dies during
     // bootstrap (TCC denial, config-merge abort, panic) the only symptom was a
@@ -1606,7 +1659,7 @@ pub fn workspace_path(env: &Env) -> Result<String, String> {
     Ok(workspace_dir(env)?.to_string_lossy().to_string())
 }
 
-/// The base folder containing projects and sessions (`~/Documents/OpenScience`).
+/// The base folder containing projects and sessions (`~/Documents/HappyScience`).
 pub fn workspace_base(env: &Env) -> Result<String, String> {
     Ok(base_workspace_dir(env)?.to_string_lossy().to_string())
 }
@@ -1631,10 +1684,7 @@ pub fn set_workspace_base(env: &Env, path: String) -> Result<String, String> {
 /// stream with `?directory=` and creates sessions with it (a bare `/event`
 /// stream would not see other folders' instances, so the scoped stream is
 /// required). `path` must be absolute.
-pub fn set_workspace(
-    env: &Env,
-    path: String,
-) -> Result<String, String> {
+pub fn set_workspace(env: &Env, path: String) -> Result<String, String> {
     let dir = PathBuf::from(&path);
     if !dir.is_absolute() {
         return Err("workspace path must be absolute".into());
@@ -1682,10 +1732,7 @@ pub fn mark_session(env: &Env, session_id: String) -> Result<(), String> {
 /// Create a new dated folder `<base>/sessions/<name>` and switch to it. `name`
 /// is a single path segment (the frontend supplies a timestamp); rejects
 /// separators.
-pub fn new_dated_workspace(
-    env: &Env,
-    name: String,
-) -> Result<String, String> {
+pub fn new_dated_workspace(env: &Env, name: String) -> Result<String, String> {
     if name.is_empty() || name.contains('/') || name.contains('\\') || name.contains("..") {
         return Err("invalid folder name".into());
     }
@@ -1725,8 +1772,8 @@ fn safe_file_stem(title: &str, fallback: &str) -> String {
     }
     // Windows refuses these device names whatever the extension.
     const RESERVED: &[&str] = &[
-        "CON", "PRN", "AUX", "NUL", "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7",
-        "COM8", "COM9", "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9",
+        "CON", "PRN", "AUX", "NUL", "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8",
+        "COM9", "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9",
     ];
     if RESERVED.iter().any(|r| capped.eq_ignore_ascii_case(r)) {
         return format!("{capped}-");
@@ -1782,13 +1829,24 @@ pub fn kill_child(state: &RuntimeState) {
 #[cfg(test)]
 mod tests {
     use super::{
-        auth_has_provider, dependency_pins, deploy_goal_plugin_dependencies, parse_scutil_proxy,
-        package_dependency_version, OPENCODE_PLUGIN_PACKAGE,
-        ensure_base_layout, prune_stale_skills, random_hex, remove_key_from_config,
-        resolve_proxy_env, skill_name_from_markdown, sync_skill_pack, validate_proxy_url,
-        workspace_skill_dirs,
+        auth_has_provider, base_workspace_dir, dependency_pins, deploy_goal_plugin_dependencies,
+        ensure_base_layout, package_dependency_version, parse_scutil_proxy, prune_stale_skills,
+        random_hex, remove_key_from_config, resolve_proxy_env, sidecar_filename,
+        skill_name_from_markdown, sync_skill_pack, validate_proxy_url, workspace_skill_dirs,
+        OPENCODE_PLUGIN_PACKAGE,
     };
     use std::fs;
+
+    #[test]
+    fn bundled_sidecars_use_product_scoped_names() {
+        let suffix = if cfg!(windows) { ".exe" } else { "" };
+        for name in ["opencode", "uv", "agent-browser", "osd"] {
+            assert_eq!(
+                sidecar_filename(name),
+                format!("happy-science-{name}{suffix}")
+            );
+        }
+    }
 
     /// The rule stated above `quiet_command`, enforced. A raw `Command::new` in
     /// shipped code opens a console window on Windows — 0.4.0 shipped one that
@@ -1819,7 +1877,6 @@ mod tests {
         );
     }
 
-
     #[test]
     fn sidecar_stderr_splits_on_carriage_returns_and_survives_chunk_boundaries() {
         // The old drain split on BOTH \n and \r; a rewrite that only split on
@@ -1847,15 +1904,20 @@ mod tests {
             .filter_map(|l| l.split_once("[opencode] ").map(|(_, t)| t.to_string()))
             .collect();
         assert!(lines.iter().any(|l| l == "ready"), "{lines:?}");
-        assert!(lines.iter().any(|l| l == "step 1"), "a \\r must end a line: {lines:?}");
+        assert!(
+            lines.iter().any(|l| l == "step 1"),
+            "a \\r must end a line: {lines:?}"
+        );
         assert!(lines.iter().any(|l| l == "step 2"), "{lines:?}");
         assert!(lines.iter().any(|l| l == "done"), "{lines:?}");
-        assert!(!log.contains('\u{fffd}'), "a split character was mangled:\n{log}");
+        assert!(
+            !log.contains('\u{fffd}'),
+            "a split character was mangled:\n{log}"
+        );
         // The straddling character survived intact, on its own line.
         assert!(lines.iter().any(|l| l.ends_with('数')), "{lines:?}");
         let _ = fs::remove_dir_all(&dir);
     }
-
 
     /// A killed sidecar must be REAPED, not left as a zombie. Unix-only: this is
     /// where the leak exists, and `ps` is how it is visible.
@@ -1900,8 +1962,7 @@ mod tests {
 
     #[test]
     fn base_layout_has_separate_project_and_session_collections() {
-        let root =
-            std::env::temp_dir().join(format!("os-workspace-layout-{}", std::process::id()));
+        let root = std::env::temp_dir().join(format!("os-workspace-layout-{}", std::process::id()));
         let _ = fs::remove_dir_all(&root);
 
         assert_eq!(ensure_base_layout(root.clone()).unwrap(), root);
@@ -1909,6 +1970,33 @@ mod tests {
         assert!(root.join("sessions").is_dir());
 
         let _ = fs::remove_dir_all(root);
+    }
+
+    #[test]
+    fn new_installs_use_happy_science_without_moving_existing_workspaces() {
+        let root =
+            std::env::temp_dir().join(format!("happy-science-workspace-{}", std::process::id()));
+        let _ = fs::remove_dir_all(&root);
+        let docs = root.join("Documents");
+        let legacy = docs.join("OpenScience");
+        fs::create_dir_all(&legacy).unwrap();
+        let env = crate::env::Env::new(
+            root.join("data"),
+            root.join("resources"),
+            Some(docs.clone()),
+            "0.0.0".into(),
+        );
+
+        assert_eq!(base_workspace_dir(&env).unwrap(), legacy);
+        assert!(!docs.join("HappyScience").exists());
+
+        fs::remove_dir_all(&root).unwrap();
+        fs::create_dir_all(&docs).unwrap();
+        assert_eq!(base_workspace_dir(&env).unwrap(), docs.join("HappyScience"));
+        assert!(docs.join("HappyScience/projects").is_dir());
+        assert!(docs.join("HappyScience/sessions").is_dir());
+
+        fs::remove_dir_all(root).unwrap();
     }
 
     #[test]
@@ -1926,20 +2014,32 @@ mod tests {
     fn proxy_env_modes() {
         let none = resolve_proxy_env("none", "");
         assert!(none.iter().any(|(k, v)| *k == "NO_PROXY" && v == "*"));
-        assert!(none.iter().any(|(k, v)| *k == "HTTPS_PROXY" && v.is_empty()));
+        assert!(none
+            .iter()
+            .any(|(k, v)| *k == "HTTPS_PROXY" && v.is_empty()));
 
         let custom = resolve_proxy_env("custom", "http://127.0.0.1:7890");
-        assert!(custom.iter().any(|(k, v)| *k == "HTTPS_PROXY" && v == "http://127.0.0.1:7890"));
-        assert!(custom.iter().any(|(k, v)| *k == "NO_PROXY" && v.contains("127.0.0.1")));
+        assert!(custom
+            .iter()
+            .any(|(k, v)| *k == "HTTPS_PROXY" && v == "http://127.0.0.1:7890"));
+        assert!(custom
+            .iter()
+            .any(|(k, v)| *k == "NO_PROXY" && v.contains("127.0.0.1")));
     }
 
     #[test]
     fn scutil_proxy_parses_and_prefers_https() {
         // Real `scutil --proxy` shape (indented `Key : value` lines).
         let all = "<dictionary> {\n  HTTPEnable : 1\n  HTTPPort : 1087\n  HTTPProxy : 127.0.0.1\n  HTTPSEnable : 1\n  HTTPSPort : 1087\n  HTTPSProxy : 127.0.0.1\n  SOCKSEnable : 1\n  SOCKSPort : 1087\n  SOCKSProxy : 127.0.0.1\n}";
-        assert_eq!(parse_scutil_proxy(all).as_deref(), Some("http://127.0.0.1:1087"));
+        assert_eq!(
+            parse_scutil_proxy(all).as_deref(),
+            Some("http://127.0.0.1:1087")
+        );
         let socks_only = "  SOCKSEnable : 1\n  SOCKSPort : 7890\n  SOCKSProxy : 10.0.0.2\n";
-        assert_eq!(parse_scutil_proxy(socks_only).as_deref(), Some("socks5://10.0.0.2:7890"));
+        assert_eq!(
+            parse_scutil_proxy(socks_only).as_deref(),
+            Some("socks5://10.0.0.2:7890")
+        );
         let disabled = "  HTTPEnable : 0\n  HTTPPort : 1087\n  HTTPProxy : 127.0.0.1\n";
         assert_eq!(parse_scutil_proxy(disabled), None);
         assert_eq!(parse_scutil_proxy(""), None);
@@ -1961,7 +2061,10 @@ mod tests {
         prune_stale_skills(&dst, &bundled);
 
         assert!(dst.join("remote-compute").is_dir(), "bundled skill kept");
-        assert!(!dst.join("hpc-slurm").exists(), "stale renamed skill removed");
+        assert!(
+            !dst.join("hpc-slurm").exists(),
+            "stale renamed skill removed"
+        );
         assert!(dst.join("notes").is_dir(), "non-skill dir left alone");
         let _ = fs::remove_dir_all(&dst);
     }
@@ -1999,7 +2102,10 @@ mod tests {
         // Not a skill file, or a name that cannot be a directory.
         assert_eq!(skill_name_from_markdown("# just markdown\n"), None);
         assert_eq!(skill_name_from_markdown("---\ndescription: x\n---\n"), None);
-        assert_eq!(skill_name_from_markdown("---\nname: ../escape\n---\n"), None);
+        assert_eq!(
+            skill_name_from_markdown("---\nname: ../escape\n---\n"),
+            None
+        );
         assert_eq!(skill_name_from_markdown("---\nname: sub/dir\n---\n"), None);
         assert_eq!(skill_name_from_markdown("---\nname: .hidden\n---\n"), None);
         assert_eq!(skill_name_from_markdown("---\nname:\n---\n"), None);
@@ -2039,9 +2145,15 @@ mod tests {
         // auth.json) — it must be unreadable to other users even when the
         // sidecar later rewrites files inside with a default umask.
         super::tighten_private(&dir);
-        assert_eq!(fs::metadata(&dir).unwrap().permissions().mode() & 0o777, 0o700);
+        assert_eq!(
+            fs::metadata(&dir).unwrap().permissions().mode() & 0o777,
+            0o700
+        );
         super::tighten_private(&cfg);
-        assert_eq!(fs::metadata(&cfg).unwrap().permissions().mode() & 0o777, 0o600);
+        assert_eq!(
+            fs::metadata(&cfg).unwrap().permissions().mode() & 0o777,
+            0o600
+        );
 
         let _ = fs::remove_dir_all(&dir);
     }
@@ -2163,7 +2275,9 @@ mod tests {
         );
 
         deploy_goal_plugin_dependencies(&src, &dst).expect("a caret range still pins 1.18.18");
-        assert!(dst.join("node_modules/@opencode-ai/plugin/package.json").is_file());
+        assert!(dst
+            .join("node_modules/@opencode-ai/plugin/package.json")
+            .is_file());
 
         // A range that pins a DIFFERENT version is still a real mismatch.
         assert!(dependency_pins("^1.18.18", "1.18.18"));
@@ -2176,8 +2290,7 @@ mod tests {
 
     #[test]
     fn adopts_existing_goal_plugin_dependencies_without_recopying() {
-        let tmp =
-            std::env::temp_dir().join(format!("goal-deps-existing-{}", std::process::id()));
+        let tmp = std::env::temp_dir().join(format!("goal-deps-existing-{}", std::process::id()));
         let _ = fs::remove_dir_all(&tmp);
         let src = tmp.join("src");
         let dst = tmp.join("dst");
@@ -2241,7 +2354,8 @@ mod tests {
             r#"{"lockfileVersion":3,"packages":{"":{"dependencies":{"@opencode-ai/plugin":"1.17.13"}}}}"#,
         );
 
-        deploy_goal_plugin_dependencies(&src, &dst).expect("a stale pin must be adopted, not fatal");
+        deploy_goal_plugin_dependencies(&src, &dst)
+            .expect("a stale pin must be adopted, not fatal");
 
         assert_eq!(
             package_dependency_version(&dst.join("package.json"), OPENCODE_PLUGIN_PACKAGE)
@@ -2363,15 +2477,30 @@ mod tests {
 
         sync_skill_pack(&src, &dst).unwrap();
 
-        assert_eq!(fs::read_to_string(dst.join("paper-writer/SKILL.md")).unwrap(), "v2");
+        assert_eq!(
+            fs::read_to_string(dst.join("paper-writer/SKILL.md")).unwrap(),
+            "v2"
+        );
         assert_eq!(
             fs::read_to_string(dst.join("paper-writer/references/guide.md")).unwrap(),
             "ref"
         );
-        assert!(!dst.join("paper-writer/obsolete.md").exists(), "stale file must be gone");
-        assert_eq!(fs::read_to_string(dst.join("my-skill/SKILL.md")).unwrap(), "user");
-        assert!(!dst.join(".commit").exists(), "top-level files are not skills");
-        assert!(!dst.join("placeholder").exists(), "dirs without SKILL.md are not skills");
+        assert!(
+            !dst.join("paper-writer/obsolete.md").exists(),
+            "stale file must be gone"
+        );
+        assert_eq!(
+            fs::read_to_string(dst.join("my-skill/SKILL.md")).unwrap(),
+            "user"
+        );
+        assert!(
+            !dst.join(".commit").exists(),
+            "top-level files are not skills"
+        );
+        assert!(
+            !dst.join("placeholder").exists(),
+            "dirs without SKILL.md are not skills"
+        );
 
         fs::remove_dir_all(&tmp).unwrap();
     }
@@ -2396,11 +2525,7 @@ mod tests {
 /// Remove an entry from a map section of the app-private global OpenCode
 /// config ("provider" or "mcp") and restart the sidecar (PATCH /global/config
 /// cannot delete keys).
-pub fn remove_config_entry(
-    env: &Env,
-    section: String,
-    key: String,
-) -> Result<(), String> {
+pub fn remove_config_entry(env: &Env, section: String, key: String) -> Result<(), String> {
     if !matches!(section.as_str(), "provider" | "mcp") {
         return Err(format!("section \"{section}\" is not removable"));
     }
@@ -2431,7 +2556,9 @@ fn remove_key_from_config(text: &str, section: &str, key: &str) -> Result<String
         .map(|p| p.remove(key).is_some())
         .unwrap_or(false);
     if !removed {
-        return Err(format!("\"{key}\" is not in the config's {section} section"));
+        return Err(format!(
+            "\"{key}\" is not in the config's {section} section"
+        ));
     }
     serde_json::to_string_pretty(&cfg).map_err(|e| e.to_string())
 }
@@ -2451,12 +2578,13 @@ pub fn get_default_model(env: &Env) -> Result<Option<String>, String> {
 pub fn set_default_model(env: &Env, model: String) -> Result<(), String> {
     let path = effective_config_file(env)?;
     let existing = std::fs::read_to_string(&path).unwrap_or_default();
-    let updated = crate::opencode_config::set_default_model(&existing, &model).ok_or_else(|| {
-        format!(
-            "{} could not be parsed, so it was left untouched — fix the JSON and try again",
-            path.display()
-        )
-    })?;
+    let updated =
+        crate::opencode_config::set_default_model(&existing, &model).ok_or_else(|| {
+            format!(
+                "{} could not be parsed, so it was left untouched — fix the JSON and try again",
+                path.display()
+            )
+        })?;
     if let Some(dir) = path.parent() {
         std::fs::create_dir_all(dir).map_err(|e| e.to_string())?;
     }
@@ -2476,10 +2604,7 @@ pub fn get_approval_mode(env: &Env) -> Result<String, String> {
 
 /// Switch the approval mode and restart the sidecar so the permission rules
 /// take effect. Returns the (stable-port) base URL when it was running.
-pub fn set_approval_mode(
-    env: &Env,
-    mode: String,
-) -> Result<String, String> {
+pub fn set_approval_mode(env: &Env, mode: String) -> Result<String, String> {
     let path = effective_config_file(env)?;
     let existing = std::fs::read_to_string(&path).unwrap_or_default();
     let updated = crate::opencode_config::set_permission_mode(&existing, &mode)?;
@@ -2490,8 +2615,7 @@ pub fn set_approval_mode(
     tighten_private(&path);
 
     // Same restart flow as configure_opencode: reload rules on a stable port.
-    Ok(restart_sidecar_if_running(env)?
-        .unwrap_or_else(|| path.to_string_lossy().to_string()))
+    Ok(restart_sidecar_if_running(env)?.unwrap_or_else(|| path.to_string_lossy().to_string()))
 }
 
 /// The global memory file: one Markdown document that OpenCode loads into
@@ -2507,7 +2631,9 @@ fn memory_file(env: &Env, scope: &str, directory: Option<&str>) -> Result<PathBu
     match scope {
         "global" => global_memory_file(env),
         "project" => {
-            let dir = directory.filter(|d| !d.is_empty()).ok_or("no project folder")?;
+            let dir = directory
+                .filter(|d| !d.is_empty())
+                .ok_or("no project folder")?;
             Ok(PathBuf::from(dir).join(crate::opencode_config::PROJECT_MEMORY_FILE))
         }
         other => Err(format!("unknown memory scope \"{other}\"")),
@@ -2516,11 +2642,7 @@ fn memory_file(env: &Env, scope: &str, directory: Option<&str>) -> Result<PathBu
 
 /// Read a memory layer. A file that was never written reads as empty — the
 /// editor opens blank rather than erroring.
-pub fn read_memory(
-    env: &Env,
-    scope: String,
-    directory: Option<String>,
-) -> Result<String, String> {
+pub fn read_memory(env: &Env, scope: String, directory: Option<String>) -> Result<String, String> {
     let path = memory_file(env, &scope, directory.as_deref())?;
     Ok(std::fs::read_to_string(path).unwrap_or_default())
 }
@@ -2574,18 +2696,19 @@ pub fn append_memory(
 
 /// Whether the memory layers are currently applied to conversations.
 pub fn get_memory_enabled(env: &Env) -> Result<bool, String> {
-    let global = global_memory_file(env)?.to_string_lossy().replace('\\', "/");
+    let global = global_memory_file(env)?
+        .to_string_lossy()
+        .replace('\\', "/");
     let existing = std::fs::read_to_string(effective_config_file(env)?).unwrap_or_default();
     Ok(crate::opencode_config::memory_enabled(&existing, &global))
 }
 
 /// Apply or stop applying the memory layers, restarting the sidecar so the
 /// change takes effect (instructions are read when a session's context is built).
-pub fn set_memory_enabled(
-    env: &Env,
-    enabled: bool,
-) -> Result<(), String> {
-    let global = global_memory_file(env)?.to_string_lossy().replace('\\', "/");
+pub fn set_memory_enabled(env: &Env, enabled: bool) -> Result<(), String> {
+    let global = global_memory_file(env)?
+        .to_string_lossy()
+        .replace('\\', "/");
     let path = effective_config_file(env)?;
     let existing = std::fs::read_to_string(&path).unwrap_or_default();
     let Some(updated) = crate::opencode_config::set_memory_enabled(&existing, &global, enabled)
@@ -2643,26 +2766,26 @@ fn write_agent_config(env: &Env, rewrite: impl FnOnce(&str) -> String) -> Result
 
 /// Pin one agent to its own model, or clear the override with an empty model.
 /// Restarts the sidecar: agent definitions are built when it loads its config.
-pub fn set_agent_model(
-    env: &Env,
-    agent: String,
-    model: String,
-) -> Result<(), String> {
+pub fn set_agent_model(env: &Env, agent: String, model: String) -> Result<(), String> {
     write_agent_config(env, |existing| {
-        let want = if model.is_empty() { None } else { Some(model.as_str()) };
+        let want = if model.is_empty() {
+            None
+        } else {
+            Some(model.as_str())
+        };
         crate::opencode_config::set_agent_model(existing, &agent, want)
     })
 }
 
 /// Pin one agent to a reasoning-effort variant, or clear it with an empty string.
 /// Restarts the sidecar for the same reason `set_agent_model` does.
-pub fn set_agent_variant(
-    env: &Env,
-    agent: String,
-    variant: String,
-) -> Result<(), String> {
+pub fn set_agent_variant(env: &Env, agent: String, variant: String) -> Result<(), String> {
     write_agent_config(env, |existing| {
-        let want = if variant.is_empty() { None } else { Some(variant.as_str()) };
+        let want = if variant.is_empty() {
+            None
+        } else {
+            Some(variant.as_str())
+        };
         crate::opencode_config::set_agent_variant(existing, &agent, want)
     })
 }
@@ -2676,11 +2799,7 @@ pub fn get_proxy_setting(env: &Env) -> Result<serde_json::Value, String> {
 
 /// Persist the proxy setting ("system" | "custom" | "none", url for custom)
 /// and restart the sidecar so its network env takes effect.
-pub fn set_proxy_setting(
-    env: &Env,
-    mode: String,
-    url: String,
-) -> Result<String, String> {
+pub fn set_proxy_setting(env: &Env, mode: String, url: String) -> Result<String, String> {
     let line = match mode.as_str() {
         "system" => "system".to_string(),
         "none" => "none".to_string(),
@@ -2698,8 +2817,7 @@ pub fn set_proxy_setting(
     std::fs::write(&path, line).map_err(|e| e.to_string())?;
 
     // Same restart flow as set_approval_mode: the env only applies at spawn.
-    Ok(restart_sidecar_if_running(env)?
-        .unwrap_or_else(|| path.to_string_lossy().to_string()))
+    Ok(restart_sidecar_if_running(env)?.unwrap_or_else(|| path.to_string_lossy().to_string()))
 }
 
 /// The persisted uv mirrors (empty string ⇒ use uv's default index/mirror).
@@ -2747,8 +2865,7 @@ pub fn configure_opencode(
     tighten_private(&path);
 
     // Restart so the running server reloads the new provider config.
-    Ok(restart_sidecar_if_running(env)?
-        .unwrap_or_else(|| path.to_string_lossy().to_string()))
+    Ok(restart_sidecar_if_running(env)?.unwrap_or_else(|| path.to_string_lossy().to_string()))
 }
 
 /// Which providers this machine has credentials for: the ones written into the
@@ -2765,10 +2882,8 @@ pub fn configured_providers(env: &Env) -> Result<Vec<String>, String> {
     {
         names.extend(map.keys().cloned());
     }
-    let auth = std::fs::read_to_string(
-        xdg_data_home(env)?.join("opencode").join("auth.json"),
-    )
-    .unwrap_or_default();
+    let auth = std::fs::read_to_string(xdg_data_home(env)?.join("opencode").join("auth.json"))
+        .unwrap_or_default();
     if let Some(map) = serde_json::from_str::<serde_json::Value>(&auth)
         .ok()
         .as_ref()
@@ -2792,12 +2907,18 @@ mod export_tests {
             safe_file_stem("../../.ssh/authorized_keys", "x"),
             "..-..-.ssh-authorized_keys"
         );
-        assert_eq!(safe_file_stem("C:\\Windows\\System32", "x"), "C--Windows-System32");
+        assert_eq!(
+            safe_file_stem("C:\\Windows\\System32", "x"),
+            "C--Windows-System32"
+        );
     }
 
     #[test]
     fn keeps_ordinary_titles_readable_including_non_latin() {
-        assert_eq!(safe_file_stem("Spike sorting — pass 2", "x"), "Spike sorting — pass 2");
+        assert_eq!(
+            safe_file_stem("Spike sorting — pass 2", "x"),
+            "Spike sorting — pass 2"
+        );
         assert_eq!(safe_file_stem("脑机接口趋势分析", "x"), "脑机接口趋势分析");
     }
 

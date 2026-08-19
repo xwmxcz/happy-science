@@ -596,7 +596,26 @@ describe("historyToThread", () => {
     expect(t.blocks[1]).toMatchObject({ kind: "tool-call", status: "pending" });
     expect(t.blocks[2]).toMatchObject({ kind: "tool-call", status: "pending" });
     const last = t.blocks[t.blocks.length - 1];
-    expect(last).toMatchObject({ kind: "status-line", tone: "error" });
+    expect(last).toMatchObject({ kind: "status-line", tone: "error", interrupted: true });
+  });
+
+  it("offers recovery when an older runtime died after its tools completed", () => {
+    const msgs: HistoryMessage[] = [
+      { role: "user", created: 100, parts: [{ type: "text", text: "continue" }] },
+      {
+        role: "assistant",
+        created: 110,
+        parts: [{ type: "reasoning", text: "Preparing the next step" }],
+      },
+    ];
+    const recovered = historyToThread(msgs, undefined, 200);
+    expect(recovered.blocks[recovered.blocks.length - 1]).toMatchObject({
+      kind: "status-line",
+      interrupted: true,
+    });
+
+    const stillLive = historyToThread(msgs, undefined, 100);
+    expect(stillLive.blocks.some((block) => block.kind === "status-line")).toBe(false);
   });
 
   it("shows a slash command as what the user typed, not its expanded template", () => {

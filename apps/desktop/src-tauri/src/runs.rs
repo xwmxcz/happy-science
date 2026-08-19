@@ -4,6 +4,7 @@
 use tauri::AppHandle;
 
 use osd_core::provenance::{capture_env, ProvenanceState};
+use osd_core::reproduction::ReproductionRequest;
 use osd_core::runs::{record_run_inner, RunRecord, RunState};
 
 use crate::env_of;
@@ -40,7 +41,10 @@ pub fn record_run(
     // provenance.jsonl, shared with record_provenance) — record_run writes both
     // stores. Only this path takes both, always in this order, so no deadlock.
     let _guard = state.0.lock().map_err(|_| "run lock poisoned")?;
-    let _prov_guard = prov_state.0.lock().map_err(|_| "provenance lock poisoned")?;
+    let _prov_guard = prov_state
+        .0
+        .lock()
+        .map_err(|_| "provenance lock poisoned")?;
     let record = record_run_inner(
         &root,
         &command,
@@ -69,4 +73,9 @@ pub fn list_runs(app: AppHandle) -> Result<Vec<RunRecord>, String> {
 #[tauri::command(async)]
 pub fn read_run_log(app: AppHandle, hash: String) -> Result<String, String> {
     osd_core::runs::read_run_log(&env_of(&app), &hash)
+}
+
+#[tauri::command(async)]
+pub fn prepare_reproduction(app: AppHandle, run_id: String) -> Result<ReproductionRequest, String> {
+    osd_core::reproduction::prepare(&crate::env_of(&app), &run_id)
 }

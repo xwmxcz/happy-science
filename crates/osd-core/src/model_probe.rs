@@ -49,7 +49,10 @@ pub fn fetch_zen_models() -> Result<Vec<String>, String> {
         .map_err(|e| format!("could not reach the OpenCode Zen model list: {e}"))?
         .text()
         .map_err(|e| format!("could not read the OpenCode Zen model list: {e}"))?;
-    Ok(parse_openai_models(&body)?.into_iter().map(|m| m.id).collect())
+    Ok(parse_openai_models(&body)?
+        .into_iter()
+        .map(|m| m.id)
+        .collect())
 }
 
 fn probe(base_url: &str, api_key: Option<&str>, kind: &str) -> Result<Vec<ProbedModel>, String> {
@@ -71,7 +74,7 @@ fn probe(base_url: &str, api_key: Option<&str>, kind: &str) -> Result<Vec<Probed
 
 fn client() -> Result<reqwest::blocking::Client, String> {
     reqwest::blocking::Client::builder()
-        .user_agent("Open Science Desktop model probe")
+        .user_agent("Happy Science model probe")
         .timeout(Duration::from_secs(5))
         .build()
         .map_err(|e| format!("could not create HTTP client: {e}"))
@@ -223,7 +226,13 @@ mod tests {
         let models = parse_openai_models(body).unwrap();
         assert_eq!(models[0].context, Some(32768));
         assert_eq!(models[1].context, Some(131072));
-        assert_eq!(models[2], ProbedModel { id: "plain-model".into(), context: None });
+        assert_eq!(
+            models[2],
+            ProbedModel {
+                id: "plain-model".into(),
+                context: None
+            }
+        );
     }
 
     #[test]
@@ -243,7 +252,9 @@ mod tests {
         let handle = std::thread::spawn(move || {
             // Serve enough requests for a probe run, then stop.
             for _ in 0..16 {
-                let Ok((mut stream, _)) = listener.accept() else { return };
+                let Ok((mut stream, _)) = listener.accept() else {
+                    return;
+                };
                 let mut buf = [0u8; 4096];
                 let n = stream.read(&mut buf).unwrap_or(0);
                 let req = String::from_utf8_lossy(&buf[..n]);
@@ -282,7 +293,10 @@ mod tests {
         let models = probe(&format!("{base}/v1"), None, "openai").unwrap();
         assert_eq!(
             models,
-            vec![ProbedModel { id: "nemotron:latest".into(), context: Some(131072) }]
+            vec![ProbedModel {
+                id: "nemotron:latest".into(),
+                context: Some(131072)
+            }]
         );
     }
 
@@ -293,7 +307,12 @@ mod tests {
             r#"{"data":[{"id":"vllm-model","max_model_len":32768}]}"#.to_string(),
         )]);
         let models = probe(&format!("{base}/v1"), Some("sk-test"), "openai").unwrap();
-        assert_eq!(models, vec![ProbedModel { id: "vllm-model".into(), context: Some(32768) }]);
+        assert_eq!(
+            models,
+            vec![ProbedModel {
+                id: "vllm-model".into(),
+                context: Some(32768)
+            }]
+        );
     }
 }
-

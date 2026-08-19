@@ -1,4 +1,4 @@
-// Open Science Desktop — the server core.
+// Happy Science — the server core.
 //
 // Everything here runs with or without a window: workspace layout, the bundled
 // OpenCode sidecar, the opencode profile and config, projects, run provenance,
@@ -9,20 +9,31 @@
 // A Tauri app cannot start where there is no display — tao calls `gtk::init()`
 // on Linux — so anything that lives here is reachable from `osd server` on a
 // headless machine, and anything that does not, is not.
+pub mod adjudication;
 pub mod artifact_file;
 pub mod browser_mcp_proxy;
+pub mod capabilities;
+pub mod claim_passport;
 pub mod debug_log;
+pub mod decisions;
 pub mod env;
+pub mod evidence;
 pub mod examples;
 pub mod gateway;
 pub mod git_snapshot;
 pub mod harness;
+pub mod literature;
+pub mod missions;
 pub mod model_probe;
 pub mod opencode_config;
 pub mod project;
 pub mod provenance;
+pub mod release_package;
+pub mod reproduction;
+pub mod research_integrity;
 pub mod runs;
 pub mod runs_index;
 pub mod runtime;
+pub mod sources;
 
-pub use env::Env;
+pub use env::{migrate_legacy_data_dir, Env};

@@ -88,7 +88,7 @@ describe("the ACP agent process an editor spawns", () => {
     });
     client.onEvent((e) => events.push(e));
     await client.connect();
-    expect(client.displayName).toBe("Open Science");
+    expect(client.displayName).toBe("Happy Science");
 
     const sessionId = await client.createSession();
     expect(sessionId).toBe("ses_gw");

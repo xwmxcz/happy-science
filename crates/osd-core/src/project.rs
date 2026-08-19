@@ -2,12 +2,12 @@
 // `<folder>/.openscience/project.json`. The folder IS the workspace — sessions
 // group under a project by their `directory`, so no registry or database exists
 // to drift out of sync. Legacy root-level projects remain readable in place.
-use serde::{Deserialize, Serialize};
-use std::path::{Path, PathBuf};
 use crate::env::Env;
 use crate::runtime::{
     base_workspace_dir, projects_dir, random_hex, PROJECTS_DIR_NAME, SESSIONS_DIR_NAME,
 };
+use serde::{Deserialize, Serialize};
+use std::path::{Path, PathBuf};
 
 #[derive(Serialize, Deserialize, Clone)]
 pub struct ProjectMeta {
@@ -22,13 +22,21 @@ pub struct ProjectMeta {
     /// The project's stub folder under the base dir holds only this metadata; the
     /// user's own repo is never written to. Absent for app-created projects,
     /// whose workspace IS their base-dir folder.
-    #[serde(rename = "sourcePath", default, skip_serializing_if = "Option::is_none")]
+    #[serde(
+        rename = "sourcePath",
+        default,
+        skip_serializing_if = "Option::is_none"
+    )]
     pub source_path: Option<String>,
     /// For a COPY-imported project: the folder it was copied from (provenance only).
     /// Unlike `source_path` this does NOT redirect the workspace — the workspace IS
     /// the local copy under the base dir — but it marks the project as imported (the
     /// sidebar badge) and tells delete to remove the whole copy, not just the marker.
-    #[serde(rename = "importedFrom", default, skip_serializing_if = "Option::is_none")]
+    #[serde(
+        rename = "importedFrom",
+        default,
+        skip_serializing_if = "Option::is_none"
+    )]
     pub imported_from: Option<String>,
     /// Pinned projects always show in the sidebar (the rest show only the most
     /// recent few). Absent = not pinned.
@@ -270,7 +278,9 @@ fn force_remove_dir_all(dir: &Path) -> std::io::Result<()> {
 }
 
 fn restore_write_recursive(dir: &Path) {
-    let Ok(meta) = std::fs::symlink_metadata(dir) else { return };
+    let Ok(meta) = std::fs::symlink_metadata(dir) else {
+        return;
+    };
     if !meta.is_dir() {
         return;
     }
@@ -447,7 +457,10 @@ fn record_import_provenance(dir: &Path, source: &Path) {
 
     // 2) One concise, idempotent pointer line in AGENTS.md (where agents look).
     let agents = dir.join("AGENTS.md");
-    if std::fs::read_to_string(&agents).unwrap_or_default().contains(IMPORT_PROVENANCE_MARKER) {
+    if std::fs::read_to_string(&agents)
+        .unwrap_or_default()
+        .contains(IMPORT_PROVENANCE_MARKER)
+    {
         return; // already recorded — never append twice
     }
     let line = format!(
@@ -455,7 +468,11 @@ fn record_import_provenance(dir: &Path, source: &Path) {
          `{}` — see `.openscience/IMPORTED_FROM.md` for the original location and caveats.\n",
         source.display()
     );
-    if let Ok(mut f) = std::fs::OpenOptions::new().create(true).append(true).open(&agents) {
+    if let Ok(mut f) = std::fs::OpenOptions::new()
+        .create(true)
+        .append(true)
+        .open(&agents)
+    {
         let _ = f.write_all(line.as_bytes());
     }
 }
@@ -557,12 +574,12 @@ pub fn list_projects(env: &Env) -> Result<Vec<ProjectInfo>, String> {
 /// The base-dir folder holding the metadata for project `id` (its stub, for an
 /// imported project — NOT the external source, which never carries a project.json).
 fn project_dir_by_id(base: &Path, id: &str) -> Option<PathBuf> {
-    project_dirs(base).into_iter().find_map(|dir| {
-        match read_meta(&dir) {
+    project_dirs(base)
+        .into_iter()
+        .find_map(|dir| match read_meta(&dir) {
             Some(meta) if meta.id == id => Some(dir),
             _ => None,
-        }
-    })
+        })
 }
 
 /// Gateway file access normally stays under the base directory. An explicitly
@@ -623,7 +640,11 @@ fn delete_in(base: &Path, id: &str) -> Result<(), String> {
     let meta = read_meta(&dir).ok_or("not a project folder")?;
     // Guard: only ever touch paths under the app's base dir.
     let base_canon = base.canonicalize().unwrap_or_else(|_| base.to_path_buf());
-    if dir.canonicalize().map(|d| !d.starts_with(&base_canon)).unwrap_or(true) {
+    if dir
+        .canonicalize()
+        .map(|d| !d.starts_with(&base_canon))
+        .unwrap_or(true)
+    {
         return Err("refusing to delete a project outside the base dir".into());
     }
     if meta.source_path.is_some() || meta.imported_from.is_some() {
@@ -666,7 +687,8 @@ mod tests {
     // loudly if either side's normalization ever drifts apart.
     #[test]
     fn a_projects_reported_path_is_what_a_workspace_switch_resolves() {
-        let base = std::env::temp_dir().join(format!("os-project-invariant-{}", super::random_hex(8)));
+        let base =
+            std::env::temp_dir().join(format!("os-project-invariant-{}", super::random_hex(8)));
         fs::create_dir_all(base.join("projects")).unwrap();
         // A CJK name, as in the report: the slug keeps it verbatim.
         let (dir, meta) = create_in(&base.join("projects"), "毕设").unwrap();
@@ -677,9 +699,12 @@ mod tests {
         // What set_workspace persists, and workspace_dir reads back, for the
         // folder the sidebar's "+" hands it (`startDraftInWorkspace(p.path)`) —
         // it canonicalizes, and the layout call returns the dir unchanged.
-        let switched = dir.canonicalize().unwrap().to_string_lossy().to_string();
+        let switched = crate::artifact_file::native_path(&dir.canonicalize().unwrap());
 
-        assert_eq!(reported, switched, "a session started in a project must map back to it");
+        assert_eq!(
+            reported, switched,
+            "a session started in a project must map back to it"
+        );
 
         let _ = fs::remove_dir_all(&base);
     }
@@ -690,7 +715,8 @@ mod tests {
 
         /// A scratch base dir with the app's layout.
         fn base() -> std::path::PathBuf {
-            let dir = std::env::temp_dir().join(format!("ai4s-adopt-{}", super::super::random_hex(8)));
+            let dir =
+                std::env::temp_dir().join(format!("ai4s-adopt-{}", super::super::random_hex(8)));
             fs::create_dir_all(dir.join(PROJECTS_DIR_NAME)).unwrap();
             fs::create_dir_all(dir.join("sessions")).unwrap();
             dir
@@ -736,7 +762,11 @@ mod tests {
         fn the_containers_themselves_are_never_adopted() {
             // Adopting one of these would swallow every project or session in it.
             let base = base();
-            for candidate in [base.clone(), base.join(PROJECTS_DIR_NAME), base.join("sessions")] {
+            for candidate in [
+                base.clone(),
+                base.join(PROJECTS_DIR_NAME),
+                base.join("sessions"),
+            ] {
                 assert!(adopt_in_base(&base, &candidate).is_err(), "{candidate:?}");
             }
             assert!(project_dirs(&base).is_empty());
@@ -804,13 +834,19 @@ mod tests {
 
         // The pointer round-trips from disk…
         let reloaded = read_meta(&stub).unwrap();
-        assert_eq!(reloaded.source_path.as_deref(), Some(ext.to_string_lossy().as_ref()));
+        assert_eq!(
+            reloaded.source_path.as_deref(),
+            Some(ext.to_string_lossy().as_ref())
+        );
 
         // …and info_of resolves the workspace to the EXTERNAL source, flagged imported.
         let info = info_of(reloaded, &stub);
         assert!(info.imported);
         assert_eq!(info.import_mode.as_deref(), Some("in-place"));
-        assert_eq!(info.path, ext.canonicalize().unwrap().to_string_lossy());
+        assert_eq!(
+            info.path,
+            crate::artifact_file::native_path(&ext.canonicalize().unwrap())
+        );
 
         // Nothing was written into the user's repo (metadata lives in the stub).
         assert!(!ext.join(".openscience").join("project.json").exists());
@@ -820,7 +856,10 @@ mod tests {
         let own_info = info_of(read_meta(&own).unwrap(), &own);
         assert!(!own_info.imported);
         assert_eq!(own_info.import_mode, None);
-        assert_eq!(own_info.path, own.canonicalize().unwrap().to_string_lossy());
+        assert_eq!(
+            own_info.path,
+            crate::artifact_file::native_path(&own.canonicalize().unwrap())
+        );
         let _ = own_meta;
 
         let _ = fs::remove_dir_all(&base);
@@ -841,7 +880,10 @@ mod tests {
         write_meta(&stub, &meta).unwrap();
 
         // Resolved by id → the STUB (where meta lives), never the external source.
-        assert_eq!(project_dir_by_id(&base, &meta.id).as_deref(), Some(stub.as_path()));
+        assert_eq!(
+            project_dir_by_id(&base, &meta.id).as_deref(),
+            Some(stub.as_path())
+        );
         assert!(project_dir_by_id(&base, "nope").is_none());
 
         // Renaming rewrites the stub's meta; the user's repo is never written to.
@@ -857,8 +899,7 @@ mod tests {
     #[test]
     fn project_lookup_reads_structured_and_legacy_locations() {
         use super::project_dir_by_id;
-        let base =
-            std::env::temp_dir().join(format!("os-project-layout-{}", std::process::id()));
+        let base = std::env::temp_dir().join(format!("os-project-layout-{}", std::process::id()));
         let _ = fs::remove_dir_all(&base);
         fs::create_dir_all(base.join("projects")).unwrap();
 
@@ -964,19 +1005,32 @@ mod tests {
         copy_tree(&src, &dst).unwrap();
 
         // Files and nested dirs come across…
-        assert_eq!(fs::read_to_string(dst.join("train.py")).unwrap(), "print(1)\n");
+        assert_eq!(
+            fs::read_to_string(dst.join("train.py")).unwrap(),
+            "print(1)\n"
+        );
         assert!(dst.join("data").join("x.csv").is_file());
         // …and so does the full git history — nothing is dropped.
-        assert_eq!(fs::read_to_string(dst.join(".git").join("config")).unwrap(), "[core]\n");
+        assert_eq!(
+            fs::read_to_string(dst.join(".git").join("config")).unwrap(),
+            "[core]\n"
+        );
         // The symlink is recreated as a link (not followed/expanded).
         #[cfg(unix)]
         {
             use std::os::unix::fs::PermissionsExt;
             let meta = fs::symlink_metadata(dst.join("latest.csv")).unwrap();
             assert!(meta.file_type().is_symlink());
-            assert_eq!(fs::read_link(dst.join("latest.csv")).unwrap(), std::path::Path::new("data/x.csv"));
+            assert_eq!(
+                fs::read_link(dst.join("latest.csv")).unwrap(),
+                std::path::Path::new("data/x.csv")
+            );
             // Private dir keeps 0700 (not widened to 0755 by the default umask).
-            let mode = fs::metadata(dst.join("private")).unwrap().permissions().mode() & 0o777;
+            let mode = fs::metadata(dst.join("private"))
+                .unwrap()
+                .permissions()
+                .mode()
+                & 0o777;
             assert_eq!(mode, 0o700);
             assert!(dst.join("private").join("k").is_file());
             // The socket was skipped, and its presence did not abort the copy.

@@ -184,7 +184,12 @@ pub async fn save_text_file(
     content: String,
 ) -> Result<Option<String>, String> {
     use tauri_plugin_dialog::DialogExt;
-    let Some(choice) = app.dialog().file().set_file_name(&filename).blocking_save_file() else {
+    let Some(choice) = app
+        .dialog()
+        .file()
+        .set_file_name(&filename)
+        .blocking_save_file()
+    else {
         return Ok(None); // user cancelled
     };
     let path = choice.into_path().map_err(|e| e.to_string())?;

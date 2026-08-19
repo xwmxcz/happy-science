@@ -114,7 +114,7 @@ ln -s /Applications "$staging_dir/Applications"
 
 rm -f "$dmg_path"
 hdiutil create \
-  -volname "Open Science" \
+  -volname "Happy Science" \
   -srcfolder "$staging_dir" \
   -format UDZO \
   -ov \

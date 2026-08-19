@@ -28,6 +28,17 @@
     "succeeded": "Succeeded",
     "failed": "Failed"
   },
+  "integrity": {
+    "section": "Research integrity",
+    "attention": "{{count}} warning",
+    "attention_other": "{{count}} warnings",
+    "attentionTitle": "The run differs from its plan or has a reproducibility warning.",
+    "aligned": "Plan aligned",
+    "alignedTitle": "No checked deviation from the research plan was found.",
+    "no-plan": "No plan",
+    "no-planTitle": "No preregistration, analysis plan, or research protocol was found.",
+    "plan": "Plan: {{path}}"
+  },
   "hardware": {
     "title": "Hardware this run executed on",
     "remoteTitle": "Remote hardware this run executed on",
@@ -40,7 +51,8 @@
   },
   "action": {
     "reproduce": "Reproduce",
-    "reproduceTitle": "Draft a prompt that re-runs this command and compares the outputs",
+    "reproducing": "Reproducing",
+    "reproduceTitle": "Run this exact command now and compare inputs, code, environment, and outputs",
     "log": "Log",
     "logTitle": "View captured stdout/stderr",
     "openConversation": "Open conversation",
@@ -51,8 +63,23 @@
   },
   "files": {
     "code": "Code",
+    "inputs": "Inputs",
     "outputs": "Outputs",
     "openTitle": "Open this output file"
+  },
+  "reproduction": {
+    "section": "Reproduction comparison",
+    "baseline": "baseline {{id}}",
+    "notConnected": "Connect the agent runtime before reproducing a run.",
+    "notStarted": "The reproduction command did not start.",
+    "completed": "Reproduction finished; its comparison is saved on the new run.",
+    "failed": "Reproduction failed: {{message}}",
+    "matches": "Matches",
+    "differences": "{{count}} differences",
+    "unverifiableFiles": "{{count}} unverifiable",
+    "unavailable": "Not captured",
+    "dimensions": { "inputs": "Inputs", "code": "Code", "environment": "Environment", "outputs": "Results" },
+    "outcome": { "identical": "Identical", "different": "Differences found", "unverifiable": "Partially unverifiable", "failed": "Command failed" }
   },
   "remote": {
     "hpcLabel": "an HPC cluster",

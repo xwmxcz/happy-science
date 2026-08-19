@@ -70,6 +70,7 @@ export function isNearBottom(el: HTMLElement, threshold = CHAT_BOTTOM_THRESHOLD)
 /**
  * Chat-specific scroll behavior:
  * - a session with no remembered offset opens at the latest messages;
+ * - an empty launcher may opt into opening at the top;
  * - content growth follows only while the reader is already near the bottom;
  * - scrolling up disables following until they explicitly jump back.
  */
@@ -77,6 +78,7 @@ export function useChatScroll(
   ref: RefObject<HTMLElement | null>,
   key: string,
   ready = true,
+  initial: "top" | "bottom" = "bottom",
 ): {
   contentRef: RefObject<HTMLDivElement>;
   onScroll: (e: UIEvent<HTMLElement>) => void;
@@ -84,8 +86,8 @@ export function useChatScroll(
   jumpToLatest: () => void;
 } {
   const contentRef = useRef<HTMLDivElement>(null);
-  const remember = useScrollMemory(ref, key, ready, "bottom");
-  const following = useRef(true);
+  const remember = useScrollMemory(ref, key, ready, initial);
+  const following = useRef(initial === "bottom");
   const [atLatest, setAtLatest] = useState(true);
 
   const update = (el: HTMLElement) => {
@@ -108,6 +110,7 @@ export function useChatScroll(
   useLayoutEffect(() => {
     const el = ref.current;
     if (!ready || !el) return;
+    const firstEntry = entered.current !== key;
     // Coming BACK to the same conversation (an inactive Screen shown again, an
     // inspector closed): it may have streamed on meanwhile, which makes the
     // remembered offset stale for a reader who was pinned to the latest — they
@@ -118,10 +121,15 @@ export function useChatScroll(
       offsets.set(key, el.scrollTop);
     }
     entered.current = key;
+    if (firstEntry && initial === "top") {
+      following.current = false;
+      setAtLatest(false);
+      return;
+    }
     update(el);
     // `update` intentionally stays local: key/ready are the restore boundary.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ref, key, ready]);
+  }, [ref, key, ready, initial]);
 
   // Markdown and tool output can grow without a parent scroll event. Keep a
   // bottom-pinned reader pinned, but never move somebody reading older turns.

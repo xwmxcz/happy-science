@@ -3,6 +3,8 @@ import { useTranslation } from "react-i18next";
 import { Command } from "cmdk";
 import { useNavigate } from "react-router-dom";
 import {
+  BookOpenCheck,
+  ClipboardCheck,
   FileSearch,
   Moon,
   NotebookPen,
@@ -10,13 +12,19 @@ import {
   Plus,
   Settings,
   ShieldCheck,
+  RefreshCw,
 } from "lucide-react";
 import { useUiStore } from "@/lib/store";
 import { useRuntimeStore } from "@/lib/runtime";
 import { useLayoutStore } from "@/lib/layout";
 import { useIsMobile } from "@/lib/useIsMobile";
 import { isGatewayWeb } from "@/lib/webMode";
-import { WORKFLOW_STARTERS } from "@/components/thread/WorkflowStarters";
+import { toast } from "@/lib/toast";
+import {
+  RESEARCH_ACTIONS,
+  researchLaunchFor,
+  type ResearchActionId,
+} from "@/lib/researchActions";
 
 interface Action {
   id: string;
@@ -24,9 +32,6 @@ interface Action {
   icon: React.ReactNode;
   run: () => void;
 }
-
-/** Prompt for a starter workflow by id, so ⌘K and the empty-session cards stay in sync. */
-const starterPrompt = (id: string) => WORKFLOW_STARTERS.find((s) => s.id === id)?.prompt ?? "";
 
 export function CommandPalette() {
   const { t } = useTranslation("nav");
@@ -56,23 +61,40 @@ export function CommandPalette() {
 
   const close = () => setOpen(false);
 
-  // Start a new session and send a workflow prompt, then reveal that session.
-  // Its own Screen and pane, like every other "new session" entry — the pane the
-  // user was reading stays put.
-  const runWorkflow = async (starterId: string) => {
+  // Mission actions open a fresh ResearchWorkbench so their required brief can
+  // be authored; quick prompts still create and reveal a session immediately.
+  const runResearchAction = async (actionId: ResearchActionId) => {
     close();
-    const layout = useLayoutStore.getState();
-    const leafId = newPaneAllowed ? layout.openInNewGroup(null) : null;
-    useRuntimeStore.getState().startDraft();
-    const id = await useRuntimeStore.getState().sendPrompt(starterPrompt(starterId));
-    if (id && leafId) layout.bindSession(leafId, id);
-    if (id) navigate(`/live/${id}`);
+    try {
+      const action = RESEARCH_ACTIONS.find((candidate) => candidate.id === actionId);
+      if (action?.kind === "mission") {
+        const layout = useLayoutStore.getState();
+        if (newPaneAllowed) layout.openInNewGroup(null);
+        useRuntimeStore.getState().startDraft();
+        navigate("/live", { state: { researchMissionId: action.id } });
+        return;
+      }
+      const launch = researchLaunchFor(actionId);
+      if (launch.kind !== "prompt") throw new Error("Mission brief is required");
+      const layout = useLayoutStore.getState();
+      const leafId = newPaneAllowed ? layout.openInNewGroup(null) : null;
+      const runtime = useRuntimeStore.getState();
+      runtime.startDraft();
+      const id = await runtime.sendPrompt(launch.prompt);
+      if (id && leafId) layout.bindSession(leafId, id);
+      if (id) navigate(`/live/${id}`);
+    } catch (actionError) {
+      toast.error(actionError instanceof Error ? actionError.message : String(actionError));
+    }
   };
 
   const actions: Action[] = [
     { id: "new", label: t("commandPalette.actions.newSession"), icon: <Plus size={16} />, run: () => { if (newPaneAllowed) useLayoutStore.getState().openInNewGroup(null); useRuntimeStore.getState().startDraft(); navigate("/live"); close(); } },
-    { id: "analyze", label: t("commandPalette.actions.analyzeData"), icon: <FileSearch size={16} />, run: () => void runWorkflow("analyze") },
-    { id: "review", label: t("commandPalette.actions.auditReport"), icon: <ShieldCheck size={16} />, run: () => void runWorkflow("audit") },
+    { id: "plan", label: t("commandPalette.actions.planStudy"), icon: <ClipboardCheck size={16} />, run: () => void runResearchAction("plan") },
+    { id: "literature", label: t("commandPalette.actions.reviewLiterature"), icon: <BookOpenCheck size={16} />, run: () => void runResearchAction("literature") },
+    { id: "analyze", label: t("commandPalette.actions.analyzeData"), icon: <FileSearch size={16} />, run: () => void runResearchAction("analyze") },
+    { id: "reproduce", label: t("commandPalette.actions.reproduceResult"), icon: <RefreshCw size={16} />, run: () => void runResearchAction("reproduce") },
+    { id: "review", label: t("commandPalette.actions.auditReport"), icon: <ShieldCheck size={16} />, run: () => void runResearchAction("audit") },
     { id: "notebooks", label: t("commandPalette.actions.openNotebooks"), icon: <NotebookPen size={16} />, run: () => { navigate("/notebooks"); close(); } },
     { id: "skills", label: t("commandPalette.actions.manageSkills"), icon: <PackagePlus size={16} />, run: () => { navigate("/skills"); close(); } },
     { id: "settings", label: t("commandPalette.actions.openSettings"), icon: <Settings size={16} />, run: () => { navigate("/settings"); close(); } },

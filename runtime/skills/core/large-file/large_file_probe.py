@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Open Science — large-file probe (P0-6): reference, don't load.
+"""Happy Science — large-file probe (P0-6): reference, don't load.
 
 Scientific files routinely exceed any context window (90 GB FASTQ, multi-GB
 HDF5/FITS snapshots, 20 GB+ NetCDF, huge VASP logs). Reading them raw both OOMs

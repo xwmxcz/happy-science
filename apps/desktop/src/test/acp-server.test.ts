@@ -1,4 +1,4 @@
-// Open Science AS an ACP agent (#14, server direction), driven by our OWN ACP
+// Happy Science AS an ACP agent (#14, server direction), driven by our OWN ACP
 // client.
 //
 // The two halves are wired to each other here: `AcpRuntime` (the client this app
@@ -102,10 +102,10 @@ async function connectedPair(opts?: { history?: HistoryMessage[]; clientCwd?: st
   return { client, server, events, ...stub };
 }
 
-describe("Open Science as an ACP agent", () => {
+describe("Happy Science as an ACP agent", () => {
   it("introduces itself and advertises only what it can actually do", async () => {
     const { client } = await connectedPair();
-    expect(client.displayName).toBe("Open Science");
+    expect(client.displayName).toBe("Happy Science");
     // The runtime really does keep conversations, so these are honest.
     expect(client.supportsSessionReplay).toBe(true);
     expect(client.supportsSessionList).toBe(true);

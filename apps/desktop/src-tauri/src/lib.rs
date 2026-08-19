@@ -1,31 +1,32 @@
-// AI4S Workbench — Tauri 2 entry. Hosts the React frontend and supervises the
+// Happy Science — Tauri 2 entry. Hosts the React frontend and supervises the
 // bundled OpenCode sidecar (isolated config/data + dedicated port; killed on exit).
+mod acp;
 mod artifact_file;
 mod browser;
 mod cli_shim;
+mod compute;
 mod debug_log;
 mod examples;
 mod gateway;
 mod git_snapshot;
 mod goal;
-mod compute;
 mod jupyter;
 mod kernel;
 mod large_file;
+#[cfg(target_os = "macos")]
+mod macos;
+mod missions;
 mod modal;
 mod model_probe;
 mod preview_server;
 mod project;
 mod provenance;
-mod acp;
 mod runs;
 mod runs_index;
 mod runtime;
 mod science_mcp;
 mod ssh_session;
 mod tools;
-#[cfg(target_os = "macos")]
-mod macos;
 mod updates;
 mod uv;
 
@@ -51,6 +52,7 @@ pub(crate) fn env_of(app: &AppHandle) -> Env {
 /// agree on where the data and the bundled resources are.
 fn build_env(app: &AppHandle) -> Result<Env, String> {
     let data_dir = app.path().app_data_dir().map_err(|e| e.to_string())?;
+    osd_core::migrate_legacy_data_dir(&data_dir)?;
     // Resources are resolved by Tauri (it knows the bundle layout on each
     // platform); the core only ever joins names onto this directory.
     let resource_dir = app.path().resource_dir().map_err(|e| e.to_string())?;
@@ -206,6 +208,20 @@ pub fn run() {
             runs::record_run,
             runs::list_runs,
             runs::read_run_log,
+            runs::prepare_reproduction,
+            missions::plan_mission,
+            missions::start_mission,
+            missions::transition_mission,
+            missions::list_missions,
+            missions::check_mission,
+            missions::approve_protocol,
+            missions::decide_evidence,
+            missions::record_research_decision,
+            missions::search_literature,
+            missions::capture_literature,
+            missions::create_research_release,
+            missions::verify_research_release,
+            missions::import_research_release,
             runs_index::query_runs_cmd,
             science_mcp::science_mcp_python,
             science_mcp::setup_science_mcp,
@@ -235,13 +251,16 @@ pub fn run() {
             debug_log::log_debug
         ])
         .build(tauri::generate_context!())
-        .expect("error while building AI4S Workbench")
+        .expect("error while building Happy Science")
         .run(|app, event| {
             // Clean up on exit. macOS Cmd+Q / Quit terminates via RunEvent::Exit
             // (ExitRequested is not always delivered), so handle BOTH — otherwise
             // the OpenCode sidecar / kernel / Jupyter orphan on every quit. The
             // cleanup is idempotent, so running on both is safe.
-            if matches!(event, tauri::RunEvent::ExitRequested { .. } | tauri::RunEvent::Exit) {
+            if matches!(
+                event,
+                tauri::RunEvent::ExitRequested { .. } | tauri::RunEvent::Exit
+            ) {
                 browser::close_agent_browser_on_exit();
                 runtime::kill_child(env_of(app).runtime());
                 kernel::kill_kernel(&app.state::<KernelState>());

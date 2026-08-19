@@ -1,8 +1,8 @@
 [package]
 name = "ai4s-workbench"
 version.workspace = true
-description = "Open Science Desktop"
-authors = ["AI4S Workbench contributors"]
+description = "Happy Science desktop application"
+authors = ["Happy Science contributors"]
 edition.workspace = true
 
 [lib]
@@ -18,7 +18,7 @@ tauri-build = { version = "2", features = [] }
 osd-core.workspace = true
 # macos-private-api: transparent webview background for the vibrancy sidebar
 # (tauri.macos.conf.json); no-op on other platforms.
-tauri = { version = "2", features = ["macos-private-api"] }
+tauri = { version = "2", features = [] }
 tauri-plugin-shell = "2"
 tauri-plugin-single-instance = "2"
 serde.workspace = true

@@ -138,26 +138,260 @@
   },
   "starters": {
     "newSession": "새 세션",
-    "heading": "무엇을 살펴볼까요?",
-    "subheading": "아래에 분석 내용을 설명하거나, 다음 중 하나로 시작해 보세요.",
-    "demo": {
-      "title": "데모 분석을 처음부터 끝까지 실행",
-      "description": "데이터셋을 시뮬레이션하고, 모델을 적합시키고, 그림과 추적 가능한 리포트를 생성합니다."
+    "missionControl": "미션 컨트롤",
+    "heading": "미션을 정의하고 근거 기준을 정하세요",
+    "subheading": "연구 작업과 산출물을 선택하고 결과 전 에이전트가 완료할 검증 수준을 결정합니다.",
+    "brief": {
+      "contract": "미션 계약", "title": "연구 좌표", "defined": "{{defined}}/{{total}} 정의됨", "optional": "· 선택", "required": "시작 전에 미션 목표를 정의하세요.",
+      "scaffold": "누락 정보를 명시적 TBD로 작성하고 질문에서 멈추지 말고 구체적인 선택지를 제안합니다.",
+      "objective": {
+        "plan": { "label": "연구 질문 / 가설", "placeholder": "집단 Z에서 중재 X가 대조군보다 결과 Y를 바꾸는가?" },
+        "literature": { "label": "검토 질문 / 주제", "placeholder": "어떤 근거가 지지하거나 반박하는가…" },
+        "reproduce": { "label": "재현할 주장", "placeholder": "정량 주장, 논문, 그림 또는 표" },
+        "audit": { "label": "감사 대상", "placeholder": "원고, 보고서 또는 연구 진실성 문제" }
+      },
+      "population": { "label": "모집단 / 표본", "placeholder": "대상, 환경, 기준, 목표 N" },
+      "intervention": { "label": "중재 / 비교", "placeholder": "치료, 노출, 용량, 대조" },
+      "primaryOutcome": { "label": "주요 결과", "placeholder": "변수, 시점, 단위" },
+      "constraints": { "label": "범위와 제약", "placeholder": "기간, 파일, 날짜 범위, 방법, 윤리, 고정 선택" }
+    },
+    "ledger": {
+      "label": "주장–근거 그래프",
+      "description": "각 주장에 추적 가능한 근거를 연결하고 Happy Science가 로컬 출처 스냅샷 해시, 원문 인용과 논쟁 관계를 검증합니다.",
+      "supports": "지지",
+      "contradicts": "반박",
+      "qualifies": "한정",
+      "ready": "{{claims}}개 주장을 검증된 출처 {{sources}}개에 연결하고 원문 인용 {{quotes}}개와 논쟁 주장 {{contested}}개를 확인했습니다."
+    },
+    "deliverables": "미션 산출물",
+    "launch": "연구 미션 시작",
+    "quickTools": "빠른 도구",
+    "rigor": {
+      "label": "엄밀도 다이얼",
+      "explore": { "title": "탐색", "description": "빠르게 방향을 잡고 미검증 출처, 가정, 결론을 모두 표시합니다." },
+      "research": { "title": "연구 수준", "description": "출처 검증, 재현 가능한 실행, 주장 추적, 중요 결정 승인을 수행합니다." },
+      "publication": { "title": "출판 수준", "description": "독립적인 2차 감사를 추가하고 근거 없는 주장을 남기지 않습니다." }
+    },
+    "plan": {
+      "title": "연구 시작",
+      "description": "결과를 보기 전에 가설, 추정 대상, 평가 변수와 결정 기준을 고정합니다.",
+      "outputs": { "protocol": "사전등록 형식 연구 프로토콜", "decisions": "분석 결정과 민감도 가정", "gate": "결과 분석 전 승인 단계" }
+    },
+    "literature": {
+      "title": "근거 스프린트",
+      "description": "검증 가능한 검색 기록으로 합의, 모순과 연구 공백을 지도화합니다.",
+      "outputs": { "search": "정확한 검색식과 검색 날짜", "evidence": "확인 가능한 출처가 포함된 선별 근거표", "map": "합의, 충돌, 불확실성과 공백 지도", "ledger": "원문 인용이 포함된 기계 검증 가능 근거 그래프", "sources": "SHA-256 출처 스냅샷과 검색 매니페스트" }
     },
     "analyze": {
       "title": "내 데이터 분석",
       "description": "추가한 파일을 에이전트에게 지정하면 그림과 리포트를 받을 수 있습니다."
     },
+    "reproduce": {
+      "title": "재현 챌린지",
+      "description": "정량적 주장을 독립적으로 재구축하고 방어 가능한 판정을 반환합니다.",
+      "outputs": { "environment": "입력 해시, 환경과 명령 목록", "comparison": "원래 값과 재현 값 비교", "verdict": "차이를 포함한 통과, 실패 또는 차단 판정", "ledger": "원래 주장과 재현 결과를 출처 근거에 연결", "sources": "SHA-256 출처 스냅샷과 검색 매니페스트" }
+    },
     "audit": {
-      "title": "리포트 추적성 감사",
-      "description": "인용, 출처 없는 수치, 그림과 코드 간 일치 여부를 확인합니다."
+      "title": "원고 스트레스 테스트",
+      "description": "제출 전에 인용, 수치, 그림과 한계를 레드팀 방식으로 감사합니다.",
+      "outputs": { "findings": "심각도순 연구 무결성 문제", "checks": "인용, 수치, 그림-코드 검증", "repair": "중요 문제별 수정 계획", "ledger": "감사된 주장의 지지·반박·한정 근거 그래프", "sources": "SHA-256 출처 스냅샷과 검색 매니페스트" }
     },
     "example-climate": {
-      "title": "예제 살펴보기: 기후 변화 추세",
+      "title": "NASA 기후 벤치마크 실행",
       "description": "실제 NASA GISTEMP 데이터 — 추세, 연대별 비교, 그림, 리포트."
     },
     "error": {
-      "setup": "예제를 설정할 수 없습니다: {{message}}"
+      "setup": "예제를 설정할 수 없습니다: {{message}}",
+      "mission": "연구 미션을 시작할 수 없습니다: {{message}}",
+      "incomplete": "필수 증거 없이 미션이 종료되었습니다: {{files}}"
+    }
+  },
+  "researchWorkspace": {
+    "status": {
+      "planned": "미션 계획됨",
+      "running": "미션 진행 중",
+      "waiting-for-input": "입력 대기 중",
+      "waiting-for-approval": "승인 대기 중",
+      "paused": "미션 일시 중지",
+      "interrupted": "실행 중단됨",
+      "review-ready": "검토 준비 완료",
+      "completed": "미션 완료",
+      "failed": "미션 실패",
+      "cancelled": "미션 취소됨"
+    },
+    "lifecycle": {
+      "pause": "일시 중지",
+      "resume": "계속",
+      "complete": "완료",
+      "failed": "미션을 업데이트하지 못했습니다: {{message}}"
+    },
+    "nextActions": {
+      "title": "다음 작업",
+      "owner": { "agent": "에이전트", "researcher": "사용자" },
+      "start-mission": "계획된 미션을 시작합니다.",
+      "resume-mission": "보존된 체크포인트에서 계속합니다.",
+      "answer-question": "진행을 막는 연구 질문에 답합니다.",
+      "review-approval": "대기 중인 작업을 승인하거나 거부합니다.",
+      "create-deliverable": "필수 산출물 생성: {{target}}",
+      "resolve-protocol": "{{target}}의 TBD와 미완료 항목을 해결합니다.",
+      "approve-protocol": "현재 프로토콜 검토 및 승인: {{target}}",
+      "review-evidence": "미결 증거 {{count}}개를 검토합니다.",
+      "repair-evidence": "증거 계약 문제 수정: {{target}}",
+      "review-run-integrity": "계획 이탈 또는 재현성 문제 {{count}}개를 검토합니다.",
+      "complete-mission": "검증된 패키지를 검토하고 미션을 완료합니다."
+    },
+    "runIntegrity": {
+      "title": "계획 ↔ 실행 무결성",
+      "summary": "실행 {{runs}}회 · 일치 {{aligned}}회 · 검토 필요 {{attention}}회",
+      "noPlan": "{{count}}회 실행에서 사전등록 또는 분석 계획을 찾지 못했습니다.",
+      "aligned": "검사된 모든 실행이 등록된 계획과 일치합니다."
+    },
+    "refresh": "상태 확인",
+    "checking": "확인 중",
+    "executor": "에이전트 실행기",
+    "recovery": {
+      "title": "재시작으로 실행이 중단됨",
+      "description": "완료된 단계는 보존되었습니다. 끝난 작업을 반복하지 않고 마지막 체크포인트부터 계속할 수 있습니다.",
+      "resume": "미션 계속"
+    },
+    "gate": {
+      "progress": "검증된 프로토콜 경로", "verified": "검증됨", "current": "현재", "pending": "대기", "next": "다음 작업", "complete": "게이트 완료", "allVerified": "필수 게이트가 모두 검증되었습니다", "unresolved": "미해결 {{count}}개", "generic": "이 요구사항에는 작업공간의 검증 가능한 근거가 더 필요합니다.",
+      "protocol-complete": { "title": "프로토콜 완성", "description": "research/protocol.md의 모든 [TBD]와 미체크 항목을 해결합니다." },
+      "approval-before-outcomes": { "title": "결과 확인 전 승인", "description": "결과 확인이나 분석 전에 현재 프로토콜 해시를 승인합니다." },
+      "deliverables-present": { "title": "산출물 검증", "description": "필수 산출물이 모두 존재하고 비어 있지 않은지 확인합니다." },
+      "approve": "현재 프로토콜 승인", "approving": "승인 기록 중…", "approvalRecorded": "현재 프로토콜이 승인되어 해시에 고정되었습니다.", "approvalFailed": "프로토콜 승인 실패: {{message}}",
+      "confirm": { "title": "이 프로토콜을 승인할까요?", "body": "현재 SHA-256에 연결된 추가 전용 결정을 기록합니다. 이후 편집하면 승인이 자동 무효화됩니다.", "confirm": "프로토콜 승인" }
+    },
+    "tabs": {
+      "mission": "미션",
+      "decisions": "의사결정",
+      "literature": "문헌",
+      "evidence": "근거",
+      "sources": "출처",
+      "artifacts": "산출물",
+      "review": "검토"
+    },
+    "decisionLog": {
+      "title": "연구 의사결정 기록",
+      "description": "무엇을 선택했고 왜 선택했는지 기록합니다. 항목은 추가만 가능하며, 수정은 이전 기록을 덮어쓰지 않고 명시적으로 대체합니다.",
+      "question": "의사결정 지점",
+      "choice": "선택한 접근법",
+      "rationale": "이유와 근거",
+      "alternatives": "검토한 대안 — 한 줄에 하나",
+      "impact": "예상 영향 또는 절충점",
+      "supersedes": "이전 의사결정 대체",
+      "none": "아니요 — 새로운 의사결정",
+      "optional": "선택",
+      "save": "의사결정 기록",
+      "saving": "기록 중",
+      "history": "기록된 의사결정 {{count}}개",
+      "empty": "아직 기록된 연구 의사결정이 없습니다.",
+      "alternativesLabel": "대안: {{values}}",
+      "impactLabel": "영향: {{value}}",
+      "supersedesLabel": "{{id}} 대체"
+    },
+    "literature": {
+      "notRequired": "문헌 캡처는 근거, 재현 및 감사 미션에서 사용할 수 있습니다.",
+      "searchLabel": "Crossref 문헌 검색",
+      "searchPlaceholder": "주제, 제목, 저자 또는 인용으로 검색…",
+      "search": "문헌 검색",
+      "searching": "검색 중",
+      "corpus": "코퍼스 {{count}}개",
+      "fullText": "전문 스냅샷 {{count}}개",
+      "abstractOnly": "초록만 {{count}}개",
+      "metadataOnly": "메타데이터만 {{count}}개",
+      "results": "검색 결과 {{count}}개",
+      "deduplicated": "중복 {{count}}개 제거",
+      "noResults": "확인 가능한 DOI 레코드가 없습니다.",
+      "fullTextCandidate": "전문 후보 있음",
+      "abstractCandidate": "초록 있음",
+      "metadataCandidate": "메타데이터만",
+      "capture": "출처 캡처",
+      "capturing": "캡처 중",
+      "captured": "캡처됨",
+      "capturedSources": "검증된 로컬 출처 코퍼스",
+      "status": { "full-text": "전문 캡처됨", "abstract-only": "초록만", "metadata-only": "메타데이터만" }
+    },
+    "gates": "품질 게이트 {{total}}개 중 {{passed}}개를 통과했습니다.",
+    "notChecked": "연구 상태를 확인하여 현재 근거와 품질 게이트를 검토하세요.",
+    "notRequired": "이 미션에는 근거 원장이나 출처 매니페스트가 필요하지 않습니다.",
+    "metrics": {
+      "claims": "주장",
+      "sources": "출처",
+      "contested": "쟁점",
+      "relations": "관계",
+      "manifestRecords": "매니페스트 행",
+      "snapshots": "검증된 스냅샷",
+      "quotes": "정확한 인용"
+    },
+    "contested": "논쟁 중인 주장",
+    "stances": { "supports": "지지", "contradicts": "반박", "qualifies": "한정" },
+    "emptyEvidence": "아직 읽을 수 있는 근거 기록이 없습니다.",
+    "emptySources": "아직 읽을 수 있는 출처 스냅샷이 없습니다.",
+    "snapshotVerified": "스냅샷 검증됨",
+    "snapshotUnverified": "검증되지 않음",
+    "hash": "SHA-256",
+    "retrieved": "{{date}}에 수집",
+    "adjudication": "사람의 근거 판정",
+    "reviewed": "관계 {{total}}개 중 {{reviewed}}개를 판정했습니다.",
+    "decisions": { "accepted": "수락", "needs-review": "재검토", "rejected": "거부" },
+    "decisionNote": {
+      "needs-review": "무엇을 다시 확인해야 하나요?",
+      "rejected": "이 근거를 제외해야 하는 이유는 무엇인가요?"
+    },
+    "saveDecision": "판정 저장",
+    "savingDecision": "저장 중",
+    "cancelDecision": "취소",
+    "reviewCounts": {
+      "accepted": "수락 {{count}}",
+      "needsReview": "재검토 {{count}}",
+      "rejected": "거부 {{count}}"
+    },
+    "noActiveMission": "진행 중인 근거 미션이 없습니다",
+    "claimPassport": "주장 패스포트",
+    "passportVersion": "v1",
+    "claimStatuses": {
+      "review-pending": "검토 대기",
+      "supported": "지지된 결론",
+      "contested": "논쟁 중인 결론",
+      "contradicted": "반박된 결론",
+      "qualified": "조건부 결론",
+      "unsupported": "근거 부족"
+    },
+    "passportReviewed": "{{reviewed}}/{{total}} 검토됨",
+    "passportSources": "출처 {{verified}}/{{total}} 검증됨",
+    "passportsReady": "주장 {{count}}개 통과",
+    "passportsBlocked": "주장 {{count}}개 미해결",
+    "artifacts": "필수 산출물 {{total}}개 중 {{present}}개가 준비되었습니다.",
+    "ready": "검토 준비 완료",
+    "blocked": "{{count}}개 문제로 검토가 차단되었습니다.",
+    "release": {
+      "eyebrow": "연구 릴리스 봉인",
+      "version": "v1",
+      "ready": "봉인 준비 완료",
+      "blocked": "릴리스 차단됨",
+      "sealed": "봉인됨",
+      "title": "검증 가능한 연구 패키지",
+      "description": "지정 산출물, 출처 스냅샷, 사람의 판정, 주장 패스포트를 SHA-256 해시와 함께 묶습니다.",
+      "blockedHint": "모든 검토 문제를 해결하고 각 주장 패스포트를 통과시켜야 합니다.",
+      "generate": "릴리스 봉인",
+      "generating": "봉인 중",
+      "get": "패키지 받기",
+      "files": "파일 {{count}}개",
+      "claims": "패스포트 {{count}}개",
+      "fingerprint": "콘텐츠 지문",
+      "unavailable": "현재 클라이언트에서 이 패키지를 전달할 수 없습니다.",
+      "verifyTitle": "릴리스 검증 또는 가져오기",
+      "verifyHint": "워크스페이스 상대 ZIP 경로를 사용하세요. 모든 해시를 검증한 뒤 기존 파일을 덮어쓰지 않고 새 imports/ 디렉터리에 압축을 풉니다.",
+      "pathLabel": "릴리스 패키지 경로",
+      "pathPlaceholder": "releases/happy-science-….zip",
+      "verify": "검증",
+      "verifying": "검증 중",
+      "verified": "검증 완료 · 파일 {{count}}개",
+      "invalid": "잘못된 패키지 · 문제 {{count}}개",
+      "import": "안전하게 가져오기",
+      "importing": "가져오는 중",
+      "imported": "덮어쓰기 없이 가져옴 → {{path}}"
     }
   },
   "live": {
@@ -186,7 +420,7 @@
       "openTitle": "{{path}} 열기 — 에이전트가 이 세션에서 이 노트북을 작업합니다"
     },
     "connBadge": {
-      "title": "OpenCode · {{status}}",
+      "title": "실행기 · {{status}}",
       "status": {
         "ready": "준비됨",
         "connecting": "연결 중",

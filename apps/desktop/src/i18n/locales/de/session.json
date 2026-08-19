@@ -138,26 +138,260 @@
   },
   "starters": {
     "newSession": "Neue Sitzung",
-    "heading": "Was sollen wir untersuchen?",
-    "subheading": "Beschreiben Sie Ihre Analyse unten — oder beginnen Sie mit einem dieser Vorschläge.",
-    "demo": {
-      "title": "Eine Demo-Analyse End-to-End ausführen",
-      "description": "Einen Datensatz simulieren, ein Modell anpassen und eine Abbildung sowie einen nachvollziehbaren Bericht erstellen."
+    "missionControl": "Missionskontrolle",
+    "heading": "Mission definieren. Evidenzstandard festlegen.",
+    "subheading": "Forschungsaufgabe und Ergebnisse wählen und festlegen, wie viel Prüfung vor einem Ergebnis erforderlich ist.",
+    "brief": {
+      "contract": "Missionsvertrag", "title": "Forschungskoordinaten", "defined": "{{defined}}/{{total}} definiert", "optional": "· optional", "required": "Definieren Sie vor dem Start das Missionsziel.",
+      "scaffold": "Fehlende Angaben als klare TBDs entwerfen und konkrete Optionen vorschlagen, statt mit einem Fragebogen zu stoppen.",
+      "objective": {
+        "plan": { "label": "Forschungsfrage / Hypothese", "placeholder": "Verändert Intervention X Ergebnis Y gegenüber der Kontrolle in Population Z?" },
+        "literature": { "label": "Reviewfrage / Thema", "placeholder": "Welche Evidenz stützt oder widerlegt…" },
+        "reproduce": { "label": "Zu reproduzierende Aussage", "placeholder": "Quantitative Aussage, Paper, Abbildung oder Tabelle" },
+        "audit": { "label": "Prüfziel", "placeholder": "Manuskript, Bericht oder Integritätsproblem" }
+      },
+      "population": { "label": "Population / Stichprobe", "placeholder": "Wer, Umfeld, Kriterien, Ziel-N" },
+      "intervention": { "label": "Intervention / Vergleich", "placeholder": "Behandlung, Exposition, Dosis, Kontrolle" },
+      "primaryOutcome": { "label": "Primärer Endpunkt", "placeholder": "Variable, Zeitpunkt, Einheit" },
+      "constraints": { "label": "Umfang und Grenzen", "placeholder": "Zeit, Dateien, Zeitraum, Methoden, Ethik, feste Vorgaben" }
+    },
+    "ledger": {
+      "label": "Behauptungs–Evidenz-Graph",
+      "description": "Jede Behauptung erhält nachvollziehbare Evidenz; Happy Science hasht lokale Quellen-Snapshots, prüft exakte Auszüge und bildet Kontroversen ab.",
+      "supports": "Stützt",
+      "contradicts": "Widerspricht",
+      "qualifies": "Schränkt ein",
+      "ready": "{{claims}} Behauptungen mit {{sources}} geprüften Quellen verknüpft; {{quotes}} Auszüge geprüft und {{contested}} strittige Behauptungen erkannt."
+    },
+    "deliverables": "Missionsergebnisse",
+    "launch": "Forschungsmission starten",
+    "quickTools": "Schnellwerkzeuge",
+    "rigor": {
+      "label": "Prüftiefe",
+      "explore": { "title": "Erkunden", "description": "Schnelle Orientierung; ungeprüfte Quellen, Annahmen und Schlüsse bleiben markiert." },
+      "research": { "title": "Forschungsniveau", "description": "Geprüfte Quellen, reproduzierbare Ausführung, Nachvollziehbarkeit und Freigabepunkte." },
+      "publication": { "title": "Publikationsniveau", "description": "Zusätzliche unabhängige Zweitprüfung ohne unbelegte Aussagen." }
+    },
+    "plan": {
+      "title": "Studienstart",
+      "description": "Hypothesen, Zielgrößen, Endpunkte und Entscheidungstore vor der Ergebnisprüfung fixieren.",
+      "outputs": { "protocol": "Präregistrierungsähnliches Protokoll", "decisions": "Analyseentscheidungen und Sensitivitätsannahmen", "gate": "Freigabe vor der Ergebnisanalyse" }
+    },
+    "literature": {
+      "title": "Evidenz-Sprint",
+      "description": "Konsens, Widersprüche und Lücken mit prüfbarer Suchspur kartieren.",
+      "outputs": { "search": "Exakte Suchanfragen und Abrufdaten", "evidence": "Geprüfte Evidenztabelle mit auflösbaren Quellen", "map": "Konsens-, Konflikt-, Unsicherheits- und Lückenkarte", "ledger": "Maschinengeprüfter Evidenzgraph mit Originalauszügen", "sources": "SHA-256-Quellen-Snapshots und Abrufmanifest" }
     },
     "analyze": {
       "title": "Meine Daten analysieren",
       "description": "Weisen Sie den Agenten auf eine hinzugefügte Datei hin; erhalten Sie Abbildungen und einen Bericht zurück."
     },
+    "reproduce": {
+      "title": "Reproduktions-Challenge",
+      "description": "Eine quantitative Aussage unabhängig rekonstruieren und belastbar bewerten.",
+      "outputs": { "environment": "Eingabe-Hashes, Umgebung und Befehlsmanifest", "comparison": "Vergleich von Original- und Reproduktionswert", "verdict": "Urteil mit Abweichungen: bestanden, gescheitert oder blockiert", "ledger": "Original- und Reproduktionsbehauptungen mit Quellenbelegen", "sources": "SHA-256-Quellen-Snapshots und Abrufmanifest" }
+    },
     "audit": {
-      "title": "Bericht auf Nachvollziehbarkeit prüfen",
-      "description": "Zitate, unbelegte Zahlen und die Übereinstimmung von Abbildung und Code prüfen."
+      "title": "Manuskript-Stresstest",
+      "description": "Zitate, Zahlen, Abbildungen und Limitationen vor Einreichung kritisch prüfen.",
+      "outputs": { "findings": "Priorisierte Integritätsbefunde", "checks": "Prüfung von Zitaten, Zahlen und Abbildung zu Code", "repair": "Reparaturplan für jedes wesentliche Problem", "ledger": "Graph für stützende, widersprechende und einschränkende Evidenz", "sources": "SHA-256-Quellen-Snapshots und Abrufmanifest" }
     },
     "example-climate": {
-      "title": "Ein Beispiel erkunden: Klimatrends",
+      "title": "NASA-Klimabenchmark ausführen",
       "description": "Echte NASA-GISTEMP-Daten — Trend, Dekadenvergleich, Abbildung und Bericht."
     },
     "error": {
-      "setup": "Das Beispiel konnte nicht eingerichtet werden: {{message}}"
+      "setup": "Das Beispiel konnte nicht eingerichtet werden: {{message}}",
+      "mission": "Die Forschungsmission konnte nicht gestartet werden: {{message}}",
+      "incomplete": "Die Mission endete ohne die erforderlichen Nachweise: {{files}}"
+    }
+  },
+  "researchWorkspace": {
+    "status": {
+      "planned": "Mission geplant",
+      "running": "Mission aktiv",
+      "waiting-for-input": "Wartet auf Eingabe",
+      "waiting-for-approval": "Wartet auf Freigabe",
+      "paused": "Mission pausiert",
+      "interrupted": "Ausführung unterbrochen",
+      "review-ready": "Bereit zur Prüfung",
+      "completed": "Mission abgeschlossen",
+      "failed": "Mission fehlgeschlagen",
+      "cancelled": "Mission abgebrochen"
+    },
+    "lifecycle": {
+      "pause": "Pausieren",
+      "resume": "Fortsetzen",
+      "complete": "Abschließen",
+      "failed": "Mission konnte nicht aktualisiert werden: {{message}}"
+    },
+    "nextActions": {
+      "title": "Nächste Schritte",
+      "owner": { "agent": "Agent", "researcher": "Sie" },
+      "start-mission": "Geplante Mission starten.",
+      "resume-mission": "Am gespeicherten Prüfpunkt fortsetzen.",
+      "answer-question": "Die blockierende Forschungsfrage beantworten.",
+      "review-approval": "Ausstehende Aktion genehmigen oder ablehnen.",
+      "create-deliverable": "Erforderliches Artefakt erstellen: {{target}}",
+      "resolve-protocol": "Alle TBDs und offenen Punkte in {{target}} klären.",
+      "approve-protocol": "Aktuelles Protokoll prüfen und genehmigen: {{target}}",
+      "review-evidence": "{{count}} ungeklärte Evidenzeinträge prüfen.",
+      "repair-evidence": "Evidenzvertrag reparieren: {{target}}",
+      "review-run-integrity": "{{count}} Planabweichungen oder Reproduzierbarkeitsbefunde prüfen.",
+      "complete-mission": "Geprüftes Paket kontrollieren und Mission abschließen."
+    },
+    "runIntegrity": {
+      "title": "Plan ↔ Ausführungsintegrität",
+      "summary": "{{runs}} Läufe · {{aligned}} konform · {{attention}} zu prüfen",
+      "noPlan": "Für {{count}} Läufe wurde kein Analyseplan gefunden.",
+      "aligned": "Alle geprüften Läufe entsprechen dem registrierten Plan."
+    },
+    "refresh": "Status prüfen",
+    "checking": "Prüfung läuft",
+    "executor": "Agent-Ausführung",
+    "recovery": {
+      "title": "Ausführung durch Neustart unterbrochen",
+      "description": "Abgeschlossene Schritte bleiben erhalten. Setzen Sie am letzten Prüfpunkt fort, ohne fertige Arbeit zu wiederholen.",
+      "resume": "Mission fortsetzen"
+    },
+    "gate": {
+      "progress": "Verifizierter Protokollpfad", "verified": "Verifiziert", "current": "Aktuell", "pending": "Ausstehend", "next": "Nächster Schritt", "complete": "Prüffolge abgeschlossen", "allVerified": "Alle erforderlichen Prüfungen sind verifiziert", "unresolved": "{{count}} ungelöst", "generic": "Diese Anforderung benötigt noch verifizierbare Evidenz aus dem Arbeitsbereich.",
+      "protocol-complete": { "title": "Protokoll vervollständigen", "description": "Alle [TBD]- und nicht abgehakten Punkte in research/protocol.md lösen." },
+      "approval-before-outcomes": { "title": "Vor Ergebnissen genehmigen", "description": "Den exakten Protokoll-Hash vor Ergebnisprüfung oder Analyse genehmigen." },
+      "deliverables-present": { "title": "Ergebnisse verifizieren", "description": "Prüfen, dass alle erforderlichen Artefakte vorhanden und nicht leer sind." },
+      "approve": "Aktuelles Protokoll genehmigen", "approving": "Genehmigung wird erfasst…", "approvalRecorded": "Das aktuelle Protokoll wurde genehmigt und an den Hash gebunden.", "approvalFailed": "Protokollgenehmigung fehlgeschlagen: {{message}}",
+      "confirm": { "title": "Dieses Protokoll genehmigen?", "body": "Es wird eine unveränderliche Entscheidung zum aktuellen SHA-256 erfasst. Spätere Änderungen machen die Genehmigung ungültig.", "confirm": "Protokoll genehmigen" }
+    },
+    "tabs": {
+      "mission": "Mission",
+      "decisions": "Entscheidungen",
+      "literature": "Literatur",
+      "evidence": "Evidenz",
+      "sources": "Quellen",
+      "artifacts": "Artefakte",
+      "review": "Prüfung"
+    },
+    "decisionLog": {
+      "title": "Forschungsentscheidung erfassen",
+      "description": "Erfassen Sie Auswahl und Begründung. Einträge werden nur angehängt; eine Revision ersetzt einen früheren Eintrag ausdrücklich.",
+      "question": "Entscheidungspunkt",
+      "choice": "Gewählter Ansatz",
+      "rationale": "Begründung und Evidenz",
+      "alternatives": "Erwogene Alternativen – eine pro Zeile",
+      "impact": "Erwartete Auswirkung oder Abwägung",
+      "supersedes": "Ersetzt eine frühere Entscheidung",
+      "none": "Nein – neue Entscheidung",
+      "optional": "optional",
+      "save": "Entscheidung erfassen",
+      "saving": "Wird erfasst",
+      "history": "{{count}} erfasste Entscheidungen",
+      "empty": "Noch keine Forschungsentscheidungen erfasst.",
+      "alternativesLabel": "Alternativen: {{values}}",
+      "impactLabel": "Auswirkung: {{value}}",
+      "supersedesLabel": "Ersetzt {{id}}"
+    },
+    "literature": {
+      "notRequired": "Literaturerfassung ist für Evidenz-, Reproduktions- und Prüfmissionen verfügbar.",
+      "searchLabel": "Crossref-Suche",
+      "searchPlaceholder": "Nach Thema, Titel, Autor oder Zitat suchen…",
+      "search": "Literatur suchen",
+      "searching": "Suche läuft",
+      "corpus": "{{count}} Quellen im Korpus",
+      "fullText": "{{count}} Volltext-Snapshots",
+      "abstractOnly": "{{count}} nur Abstract",
+      "metadataOnly": "{{count}} nur Metadaten",
+      "results": "{{count}} Suchergebnisse",
+      "deduplicated": "{{count}} Duplikate entfernt",
+      "noResults": "Keine passenden DOI-Datensätze gefunden.",
+      "fullTextCandidate": "Volltextkandidat",
+      "abstractCandidate": "Abstract verfügbar",
+      "metadataCandidate": "nur Metadaten",
+      "capture": "Quelle erfassen",
+      "capturing": "Erfassung",
+      "captured": "Erfasst",
+      "capturedSources": "Verifiziertes lokales Quellenkorpus",
+      "status": { "full-text": "Volltext erfasst", "abstract-only": "Nur Abstract", "metadata-only": "Nur Metadaten" }
+    },
+    "gates": "{{passed}} von {{total}} Qualitätsprüfungen bestanden.",
+    "notChecked": "Forschungsstatus prüfen, um Evidenz und Qualitätsprüfungen anzuzeigen.",
+    "notRequired": "Diese Mission benötigt keinen Evidenzgraphen und kein Quellenmanifest.",
+    "metrics": {
+      "claims": "Aussagen",
+      "sources": "Quellen",
+      "contested": "Umstritten",
+      "relations": "Beziehungen",
+      "manifestRecords": "Manifestzeilen",
+      "snapshots": "Geprüfte Snapshots",
+      "quotes": "Exakte Zitate"
+    },
+    "contested": "Umstrittene Aussage",
+    "stances": { "supports": "Unterstützt", "contradicts": "Widerspricht", "qualifies": "Schränkt ein" },
+    "emptyEvidence": "Noch keine lesbaren Evidenzeinträge verfügbar.",
+    "emptySources": "Noch keine lesbaren Quellen-Snapshots verfügbar.",
+    "snapshotVerified": "Snapshot verifiziert",
+    "snapshotUnverified": "Nicht verifiziert",
+    "hash": "SHA-256",
+    "retrieved": "Abgerufen am {{date}}",
+    "adjudication": "Menschliche Evidenzprüfung",
+    "reviewed": "{{reviewed}} von {{total}} Beziehungen geprüft.",
+    "decisions": { "accepted": "Akzeptieren", "needs-review": "Erneut prüfen", "rejected": "Ablehnen" },
+    "decisionNote": {
+      "needs-review": "Was muss erneut geprüft werden?",
+      "rejected": "Warum soll diese Evidenz ausgeschlossen werden?"
+    },
+    "saveDecision": "Entscheidung speichern",
+    "savingDecision": "Speichern",
+    "cancelDecision": "Abbrechen",
+    "reviewCounts": {
+      "accepted": "{{count}} akzeptiert",
+      "needsReview": "{{count}} erneut prüfen",
+      "rejected": "{{count}} abgelehnt"
+    },
+    "noActiveMission": "Keine aktive Evidenzmission",
+    "claimPassport": "Aussagenpass",
+    "passportVersion": "v1",
+    "claimStatuses": {
+      "review-pending": "Prüfung ausstehend",
+      "supported": "Gestützte Schlussfolgerung",
+      "contested": "Umstrittene Schlussfolgerung",
+      "contradicted": "Widerlegte Schlussfolgerung",
+      "qualified": "Eingeschränkte Schlussfolgerung",
+      "unsupported": "Unzureichende Evidenz"
+    },
+    "passportReviewed": "{{reviewed}}/{{total}} geprüft",
+    "passportSources": "{{verified}}/{{total}} Quellen verifiziert",
+    "passportsReady": "{{count}} Aussagen freigegeben",
+    "passportsBlocked": "{{count}} Aussagen ungeklärt",
+    "artifacts": "{{present}} von {{total}} erforderlichen Artefakten vorhanden.",
+    "ready": "Bereit zur Prüfung",
+    "blocked": "Prüfung durch {{count}} Probleme blockiert.",
+    "release": {
+      "eyebrow": "Forschungsfreigabesiegel",
+      "version": "v1",
+      "ready": "Bereit zum Versiegeln",
+      "blocked": "Freigabe blockiert",
+      "sealed": "Versiegelt",
+      "title": "Prüfbares Forschungspaket",
+      "description": "Bündelt festgelegte Artefakte, Quellen-Snapshots, menschliche Entscheidungen und Claim Passports mit SHA-256-Hashes.",
+      "blockedHint": "Alle Prüfprobleme lösen und jeden Claim Passport freigeben.",
+      "generate": "Freigabe versiegeln",
+      "generating": "Wird versiegelt",
+      "get": "Paket abrufen",
+      "files": "{{count}} Dateien",
+      "claims": "{{count}} Pässe",
+      "fingerprint": "Inhaltsfingerabdruck",
+      "unavailable": "Dieses Paket kann im aktuellen Client nicht bereitgestellt werden.",
+      "verifyTitle": "Release prüfen oder importieren",
+      "verifyHint": "Verwenden Sie einen workspace-relativen ZIP-Pfad. Beim Import werden alle Hashes geprüft und die Dateien ohne Überschreiben in ein neues imports/-Verzeichnis entpackt.",
+      "pathLabel": "Pfad des Release-Pakets",
+      "pathPlaceholder": "releases/happy-science-….zip",
+      "verify": "Prüfen",
+      "verifying": "Prüfung",
+      "verified": "Geprüft · {{count}} Nutzdateien",
+      "invalid": "Ungültiges Paket · {{count}} Probleme",
+      "import": "Sicher importieren",
+      "importing": "Import läuft",
+      "imported": "Ohne Überschreiben importiert → {{path}}"
     }
   },
   "live": {
@@ -186,7 +420,7 @@
       "openTitle": "{{path}} öffnen — der Agent arbeitet in dieser Sitzung an diesem Notebook"
     },
     "connBadge": {
-      "title": "OpenCode · {{status}}",
+      "title": "Ausführung · {{status}}",
       "status": {
         "ready": "bereit",
         "connecting": "verbindet …",

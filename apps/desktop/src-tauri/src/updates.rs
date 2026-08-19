@@ -1,6 +1,8 @@
 use serde::Serialize;
 
-const RELEASES_ATOM_URL: &str = "https://github.com/ai4s-research/open-science/releases.atom";
+// Disabled until Happy Science has its own public release repository. Never
+// advertise upstream Open Science installers from a rebranded build.
+const RELEASES_ATOM_URL: Option<&str> = None;
 
 #[derive(Debug, Clone, Serialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
@@ -19,11 +21,12 @@ pub async fn latest_release() -> Result<ReleaseInfo, String> {
 }
 
 fn fetch_latest_release() -> Result<ReleaseInfo, String> {
+    let url = RELEASES_ATOM_URL.ok_or("Happy Science does not have a release feed yet")?;
     let body = reqwest::blocking::Client::builder()
-        .user_agent("Open Science Desktop update checker")
+        .user_agent("Happy Science update checker")
         .build()
         .map_err(|e| format!("could not create HTTP client: {e}"))?
-        .get(RELEASES_ATOM_URL)
+        .get(url)
         .send()
         .and_then(|r| r.error_for_status())
         .map_err(|e| format!("could not fetch GitHub releases feed: {e}"))?
@@ -98,7 +101,7 @@ mod tests {
   <entry>
     <updated>2026-07-09T13:59:12Z</updated>
     <link rel="alternate" type="text/html" href="https://github.com/ai4s-research/open-science/releases/tag/v0.1.8"/>
-    <title>Open Science v0.1.8</title>
+    <title>Happy Science v0.1.8</title>
   </entry>
 </feed>
 "#;
@@ -108,7 +111,7 @@ mod tests {
             ReleaseInfo {
                 version: "v0.1.8".into(),
                 url: "https://github.com/ai4s-research/open-science/releases/tag/v0.1.8".into(),
-                name: Some("Open Science v0.1.8".into()),
+                name: Some("Happy Science v0.1.8".into()),
                 published_at: Some("2026-07-09T13:59:12Z".into()),
             },
         );

@@ -98,6 +98,24 @@ export async function revealArtifact(path: string, root?: FileRoot): Promise<voi
   await invoke("reveal_path", { path, root });
 }
 
+/** Deliver a generated workspace file through the right client surface. */
+export async function presentArtifact(path: string, filename: string): Promise<boolean> {
+  if (!isGatewayWeb) {
+    if (!isTauri) return false;
+    await revealArtifact(path);
+    return true;
+  }
+  const url = await previewUrl(path);
+  if (!url || typeof document === "undefined") return false;
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  return true;
+}
+
 /** The absolute filesystem path of a root-relative file/dir (for "Copy path").
  *  Null in the browser. */
 export async function absoluteArtifactPath(path: string, root?: FileRoot): Promise<string | null> {

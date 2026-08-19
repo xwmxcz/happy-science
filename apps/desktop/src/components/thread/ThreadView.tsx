@@ -49,7 +49,7 @@ export function ThreadView({ session }: { session: Session }) {
       </div>
       <div className="flex-1 overflow-y-auto">
         {/* Document content: keeps the WebView's own menu (see lib/nativeMenu). */}
-        <div className="mx-auto flex max-w-[760px] flex-col gap-4 px-8 py-6" data-native-menu>
+        <div className="mx-auto flex w-full max-w-[760px] flex-col gap-4 px-8 py-6" data-native-menu>
           <BlockList blocks={session.blocks} />
         </div>
       </div>

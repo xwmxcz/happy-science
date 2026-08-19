@@ -1165,6 +1165,7 @@ describe("stale running locks and interrupt", () => {
       kind: "status-line",
       text: "Interrupted",
       tone: "error",
+      interrupted: true,
     });
   });
 
@@ -1192,7 +1193,9 @@ describe("stale running locks and interrupt", () => {
     const statusLines = useRuntimeStore
       .getState()
       .threads["ses_new"].blocks.filter((b) => b.kind === "status-line");
-    expect(statusLines).toEqual([{ kind: "status-line", text: "Interrupted", tone: "error" }]);
+    expect(statusLines).toEqual([
+      { kind: "status-line", text: "Interrupted", tone: "error", interrupted: true },
+    ]);
   });
 
   it("a new turn after an interrupt folds its events normally again", async () => {

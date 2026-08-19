@@ -1,4 +1,4 @@
-# AI4S Workbench Desktop — Technical Design
+# Happy Science — Technical Design
 
 > **Implementation status (v0.1, 2026-07-02).** Built and verified: Tauri 2 shell + React
 > UI; **OpenCode** bundled as an isolated sidecar (auto-started, app-private config/data,
@@ -18,17 +18,18 @@ extensibility to Jupyter, HPC, Modal, Docker, and remote servers.
 ## 2. Overall architecture
 
 ```text
-AI4S Workbench Desktop
+Happy Science
 ├── Desktop Shell: Tauri 2
 ├── Frontend: React + TypeScript + Vite
 ├── UI System: Tailwind CSS + Radix UI / shadcn-style components
+├── Product Kernel: Rust mission contracts + lifecycle + deterministic gates
 ├── Local Service: Rust commands + bundled OpenCode sidecar
-├── Agent Runtime: OpenCode (bundled single-binary sidecar)
+├── Agent Executor: OpenCode (bundled single-binary sidecar)
 ├── Agent Protocol: OpenCode HTTP + SSE API (opencode serve)
 ├── Skills Layer: OpenCode skills/agents + optional third-party scientific skills
 ├── MCP Layer: filesystem / paper-search / BioMCP / Zotero / GitHub / custom
 ├── Execution Layer: OpenCode agents/tools + optional Jupyter Kernel Gateway
-├── Storage: Local workspace + SQLite + JSONL provenance
+├── Storage: Local workspace + SQLite + JSONL mission/evidence/provenance records
 └── Packaging: Tauri DMG / APP / NSIS / MSI
 ```
 
@@ -48,7 +49,7 @@ small, fast, secure cross-platform apps built from a single codebase.
 
 If later needs arise — complex browser capabilities, a more mature desktop ecosystem,
 identical embedded Chromium behavior, or many native Node.js modules — Electron could be
-reconsidered. But AI4S Workbench's core is the workbench, files, agent, runtime, and
+reconsidered. But Happy Science's core is the workbench, files, agent, runtime, and
 artifacts, which do not need Chromium-level capabilities, so Tauri fits better.
 
 ## 4. Frontend
@@ -77,7 +78,44 @@ large-Markdown render; on-demand figures; cached artifact previews; a unified ag
 event bus; all heavy work off to sidecar / worker; the Tauri main process does system
 capabilities only, not heavy computation.
 
-## 5. Agent runtime
+## 5. Mission kernel and agent executor
+
+### 5.0 Happy Science-owned mission kernel
+
+`crates/osd-core/src/missions.rs` is the single owner of research mission
+contracts. It compiles a versioned mission plan from a mission kind and rigor
+level, persists lifecycle records under `.happy-science/missions.jsonl`, and
+checks required deliverables independently of the executor's textual claims.
+The Tauri bridge and authenticated `/v1/missions` gateway routes are adapters to
+the same headless API. React contains display copy and quick-tool prompts only;
+it does not duplicate research mission prompts, artifact paths, or quality gates.
+
+OpenCode remains a replaceable execution engine. A mission is planned by the
+Happy Science kernel first, the compiled execution request is sent to OpenCode,
+and the resulting session is bound back to the persisted mission. This boundary
+allows later ACP or other executors without moving the scientific contract.
+
+Evidence-bearing missions also require a mission-scoped Claim–Evidence Graph
+at `evidence/<mission-id>.claims.jsonl` and a source manifest at
+`evidence/<mission-id>.sources.jsonl`. `crates/osd-core/src/evidence.rs` owns
+its strict schema: stable claim/evidence IDs, a `supports` / `contradicts` /
+`qualifies` stance, DOI or HTTP(S) source identity, exact source excerpt, and a
+page/section/figure/table locator. Unknown fields, duplicate evidence IDs,
+untraceable sources, empty excerpts, and malformed rows fail the deterministic
+`claim-evidence-valid` gate. The same owner derives the contestation graph:
+claim and source counts, contested claims with both supporting and contradicting
+edges, and qualified-only claims. Reusing a claim ID with different text or a
+source ID with a different title fails the gate. Conflicting evidence is
+preserved as a first-class relation rather than silently collapsed into a single
+generated answer.
+
+`crates/osd-core/src/sources.rs` owns the source snapshot contract. Each source
+record binds a DOI or URL and stable title to its final retrieval URL, retrieval
+time, a UTF-8 snapshot below `evidence/snapshots/`, and a SHA-256 digest. Mission
+checking stays offline and deterministic: it recomputes each digest, rejects
+path traversal or duplicate identities, and requires every evidence quote to be
+an exact substring of its declared source snapshot. Network retrieval remains a
+separate, explicitly approved operation rather than a side effect of validation.
 
 ### 5.1 Choice: OpenCode (bundled)
 
@@ -126,7 +164,7 @@ git-ignored and fetched by `scripts/dev/fetch-opencode.sh`). The Rust side
 - runs the **bundled** binary (not the user's `PATH`);
 - on a **dedicated free port** (not the default 4096);
 - with an **app-private** config/data dir via `XDG_CONFIG_HOME`/`XDG_DATA_HOME` under
-  `~/Library/Application Support/com.ai4s.workbench/runtime/` (macOS) — so the user's
+  `~/Library/Application Support/com.happyscience.desktop/runtime/` (macOS) — so the user's
   sessions/config are never touched;
 - but it **shares the user's login**: the user's `auth.json` (OpenCode credentials / free
   access) is copied read-only into the sandbox at startup, so the bundled runtime can
@@ -226,7 +264,7 @@ the OpenCode server; start an optional Jupyter Gateway; monitor runtime health.
   workspaces/  logs/  cache/  secrets/
 ```
 
-Windows: `%APPDATA%/AI4S Workbench/` · macOS: `~/Library/Application Support/AI4S Workbench/`
+Windows: `%APPDATA%/com.happyscience.desktop/` · macOS: `~/Library/Application Support/com.happyscience.desktop/`
 
 ## 9. Storage
 
@@ -449,7 +487,7 @@ ai4s-workbench/
 - `apps/desktop` — Tauri + React desktop app; `src-tauri/src/runtime.rs` supervises the
   bundled OpenCode sidecar (`OpenCodeClient` lives in `packages/sdk`).
 - `runtime/manager` — local runtime manager (detect deps, workspace, provenance, logs).
-- `runtime/opencode-profile` — the AI4S Workbench OpenCode config/skills bundle.
+- `runtime/opencode-profile` — the Happy Science OpenCode config/skills bundle.
 - `runtime/skills` — self-authored scientific skills.
 - `examples` — the complete demo project.
 

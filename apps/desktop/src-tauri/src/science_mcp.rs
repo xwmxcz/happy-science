@@ -80,8 +80,12 @@ fn is_safe_package(pkg: &str) -> bool {
     let core = pkg.split_once("==").map(|(n, _)| n).unwrap_or(pkg);
     !core.is_empty()
         && !core.starts_with('-')
-        && core.chars().all(|c| c.is_ascii_alphanumeric() || matches!(c, '.' | '_' | '-'))
-        && pkg.chars().all(|c| c.is_ascii_alphanumeric() || matches!(c, '.' | '_' | '-' | '='))
+        && core
+            .chars()
+            .all(|c| c.is_ascii_alphanumeric() || matches!(c, '.' | '_' | '-'))
+        && pkg
+            .chars()
+            .all(|c| c.is_ascii_alphanumeric() || matches!(c, '.' | '_' | '-' | '='))
 }
 
 #[cfg(test)]

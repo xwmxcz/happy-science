@@ -48,7 +48,7 @@ each skill directory keeps its own `LICENSE.txt`). Same pipeline as above:
 
 `scripts/dev/fetch-agent-browser.sh` fetches both the pinned sidecar and the
 official `skill-data/core` directory from the same agent-browser tag. The build
-adds only a small Open Science Desktop MCP/lifecycle adapter, bundles the result
+adds only a small Happy Science MCP/lifecycle adapter, bundles the result
 as `skills-agent-browser/`, and deploys it as `open-science-browser`. This keeps
 the browser workflow version-matched without copying an upstream guide into git.
 While the connector is configured, the runtime hides the unrelated legacy

@@ -33,9 +33,10 @@ pub async fn modal_status(app: AppHandle) -> Result<ModalStatus, String> {
     let cmd = cmd.env("PATH", crate::runtime::enriched_path());
     let out = cmd.output().await;
     let (installed, version) = match out {
-        Ok(o) if o.status.success() => {
-            (true, Some(String::from_utf8_lossy(&o.stdout).trim().to_string()))
-        }
+        Ok(o) if o.status.success() => (
+            true,
+            Some(String::from_utf8_lossy(&o.stdout).trim().to_string()),
+        ),
         _ => (false, None),
     };
 
@@ -46,12 +47,20 @@ pub async fn modal_status(app: AppHandle) -> Result<ModalStatus, String> {
     let hint = if !installed {
         Some("Modal not found — install it (`pip install modal`) then run `modal token new` in your terminal.".to_string())
     } else if !authenticated {
-        Some("Modal is installed but not authenticated — run `modal token new` in your terminal.".to_string())
+        Some(
+            "Modal is installed but not authenticated — run `modal token new` in your terminal."
+                .to_string(),
+        )
     } else {
         None
     };
 
-    Ok(ModalStatus { installed, version, authenticated, hint })
+    Ok(ModalStatus {
+        installed,
+        version,
+        authenticated,
+        hint,
+    })
 }
 
 #[cfg(test)]

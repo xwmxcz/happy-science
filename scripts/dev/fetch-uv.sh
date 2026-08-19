@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Fetch the pinned uv binary as a Tauri sidecar
-# (apps/desktop/src-tauri/binaries/uv-<target-triple>). uv provisions the
+# (apps/desktop/src-tauri/binaries/happy-science-uv-<target-triple>). uv provisions the
 # isolated Jupyter environment for the Jupyter MCP integration on demand.
 set -euo pipefail
 
@@ -29,11 +29,11 @@ esac
 
 if [ -f "$TMP/uv.exe" ] || find "$TMP" -name uv.exe | grep -q .; then
   BIN="$(find "$TMP" -type f -name uv.exe | head -1)"
-  cp "$BIN" "$OUT_DIR/uv-$TRIPLE.exe"
+  cp "$BIN" "$OUT_DIR/happy-science-uv-$TRIPLE.exe"
 else
   BIN="$(find "$TMP" -type f -name uv | head -1)"
-  cp "$BIN" "$OUT_DIR/uv-$TRIPLE"
-  chmod +x "$OUT_DIR/uv-$TRIPLE"
+  cp "$BIN" "$OUT_DIR/happy-science-uv-$TRIPLE"
+  chmod +x "$OUT_DIR/happy-science-uv-$TRIPLE"
 fi
 rm -rf "$TMP"
 echo "Placed uv sidecar for $TRIPLE in $OUT_DIR"

@@ -138,26 +138,260 @@
   },
   "starters": {
     "newSession": "新規セッション",
-    "heading": "何を調べましょうか？",
-    "subheading": "以下に分析内容を記入してください — またはこちらから始められます。",
-    "demo": {
-      "title": "デモ分析をエンドツーエンドで実行",
-      "description": "データセットをシミュレートし、モデルを適合させ、図とトレース可能なレポートを作成します。"
+    "missionControl": "ミッションコントロール",
+    "heading": "ミッションを定義し、証拠基準を決める",
+    "subheading": "研究タスクと成果物を選び、結果を出す前にエージェントが完了すべき検証水準を設定します。",
+    "brief": {
+      "contract": "ミッション契約", "title": "研究座標", "defined": "{{defined}}/{{total}} 定義済み", "optional": "・任意", "required": "開始前にミッションの目的を定義してください。",
+      "scaffold": "不足情報を明示的な TBD として下書きし、質問だけで停止せず具体的な選択肢を提示します。",
+      "objective": {
+        "plan": { "label": "研究質問 / 仮説", "placeholder": "集団 Z で介入 X は対照より結果 Y を変えるか？" },
+        "literature": { "label": "レビュー質問 / テーマ", "placeholder": "どの証拠が支持または反証するか…" },
+        "reproduce": { "label": "再現する主張", "placeholder": "定量的主張、論文、図、表" },
+        "audit": { "label": "監査対象", "placeholder": "原稿、報告書、研究公正上の懸念" }
+      },
+      "population": { "label": "対象集団 / 標本", "placeholder": "対象、環境、基準、目標 N" },
+      "intervention": { "label": "介入 / 比較", "placeholder": "治療、曝露、用量、対照" },
+      "primaryOutcome": { "label": "主要評価項目", "placeholder": "変数、時点、単位" },
+      "constraints": { "label": "範囲と制約", "placeholder": "期間、ファイル、日付範囲、方法、倫理、固定条件" }
+    },
+    "ledger": {
+      "label": "主張–エビデンスグラフ",
+      "description": "各主張に追跡可能な証拠を結び付け、Happy Science がローカル出典スナップショットをハッシュ化し、原文抜粋と論争関係を検証します。",
+      "supports": "支持",
+      "contradicts": "反証",
+      "qualifies": "限定",
+      "ready": "{{claims}} 件の主張を {{sources}} 件の検証済み出典に接続し、{{quotes}} 件の原文抜粋と {{contested}} 件の論争中の主張を確認しました。"
+    },
+    "deliverables": "ミッション成果物",
+    "launch": "研究ミッションを開始",
+    "quickTools": "クイックツール",
+    "rigor": {
+      "label": "厳密度ダイヤル",
+      "explore": { "title": "探索", "description": "素早く方向を確認し、未検証の情報源・仮定・結論を明示します。" },
+      "research": { "title": "研究水準", "description": "情報源の検証、再現可能な実行、主張の追跡、重要判断の承認を行います。" },
+      "publication": { "title": "出版水準", "description": "独立した二次監査を加え、根拠のない主張を残しません。" }
+    },
+    "plan": {
+      "title": "研究開始",
+      "description": "結果を見る前に仮説、推定対象、評価項目、判断基準を固定します。",
+      "outputs": { "protocol": "事前登録形式の研究プロトコル", "decisions": "分析判断と感度仮定", "gate": "結果分析前の承認ゲート" }
+    },
+    "literature": {
+      "title": "エビデンス・スプリント",
+      "description": "検証可能な検索履歴から合意、矛盾、研究ギャップを整理します。",
+      "outputs": { "search": "検索式と取得日の完全な記録", "evidence": "解決可能な情報源付きの選別済み証拠表", "map": "合意・対立・不確実性・ギャップのマップ", "ledger": "原文抜粋付きの機械検証可能なエビデンスグラフ", "sources": "SHA-256 出典スナップショットと取得マニフェスト" }
     },
     "analyze": {
       "title": "データを分析する",
       "description": "追加したファイルをエージェントに指定すると、図とレポートが返されます。"
     },
+    "reproduce": {
+      "title": "再現チャレンジ",
+      "description": "定量的主張を独立に再構築し、説明可能な判定を返します。",
+      "outputs": { "environment": "入力ハッシュ、環境、コマンド一覧", "comparison": "原値と再現値の比較", "verdict": "差異を伴う合格・不合格・阻害判定", "ledger": "元の主張と再現結果を出典証拠に接続", "sources": "SHA-256 出典スナップショットと取得マニフェスト" }
+    },
     "audit": {
-      "title": "レポートのトレーサビリティを検証",
-      "description": "引用、出典のない数値、図とコードの整合性を確認します。"
+      "title": "原稿ストレステスト",
+      "description": "投稿前に引用、数値、図、限界をレッドチーム方式で監査します。",
+      "outputs": { "findings": "重要度順の研究公正上の指摘", "checks": "引用・数値・図とコードの照合", "repair": "重大な問題ごとの修正計画", "ledger": "監査対象主張の支持・反証・限定エビデンスグラフ", "sources": "SHA-256 出典スナップショットと取得マニフェスト" }
     },
     "example-climate": {
-      "title": "例を試す: 気候変動トレンド",
+      "title": "NASA 気候ベンチマークを実行",
       "description": "実際の NASA GISTEMP データ — トレンド、10 年ごとの比較、図、レポート。"
     },
     "error": {
-      "setup": "例を準備できませんでした: {{message}}"
+      "setup": "例を準備できませんでした: {{message}}",
+      "mission": "研究ミッションを開始できませんでした: {{message}}",
+      "incomplete": "必須の証拠がないままミッションが終了しました: {{files}}"
+    }
+  },
+  "researchWorkspace": {
+    "status": {
+      "planned": "ミッション計画済み",
+      "running": "ミッション実行中",
+      "waiting-for-input": "入力待ち",
+      "waiting-for-approval": "承認待ち",
+      "paused": "一時停止中",
+      "interrupted": "実行中断",
+      "review-ready": "レビュー可能",
+      "completed": "ミッション完了",
+      "failed": "ミッション失敗",
+      "cancelled": "ミッション取消"
+    },
+    "lifecycle": {
+      "pause": "一時停止",
+      "resume": "再開",
+      "complete": "完了",
+      "failed": "ミッションを更新できませんでした：{{message}}"
+    },
+    "nextActions": {
+      "title": "次のアクション",
+      "owner": { "agent": "エージェント", "researcher": "あなた" },
+      "start-mission": "計画済みミッションを開始します。",
+      "resume-mission": "保存されたチェックポイントから再開します。",
+      "answer-question": "進行を止めている研究質問に回答します。",
+      "review-approval": "保留中の操作を承認または拒否します。",
+      "create-deliverable": "必要な成果物を作成：{{target}}",
+      "resolve-protocol": "{{target}} の TBD と未完了項目を解決します。",
+      "approve-protocol": "現在のプロトコルを確認して承認：{{target}}",
+      "review-evidence": "未解決の証拠 {{count}} 件をレビューします。",
+      "repair-evidence": "証拠契約を修復：{{target}}",
+      "review-run-integrity": "計画逸脱または再現性の指摘 {{count}} 件をレビューします。",
+      "complete-mission": "検証済みパッケージを確認して完了します。"
+    },
+    "runIntegrity": {
+      "title": "計画 ↔ 実行の整合性",
+      "summary": "{{runs}} 実行 · {{aligned}} 整合 · {{attention}} 要確認",
+      "noPlan": "{{count}} 実行で事前登録または分析計画が見つかりませんでした。",
+      "aligned": "確認済みの実行はすべて登録計画と整合しています。"
+    },
+    "refresh": "状態を確認",
+    "checking": "確認中",
+    "executor": "エージェント実行領域",
+    "recovery": {
+      "title": "再起動により実行が中断されました",
+      "description": "完了した手順は保持されています。完了済みの作業を繰り返さず、直前のチェックポイントから再開できます。",
+      "resume": "ミッションを続行"
+    },
+    "gate": {
+      "progress": "検証済みプロトコル経路", "verified": "検証済み", "current": "現在", "pending": "保留", "next": "次の操作", "complete": "ゲート完了", "allVerified": "必要なゲートはすべて検証済みです", "unresolved": "未解決 {{count}} 件", "generic": "この要件にはワークスペースからの検証可能な証拠が必要です。",
+      "protocol-complete": { "title": "プロトコルを完成", "description": "research/protocol.md のすべての [TBD] と未チェック項目を解決します。" },
+      "approval-before-outcomes": { "title": "結果確認前に承認", "description": "結果確認や解析前に現在のプロトコルハッシュを承認します。" },
+      "deliverables-present": { "title": "成果物を検証", "description": "必須成果物が存在し、空でないことを確認します。" },
+      "approve": "現在のプロトコルを承認", "approving": "承認を記録中…", "approvalRecorded": "現在のプロトコルを承認しハッシュに固定しました。", "approvalFailed": "承認に失敗しました：{{message}}",
+      "confirm": { "title": "このプロトコルを承認しますか？", "body": "現在の SHA-256 に紐づく追記専用の決定を記録します。後の編集で承認は自動的に無効になります。", "confirm": "プロトコルを承認" }
+    },
+    "tabs": {
+      "mission": "ミッション",
+      "decisions": "意思決定",
+      "literature": "文献",
+      "evidence": "エビデンス",
+      "sources": "出典",
+      "artifacts": "成果物",
+      "review": "レビュー"
+    },
+    "decisionLog": {
+      "title": "研究上の意思決定を記録",
+      "description": "何を選び、なぜ選んだかを記録します。履歴は追記のみで、改訂は過去の記録を上書きせず明示的に置き換えます。",
+      "question": "意思決定点",
+      "choice": "選択した方法",
+      "rationale": "理由と根拠",
+      "alternatives": "検討した代替案（1行に1件）",
+      "impact": "予想される影響やトレードオフ",
+      "supersedes": "以前の決定を置き換える",
+      "none": "いいえ — 新しい決定",
+      "optional": "任意",
+      "save": "決定を記録",
+      "saving": "記録中",
+      "history": "記録済み {{count}} 件",
+      "empty": "研究上の意思決定はまだ記録されていません。",
+      "alternativesLabel": "代替案：{{values}}",
+      "impactLabel": "影響：{{value}}",
+      "supersedesLabel": "{{id}} を置換"
+    },
+    "literature": {
+      "notRequired": "文献キャプチャはエビデンス、再現、監査ミッションで利用できます。",
+      "searchLabel": "Crossref 文献検索",
+      "searchPlaceholder": "トピック、題名、著者、引用で検索…",
+      "search": "文献を検索",
+      "searching": "検索中",
+      "corpus": "コーパス {{count}} 件",
+      "fullText": "全文スナップショット {{count}} 件",
+      "abstractOnly": "抄録のみ {{count}} 件",
+      "metadataOnly": "メタデータのみ {{count}} 件",
+      "results": "検索結果 {{count}} 件",
+      "deduplicated": "重複 {{count}} 件を除外",
+      "noResults": "解決可能な DOI レコードが見つかりません。",
+      "fullTextCandidate": "全文候補あり",
+      "abstractCandidate": "抄録あり",
+      "metadataCandidate": "メタデータのみ",
+      "capture": "ソースを保存",
+      "capturing": "保存中",
+      "captured": "保存済み",
+      "capturedSources": "検証済みローカルソースコーパス",
+      "status": { "full-text": "全文保存済み", "abstract-only": "抄録のみ", "metadata-only": "メタデータのみ" }
+    },
+    "gates": "{{total}} 件中 {{passed}} 件の品質ゲートを通過しました。",
+    "notChecked": "研究状態を確認すると、現在のエビデンスと品質ゲートを表示できます。",
+    "notRequired": "このミッションではエビデンス台帳と出典マニフェストは不要です。",
+    "metrics": {
+      "claims": "主張",
+      "sources": "出典",
+      "contested": "争点",
+      "relations": "関係",
+      "manifestRecords": "マニフェスト行",
+      "snapshots": "検証済みスナップショット",
+      "quotes": "完全一致引用"
+    },
+    "contested": "争点のある主張",
+    "stances": { "supports": "支持", "contradicts": "反証", "qualifies": "限定" },
+    "emptyEvidence": "読み取れるエビデンス記録はまだありません。",
+    "emptySources": "読み取れる出典スナップショットはまだありません。",
+    "snapshotVerified": "スナップショット検証済み",
+    "snapshotUnverified": "未検証",
+    "hash": "SHA-256",
+    "retrieved": "{{date}} に取得",
+    "adjudication": "人によるエビデンス判定",
+    "reviewed": "{{total}} 件中 {{reviewed}} 件の関係を判定済み。",
+    "decisions": { "accepted": "採用", "needs-review": "要再確認", "rejected": "却下" },
+    "decisionNote": {
+      "needs-review": "何を再確認する必要がありますか？",
+      "rejected": "このエビデンスを除外する理由は？"
+    },
+    "saveDecision": "判定を保存",
+    "savingDecision": "保存中",
+    "cancelDecision": "キャンセル",
+    "reviewCounts": {
+      "accepted": "採用 {{count}}",
+      "needsReview": "要再確認 {{count}}",
+      "rejected": "却下 {{count}}"
+    },
+    "noActiveMission": "実行中のエビデンスミッションがありません",
+    "claimPassport": "主張パスポート",
+    "passportVersion": "v1",
+    "claimStatuses": {
+      "review-pending": "レビュー待ち",
+      "supported": "支持された結論",
+      "contested": "争点のある結論",
+      "contradicted": "反証された結論",
+      "qualified": "条件付きの結論",
+      "unsupported": "エビデンス不足"
+    },
+    "passportReviewed": "{{reviewed}}/{{total}} 件を判定済み",
+    "passportSources": "出典 {{verified}}/{{total}} 件を検証済み",
+    "passportsReady": "{{count}} 件の主張を承認",
+    "passportsBlocked": "{{count}} 件の主張が未解決",
+    "artifacts": "必須成果物 {{total}} 件中 {{present}} 件が揃っています。",
+    "ready": "レビュー可能",
+    "blocked": "{{count}} 件の問題によりレビューできません。",
+    "release": {
+      "eyebrow": "研究リリースシール",
+      "version": "v1",
+      "ready": "封印可能",
+      "blocked": "リリース不可",
+      "sealed": "封印済み",
+      "title": "検証可能な研究パッケージ",
+      "description": "指定成果物、出典スナップショット、人間の判定、主張パスポートを SHA-256 ハッシュ付きでまとめます。",
+      "blockedHint": "すべてのレビュー問題を解決し、各主張パスポートを承認してください。",
+      "generate": "リリースを封印",
+      "generating": "封印中",
+      "get": "パッケージを取得",
+      "files": "{{count}} ファイル",
+      "claims": "{{count}} パスポート",
+      "fingerprint": "コンテンツ指紋",
+      "unavailable": "現在のクライアントではこのパッケージを取得できません。",
+      "verifyTitle": "リリースの検証またはインポート",
+      "verifyHint": "ワークスペース相対の ZIP パスを指定します。全ハッシュを検証し、既存ファイルを上書きせず新しい imports/ ディレクトリへ展開します。",
+      "pathLabel": "リリースパッケージのパス",
+      "pathPlaceholder": "releases/happy-science-….zip",
+      "verify": "検証",
+      "verifying": "検証中",
+      "verified": "検証済み · {{count}} ファイル",
+      "invalid": "無効なパッケージ · {{count}} 件の問題",
+      "import": "安全にインポート",
+      "importing": "インポート中",
+      "imported": "上書きなしでインポート済み → {{path}}"
     }
   },
   "live": {
@@ -186,7 +420,7 @@
       "openTitle": "{{path}} を開く — エージェントはこのセッションでこのノートブックを操作します"
     },
     "connBadge": {
-      "title": "OpenCode · {{status}}",
+      "title": "実行エンジン · {{status}}",
       "status": {
         "ready": "準備完了",
         "connecting": "接続中",

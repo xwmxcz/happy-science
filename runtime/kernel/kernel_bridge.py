@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Minimal local Python kernel for the AI4S Workbench notebook.
+"""Minimal local Python kernel for the Happy Science notebook.
 
 A persistent process that holds one namespace across cells (shared state, like a
 Jupyter kernel) and speaks a line-delimited JSON protocol over stdin/stdout:

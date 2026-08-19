@@ -28,6 +28,16 @@
     "succeeded": "成功",
     "failed": "失败"
   },
+  "integrity": {
+    "section": "研究完整性",
+    "attention": "{{count}} 项警告",
+    "attentionTitle": "本次运行与研究计划存在偏差，或有可复现性警告。",
+    "aligned": "符合计划",
+    "alignedTitle": "未发现本次运行偏离研究计划。",
+    "no-plan": "缺少计划",
+    "no-planTitle": "未找到预注册、分析计划或研究方案。",
+    "plan": "计划：{{path}}"
+  },
   "hardware": {
     "title": "本次运行所使用的硬件",
     "remoteTitle": "本次运行所使用的远程硬件",
@@ -39,7 +49,8 @@
   },
   "action": {
     "reproduce": "复现",
-    "reproduceTitle": "起草一个提示，重新运行此命令并比较输出",
+    "reproducing": "正在复现",
+    "reproduceTitle": "立即运行相同命令，并比较输入、代码、环境和结果",
     "log": "日志",
     "logTitle": "查看捕获的 stdout/stderr",
     "openConversation": "打开对话",
@@ -50,8 +61,23 @@
   },
   "files": {
     "code": "代码",
+    "inputs": "输入",
     "outputs": "输出",
     "openTitle": "打开此输出文件"
+  },
+  "reproduction": {
+    "section": "复现对比",
+    "baseline": "基线 {{id}}",
+    "notConnected": "请先连接代理运行时，再复现运行。",
+    "notStarted": "复现命令未能启动。",
+    "completed": "复现已完成；对比结果已保存到新运行。",
+    "failed": "复现失败：{{message}}",
+    "matches": "一致",
+    "differences": "{{count}} 处差异",
+    "unverifiableFiles": "{{count}} 项无法核验",
+    "unavailable": "未采集",
+    "dimensions": { "inputs": "输入", "code": "代码", "environment": "环境", "outputs": "结果" },
+    "outcome": { "identical": "完全一致", "different": "发现差异", "unverifiable": "部分无法核验", "failed": "命令失败" }
   },
   "remote": {
     "hpcLabel": "HPC 集群",

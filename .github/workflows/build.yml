@@ -107,9 +107,9 @@ jobs:
             runtime/skills/external/anthropic-skills \
             runtime/skills/external/agent-browser/open-science-browser/SKILL.md \
             runtime/goal-plugin/goal-plugin.server.js \
-            "apps/desktop/src-tauri/binaries/opencode-${{ matrix.target }}$ext" \
-            "apps/desktop/src-tauri/binaries/uv-${{ matrix.target }}$ext" \
-            "apps/desktop/src-tauri/binaries/agent-browser-${{ matrix.target }}$ext"; do
+            "apps/desktop/src-tauri/binaries/happy-science-opencode-${{ matrix.target }}$ext" \
+            "apps/desktop/src-tauri/binaries/happy-science-uv-${{ matrix.target }}$ext" \
+            "apps/desktop/src-tauri/binaries/happy-science-agent-browser-${{ matrix.target }}$ext"; do
             if [ ! -e "$path" ]; then
               echo "Missing bundled resource: $path" >&2
               status=1
@@ -182,7 +182,7 @@ jobs:
           # On a v* tag push, attach installers to a draft GitHub Release.
           # Empty tagName (workflow_dispatch) skips release creation.
           tagName: ${{ github.ref_type == 'tag' && github.ref_name || '' }}
-          releaseName: ${{ github.ref_type == 'tag' && format('Open Science Desktop {0}', github.ref_name) || '' }}
+          releaseName: ${{ github.ref_type == 'tag' && format('Happy Science {0}', github.ref_name) || '' }}
           releaseDraft: true
           # Standing install/first-launch notes. Tagged macOS releases are blocked
           # above unless Developer ID signing + notarization credentials are
@@ -191,13 +191,13 @@ jobs:
             ## Install & first launch
 
             **macOS** — Apple Silicon: `…_aarch64.dmg` · Intel: `…_x64.dmg` (requires macOS 13+)
-            - Developer ID-signed and notarized. Open the DMG and drag **Open Science** into Applications.
+            - Developer ID-signed and notarized. Open the DMG and drag **Happy Science** into Applications.
             - When you use an existing project in place, allow access to its folder if macOS asks.
 
             **Windows** — `…_x64-setup.exe` (start here) · `…_x64_en-US.msi` (IT-managed deployment only)
             - SmartScreen shows *"Windows protected your PC"* → **More info** → **Run anyway**.
             - Upgrading: choose **"Install over it, keeping my data"**. Removing the old version first is only for repairing a failed upgrade.
-            - Uninstalling: leave **"Also delete my sessions, run history and settings"** unchecked unless you mean it — it erases `%APPDATA%\com.ai4s.workbench`.
+            - Uninstalling: leave **"Also delete my sessions, run history and settings"** unchecked unless you mean it — it erases `%APPDATA%\com.happyscience.desktop`.
             - Pick one format and stay on it. Installing the `.exe` over an `.msi` install (or the reverse) registers the app twice; uninstall the old one from **Settings → Apps** first.
 
             **Linux** — `.deb` / `.rpm`
@@ -262,8 +262,8 @@ jobs:
           esac
 
           archive_dir="$RUNNER_TEMP/macos-submitted-app"
-          archive_path="$archive_dir/Open.Science_${version}_${suffix}.submitted.app.zip"
-          dmg_path="$PWD/target/${{ matrix.target }}/release/bundle/dmg/Open.Science_${version}_${suffix}.dmg"
+          archive_path="$archive_dir/Happy.Science_${version}_${suffix}.submitted.app.zip"
+          dmg_path="$PWD/target/${{ matrix.target }}/release/bundle/dmg/Happy.Science_${version}_${suffix}.dmg"
           mkdir -p "$archive_dir"
           ditto -c -k --keepParent --sequesterRsrc "$app_path" "$archive_path"
 
@@ -276,7 +276,7 @@ jobs:
         if: always() && steps.macos_app.outputs.found == 'true'
         uses: actions/upload-artifact@v4
         with:
-          name: ai4s-workbench-${{ matrix.target }}-submitted-app
+          name: happy-science-${{ matrix.target }}-submitted-app
           path: ${{ steps.macos_app.outputs.archive_path }}
           if-no-files-found: error
 
@@ -309,7 +309,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: ai4s-workbench-${{ matrix.target }}
+          name: happy-science-${{ matrix.target }}
           path: |
             target/${{ matrix.target }}/release/bundle/**/*.dmg
             target/${{ matrix.target }}/release/bundle/**/*.exe

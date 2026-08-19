@@ -138,26 +138,314 @@
   },
   "starters": {
     "newSession": "New session",
-    "heading": "What should we look into?",
-    "subheading": "Describe your analysis below — or start from one of these.",
-    "demo": {
-      "title": "Run a demo analysis, end to end",
-      "description": "Simulate a dataset, fit a model, and produce a figure and a traceable report."
+    "missionControl": "Mission Control",
+    "heading": "Define the mission. Set the proof standard.",
+    "subheading": "Choose the scientific job, inspect its deliverables, and decide how much verification the agent must complete before it can report a result.",
+    "brief": {
+      "contract": "Mission contract",
+      "title": "Research coordinates",
+      "defined": "{{defined}}/{{total}} defined",
+      "optional": "· optional",
+      "required": "Define the mission objective before launch.",
+      "scaffold": "Draft missing details as explicit TBDs and propose concrete options instead of stopping at a questionnaire.",
+      "objective": {
+        "plan": { "label": "Research question / hypothesis", "placeholder": "Does intervention X change outcome Y versus control in population Z?" },
+        "literature": { "label": "Review question / topic", "placeholder": "What evidence supports or contradicts…" },
+        "reproduce": { "label": "Claim to reproduce", "placeholder": "Name the quantitative claim, paper, figure, or table" },
+        "audit": { "label": "Audit target", "placeholder": "Name the manuscript, report, or integrity concern" }
+      },
+      "population": { "label": "Population / sample", "placeholder": "Who, setting, eligibility, target N" },
+      "intervention": { "label": "Intervention / comparison", "placeholder": "Treatment, exposure, dose, control" },
+      "primaryOutcome": { "label": "Primary outcome", "placeholder": "Variable, timepoint, units" },
+      "constraints": { "label": "Scope and constraints", "placeholder": "Timeline, files, date range, methods, ethics, fixed choices" }
+    },
+    "ledger": {
+      "label": "Claim–Evidence Graph",
+      "description": "Every claim carries traceable evidence; Happy Science hashes local source snapshots, verifies exact excerpts, and maps contestation.",
+      "supports": "Supports",
+      "contradicts": "Contradicts",
+      "qualifies": "Qualifies",
+      "ready": "{{claims}} claims linked to {{sources}} verified sources; {{quotes}} exact excerpts checked and {{contested}} contested claims mapped."
+    },
+    "deliverables": "Mission deliverables",
+    "launch": "Launch research mission",
+    "quickTools": "Quick tools",
+    "rigor": {
+      "label": "Rigor dial",
+      "explore": {
+        "title": "Explore",
+        "description": "Fast orientation. Every unresolved source, assumption, and conclusion stays explicitly marked."
+      },
+      "research": {
+        "title": "Research-grade",
+        "description": "Verified sources, reproducible execution, claim traceability, and approval at consequential decisions."
+      },
+      "publication": {
+        "title": "Publication-grade",
+        "description": "Research-grade work plus an independent second-pass audit and no unsupported claims."
+      }
+    },
+    "plan": {
+      "title": "Study launch",
+      "description": "Lock hypotheses, estimands, endpoints, and decision gates before looking at outcomes.",
+      "outputs": {
+        "protocol": "Preregistration-style research protocol",
+        "decisions": "Analysis decisions and sensitivity assumptions",
+        "gate": "Approval gate before outcome analysis"
+      }
+    },
+    "literature": {
+      "title": "Evidence sprint",
+      "description": "Map consensus, contradictions, and research gaps with a verified search trail.",
+      "outputs": {
+        "search": "Exact search queries and retrieval dates",
+        "evidence": "Screened evidence table with resolvable sources",
+        "map": "Consensus, conflict, uncertainty, and gap map",
+        "ledger": "Machine-checked claim graph with exact source excerpts",
+        "sources": "SHA-256 source snapshots and retrieval manifest"
+      }
     },
     "analyze": {
       "title": "Analyze my data",
       "description": "Point the agent at a file you added; get figures and a report back."
     },
+    "reproduce": {
+      "title": "Reproduction challenge",
+      "description": "Rebuild one quantitative claim independently and return a defensible verdict.",
+      "outputs": {
+        "environment": "Input hashes, environment, and command manifest",
+        "comparison": "Original-versus-reproduced value comparison",
+        "verdict": "Pass, fail, or blocked verdict with deviations",
+        "ledger": "Original and reproduced claims linked to source evidence",
+        "sources": "SHA-256 source snapshots and retrieval manifest"
+      }
+    },
     "audit": {
-      "title": "Audit a report for traceability",
-      "description": "Check citations, unsourced numbers, and figure-versus-code consistency."
+      "title": "Manuscript stress test",
+      "description": "Red-team citations, numbers, figures, and limitations before submission.",
+      "outputs": {
+        "findings": "Ranked research-integrity findings",
+        "checks": "Citation, number, and figure-to-code checks",
+        "repair": "Repair plan for every material issue",
+        "ledger": "Support, contradiction, and qualification graph for audited claims",
+        "sources": "SHA-256 source snapshots and retrieval manifest"
+      }
     },
     "example-climate": {
-      "title": "Explore an example: climate trends",
+      "title": "Run the NASA climate benchmark",
       "description": "Real NASA GISTEMP data — trend, decadal comparison, figure, and report."
     },
     "error": {
-      "setup": "Could not set up the example: {{message}}"
+      "setup": "Could not set up the example: {{message}}",
+      "mission": "Could not launch the research mission: {{message}}",
+      "incomplete": "Mission finished without its required evidence: {{files}}"
+    }
+  },
+  "researchWorkspace": {
+    "status": {
+      "planned": "Mission planned",
+      "running": "Mission active",
+      "waiting-for-input": "Waiting for input",
+      "waiting-for-approval": "Waiting for approval",
+      "paused": "Mission paused",
+      "interrupted": "Execution interrupted",
+      "review-ready": "Ready for review",
+      "completed": "Mission completed",
+      "failed": "Mission failed",
+      "cancelled": "Mission cancelled"
+    },
+    "lifecycle": {
+      "pause": "Pause",
+      "resume": "Resume",
+      "complete": "Complete",
+      "failed": "Could not update the mission: {{message}}"
+    },
+    "nextActions": {
+      "title": "Next actions",
+      "owner": { "agent": "Agent", "researcher": "You" },
+      "start-mission": "Start the planned mission.",
+      "resume-mission": "Resume from the preserved checkpoint.",
+      "answer-question": "Answer the agent's blocking research question.",
+      "review-approval": "Approve or reject the pending action.",
+      "create-deliverable": "Create the required artifact: {{target}}",
+      "resolve-protocol": "Resolve every TBD and unchecked item in {{target}}.",
+      "approve-protocol": "Review and approve the current protocol: {{target}}",
+      "review-evidence": "Review {{count}} unresolved evidence items.",
+      "repair-evidence": "Repair the evidence contract: {{target}}",
+      "review-run-integrity": "Review {{count}} plan-deviation or reproducibility findings.",
+      "complete-mission": "Review the verified package and mark the mission complete."
+    },
+    "runIntegrity": {
+      "title": "Plan ↔ run integrity",
+      "summary": "{{runs}} runs · {{aligned}} aligned · {{attention}} need review",
+      "noPlan": "{{count}} runs had no discoverable preregistration or analysis plan.",
+      "aligned": "Every checked run is aligned with the registered plan."
+    },
+    "refresh": "Check status",
+    "checking": "Checking",
+    "executor": "Agent executor",
+    "recovery": {
+      "title": "Execution interrupted by restart",
+      "description": "Completed steps are preserved. Continue from the last checkpoint without repeating finished work.",
+      "resume": "Continue mission"
+    },
+    "gate": {
+      "progress": "Verified protocol path",
+      "verified": "Verified",
+      "current": "Current",
+      "pending": "Pending",
+      "next": "Next action",
+      "complete": "Gate sequence complete",
+      "allVerified": "Every required gate is verified",
+      "unresolved": "{{count}} unresolved",
+      "generic": "This requirement still needs verifiable evidence from the mission workspace.",
+      "protocol-complete": { "title": "Complete protocol", "description": "Resolve every [TBD] and unchecked item in research/protocol.md." },
+      "approval-before-outcomes": { "title": "Approve before outcomes", "description": "Review and approve the exact protocol hash before any outcome inspection or analysis." },
+      "deliverables-present": { "title": "Verify deliverables", "description": "Confirm every required artifact exists and is non-empty in the workspace." },
+      "approve": "Approve current protocol",
+      "approving": "Recording approval…",
+      "approvalRecorded": "The current protocol was approved and hash-locked.",
+      "approvalFailed": "Protocol approval failed: {{message}}",
+      "confirm": {
+        "title": "Approve this protocol?",
+        "body": "This records an append-only decision bound to the current protocol SHA-256. Editing the protocol later automatically invalidates the approval.",
+        "confirm": "Approve protocol"
+      }
+    },
+    "tabs": {
+      "mission": "Mission",
+      "decisions": "Decisions",
+      "literature": "Literature",
+      "evidence": "Evidence",
+      "sources": "Sources",
+      "artifacts": "Artifacts",
+      "review": "Review"
+    },
+    "decisionLog": {
+      "title": "Record a research decision",
+      "description": "Capture what was chosen and why. Entries are append-only; a revision supersedes an earlier entry instead of rewriting it.",
+      "question": "Decision point",
+      "choice": "Chosen approach",
+      "rationale": "Rationale and evidence",
+      "alternatives": "Alternatives considered — one per line",
+      "impact": "Expected impact or trade-off",
+      "supersedes": "Supersedes an earlier decision",
+      "none": "No — this is a new decision",
+      "optional": "optional",
+      "save": "Record decision",
+      "saving": "Recording",
+      "history": "{{count}} recorded decisions",
+      "empty": "No research decisions have been recorded yet.",
+      "alternativesLabel": "Alternatives: {{values}}",
+      "impactLabel": "Impact: {{value}}",
+      "supersedesLabel": "Supersedes {{id}}"
+    },
+    "literature": {
+      "notRequired": "Literature capture is available for evidence, reproduction, and audit missions.",
+      "searchLabel": "Crossref discovery",
+      "searchPlaceholder": "Search by topic, title, author, or citation…",
+      "search": "Search literature",
+      "searching": "Searching",
+      "corpus": "{{count}} sources in corpus",
+      "fullText": "{{count}} full-text snapshots",
+      "abstractOnly": "{{count}} abstract-only",
+      "metadataOnly": "{{count}} metadata-only",
+      "results": "{{count}} search results",
+      "deduplicated": "{{count}} duplicates removed",
+      "noResults": "No resolvable DOI records matched this query.",
+      "fullTextCandidate": "full text candidate",
+      "abstractCandidate": "abstract available",
+      "metadataCandidate": "metadata only",
+      "capture": "Capture source",
+      "capturing": "Capturing",
+      "captured": "Captured",
+      "capturedSources": "Verified local source corpus",
+      "status": {
+        "full-text": "Full text captured",
+        "abstract-only": "Abstract only",
+        "metadata-only": "Metadata only"
+      }
+    },
+    "gates": "{{passed}} of {{total}} quality gates passed.",
+    "notChecked": "Check research status to inspect the current evidence and quality gates.",
+    "notRequired": "This mission does not require an evidence ledger or source snapshot manifest.",
+    "metrics": {
+      "claims": "Claims",
+      "sources": "Sources",
+      "contested": "Contested",
+      "relations": "Relations",
+      "manifestRecords": "Manifest rows",
+      "snapshots": "Verified snapshots",
+      "quotes": "Exact quotes"
+    },
+    "contested": "Contested claim",
+    "stances": { "supports": "Supports", "contradicts": "Contradicts", "qualifies": "Qualifies" },
+    "emptyEvidence": "No parsed evidence records are available yet.",
+    "emptySources": "No parsed source snapshots are available yet.",
+    "snapshotVerified": "Snapshot verified",
+    "snapshotUnverified": "Not verified",
+    "hash": "SHA-256",
+    "retrieved": "Retrieved {{date}}",
+    "adjudication": "Human evidence review",
+    "reviewed": "{{reviewed}} of {{total}} relations adjudicated.",
+    "decisions": { "accepted": "Accept", "needs-review": "Needs review", "rejected": "Reject" },
+    "decisionNote": {
+      "needs-review": "What needs another check?",
+      "rejected": "Why should this evidence be excluded?"
+    },
+    "saveDecision": "Save decision",
+    "savingDecision": "Saving",
+    "cancelDecision": "Cancel",
+    "reviewCounts": {
+      "accepted": "{{count}} accepted",
+      "needsReview": "{{count}} to revisit",
+      "rejected": "{{count}} rejected"
+    },
+    "noActiveMission": "No active evidence mission",
+    "claimPassport": "Claim Passport",
+    "passportVersion": "v1",
+    "claimStatuses": {
+      "review-pending": "Review pending",
+      "supported": "Supported conclusion",
+      "contested": "Contested conclusion",
+      "contradicted": "Contradicted conclusion",
+      "qualified": "Qualified conclusion",
+      "unsupported": "Insufficient evidence"
+    },
+    "passportReviewed": "{{reviewed}}/{{total}} reviewed",
+    "passportSources": "{{verified}}/{{total}} sources verified",
+    "passportsReady": "{{count}} claims cleared",
+    "passportsBlocked": "{{count}} claims unresolved",
+    "artifacts": "{{present}} of {{total}} required artifacts are present.",
+    "ready": "Ready for review",
+    "blocked": "Review blocked by {{count}} issues.",
+    "release": {
+      "eyebrow": "Research Release Seal",
+      "version": "v1",
+      "ready": "Ready to seal",
+      "blocked": "Release blocked",
+      "sealed": "Sealed",
+      "title": "Verifiable research package",
+      "description": "Packages declared artifacts, source snapshots, human decisions, and Claim Passports with SHA-256 hashes.",
+      "blockedHint": "Resolve every review issue and clear each Claim Passport before sealing.",
+      "generate": "Seal release",
+      "generating": "Sealing",
+      "get": "Get package",
+      "files": "{{count}} files",
+      "claims": "{{count}} passports",
+      "fingerprint": "Content fingerprint",
+      "unavailable": "This package cannot be delivered in the current client.",
+      "verifyTitle": "Verify or import a release",
+      "verifyHint": "Use a workspace-relative ZIP path. Import verifies every hash and extracts into a new isolated imports/ directory without overwriting files.",
+      "pathLabel": "Release package path",
+      "pathPlaceholder": "releases/happy-science-….zip",
+      "verify": "Verify",
+      "verifying": "Verifying",
+      "verified": "Verified · {{count}} payload files",
+      "invalid": "Invalid package · {{count}} issues",
+      "import": "Safe import",
+      "importing": "Importing",
+      "imported": "Imported without overwrite → {{path}}"
     }
   },
   "live": {
@@ -186,7 +474,7 @@
       "openTitle": "Open {{path}} — the agent works on this notebook in this session"
     },
     "connBadge": {
-      "title": "OpenCode · {{status}}",
+      "title": "Executor · {{status}}",
       "status": {
         "ready": "ready",
         "connecting": "connecting",

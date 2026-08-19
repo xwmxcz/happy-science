@@ -1,5 +1,7 @@
-// Stable domain types for AI4S Workbench.
+// Stable domain types and product identity for Happy Science.
 // Imported by the desktop app now, and by the SDK / runtime in later slices.
+
+export { PRODUCT_NAME, PRODUCT_SLUG, UPDATE_REPOSITORY } from "./brand";
 
 export type RuntimeStatus = "connecting" | "ready" | "error" | "offline";
 export type ModelStatus = "connected" | "disconnected" | "error";
@@ -266,6 +268,8 @@ export interface StatusLineBlock {
   text: string; // e.g. "8 running · 16m 2s"
   tone?: "running" | "done" | "review" | "error";
   divider?: boolean;
+  /** The previous agent turn ended before completion and can be continued. */
+  interrupted?: true;
 }
 
 // ---- Inspector (right pane) ----
@@ -422,7 +426,7 @@ export interface ProvenanceEnv {
   python?: string;
   /** OS and architecture, e.g. "macos-aarch64". */
   platform: string;
-  /** Open Science app version that recorded it. */
+  /** Happy Science app version that recorded it. */
   app: string;
   /** Installed Python packages (pip freeze), content-addressed to a lockfile. */
   packages?: PackageSnapshot;
@@ -479,6 +483,8 @@ export interface RunRecord {
    *  later edit to the script is detectable when reproducing. May be absent
    *  (the store omits empty arrays). */
   code?: RunArtifact[];
+  /** Existing data/config files named by the command, excluding code and outputs. */
+  inputs?: RunArtifact[];
   /** Files created or modified during the run's time window — its outputs.
    *  May be absent (the store omits empty arrays). */
   outputs?: RunArtifact[];
@@ -486,6 +492,54 @@ export interface RunRecord {
   logHash?: string;
   /** Runtime environment (software + hardware) the run executed in. */
   env?: ProvenanceEnv;
+  /** Automatic plan-deviation and reproducibility checks. Remote runs may omit
+   * this when their code and outputs are not present in the local workspace. */
+  integrity?: RunIntegrityCheck;
+  /** Deterministic comparison against a baseline run when this was a reproduction. */
+  reproduction?: RunReproduction;
+}
+
+export interface RunIntegrityCheck {
+  schemaVersion: 1;
+  /** `no-plan` means no plan was discoverable; `aligned` means no checked
+   * deviation was found; `attention` means at least one finding exists. */
+  status: "no-plan" | "aligned" | "attention";
+  planPaths: string[];
+  findings: RunIntegrityFinding[];
+}
+
+export interface RunIntegrityFinding {
+  kind: "unregistered-predictor" | "unregistered-interaction" | "missing-seed" | "causal-overreach";
+  level: "warn";
+  tag: "stats · prereg" | "stats · seed" | "stats · interpretation";
+  title: string;
+  evidence: string;
+  path: string;
+  line: number;
+}
+
+export interface ArtifactComparison {
+  matched: string[];
+  changed: string[];
+  missing: string[];
+  added: string[];
+  unverifiable: string[];
+}
+
+export interface EnvironmentComparison {
+  /** Missing when either run did not capture its environment. */
+  matches?: boolean;
+  changes: string[];
+}
+
+export interface RunReproduction {
+  requestId: string;
+  baselineRunId: string;
+  outcome: "identical" | "different" | "unverifiable" | "failed";
+  inputs: ArtifactComparison;
+  code: ArtifactComparison;
+  environment: EnvironmentComparison;
+  outputs: ArtifactComparison;
 }
 
 /** A file referenced by a run — its code input or produced output. */

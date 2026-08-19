@@ -41,7 +41,7 @@ const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 export default tool({
   description:
-    "Sign in to a remote compute host that asks for a password or a one-time code, by asking the Open Science Desktop UI to prompt the user. Call this when an ssh/scp/rsync/sbatch command on a saved machine fails with a permission or authentication error, BEFORE reporting the failure — many institutional clusters require two-factor authentication on every connection. It returns once the shared connection is up (the user may take a minute to approve), after which every later command on that host needs no credentials. Do not call it for host-key or network errors: signing in cannot fix those.",
+    "Sign in to a remote compute host that asks for a password or a one-time code, by asking the Happy Science UI to prompt the user. Call this when an ssh/scp/rsync/sbatch command on a saved machine fails with a permission or authentication error, BEFORE reporting the failure — many institutional clusters require two-factor authentication on every connection. It returns once the shared connection is up (the user may take a minute to approve), after which every later command on that host needs no credentials. Do not call it for host-key or network errors: signing in cannot fix those.",
   args: {
     host: tool.schema
       .string()

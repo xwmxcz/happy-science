@@ -14,7 +14,7 @@ vi.mock("@/lib/tauri", () => ({
 }));
 
 const status = (over: Partial<CliShimStatus> = {}): CliShimStatus => ({
-  binary: "/Applications/Open Science.app/Contents/MacOS/osd",
+  binary: "/Applications/Happy Science.app/Contents/MacOS/osd",
   shim: "/Users/x/bin/osd",
   installed: true,
   occupied: false,

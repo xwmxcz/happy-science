@@ -1,6 +1,6 @@
 [package]
 name = "osd-cli"
-description = "osd — Open Science Desktop without a window: a headless server and a client for it."
+description = "osd — Happy Science without a window: a headless server and a client for it."
 version.workspace = true
 edition.workspace = true
 license.workspace = true

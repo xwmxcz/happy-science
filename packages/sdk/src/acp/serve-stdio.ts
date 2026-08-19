@@ -1,4 +1,4 @@
-// The process an external editor spawns to drive Open Science over ACP (#14).
+// The process an external editor spawns to drive Happy Science over ACP (#14).
 //
 // Node-only, and deliberately NOT exported from the browser barrel: it owns
 // `process.stdin`/`stdout`, which the webview does not have. stdio is the only
@@ -11,6 +11,7 @@
 // sees in the window. Nothing here duplicates the runtime, and nothing works
 // unless the user has enabled remote access and handed over a token.
 import { OpenCodeClient } from "../OpenCodeClient";
+import { PRODUCT_NAME } from "@ai4s/shared";
 import { AcpAgentServer } from "./server";
 import type { JsonRpcTransport } from "./protocol";
 
@@ -124,9 +125,9 @@ export async function main(argv: string[] = process.argv.slice(2)): Promise<void
   const token = flag("token") ?? process.env.OPENSCIENCE_GATEWAY_TOKEN ?? "";
   if (!url || !token) {
     process.stderr.write(
-      "Open Science ACP server: --url and --token are required " +
+      `${PRODUCT_NAME} ACP server: --url and --token are required ` +
         "(or OPENSCIENCE_GATEWAY_URL / OPENSCIENCE_GATEWAY_TOKEN).\n" +
-        "Both are shown in Open Science → Settings → Remote Access.\n",
+        `Both are shown in ${PRODUCT_NAME} → Settings → Remote Access.\n`,
     );
     process.exitCode = 2;
     return;
@@ -135,9 +136,9 @@ export async function main(argv: string[] = process.argv.slice(2)): Promise<void
     await serveStdio({ url, token, version: flag("version") });
   } catch (err) {
     process.stderr.write(
-      `Open Science ACP server: could not reach the desktop app at ${url} — ` +
+      `${PRODUCT_NAME} ACP server: could not reach the desktop app at ${url} — ` +
         `${err instanceof Error ? err.message : String(err)}\n` +
-        "Is Open Science running with remote access enabled?\n",
+        `Is ${PRODUCT_NAME} running with remote access enabled?\n`,
     );
     process.exitCode = 1;
   }

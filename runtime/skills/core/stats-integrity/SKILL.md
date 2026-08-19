@@ -55,16 +55,19 @@ df = pd.read_stata("data.dta")        # or pd.read_spss("data.sav")
 Report the coefficient **and** its standard error; if you compute the same model
 two ways (pandas vs R), confirm they match to the printed precision.
 
-## Run the integrity gate
+## Read the automatic integrity gate
 
-The deterministic gate ships beside this SKILL.md. Run it on the workspace (or
-named files) before you report results:
+Happy Science runs the deterministic gate automatically whenever it records a
+local analysis execution. The result is persisted on that run in
+`.openscience/runs.jsonl`; the script beside this SKILL.md only renders the
+latest result as a reviewer block. Run it from the workspace before reporting
+results:
 
 ```bash
-python "$XDG_CONFIG_HOME/opencode/skills/stats-integrity/stats_integrity_check.py" [files...]
+python "$XDG_CONFIG_HOME/opencode/skills/stats-integrity/stats_integrity_check.py"
 ```
 
-It prints one ` ```review ` fenced JSON block covering three risks:
+It prints one ` ```review ` fenced JSON block covering three core-owned risks:
 
 - **stats · interpretation** — causal / provocative language over an association
   in a report.
@@ -82,5 +85,6 @@ the gate checks specific risks only.
 
 ## Adding a check
 
-Add a `check_<name>(...)` function in `stats_integrity_check.py` and call it from
-`run()`; each finding carries its own `tag`, so the app needs no change.
+Add detection to `crates/osd-core/src/research_integrity.rs` and test it there.
+Keep `stats_integrity_check.py` as a projection of the persisted run result so
+there is only one integrity contract and one rule implementation.

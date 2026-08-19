@@ -941,6 +941,19 @@ export function turnStillStreaming(
   return true;
 }
 
+/** A turn accepted by an older runtime but never completed needs an explicit
+ * recovery affordance. This also covers a crash after the user message was
+ * stored but before the assistant message was created. */
+export function turnNeedsRecovery(
+  messages: HistoryMessage[],
+  runtimeStartedAt?: number,
+): boolean {
+  const last = messages[messages.length - 1];
+  if (!last || !runtimeStartedAt || !last.created || last.created >= runtimeStartedAt) return false;
+  if (last.role === "user") return true;
+  return last.role === "assistant" && !last.completed && !last.error;
+}
+
 /** Streamed events that prove a session's turn is still in flight. Any of them
  *  re-locks a session whose local running flag is missing — see the handler.
  *
@@ -3239,10 +3252,11 @@ export const useRuntimeStore = create<RuntimeState>((set, get) => ({
       // A replayed ACP session reports its selectors during the load — show the
       // model it is actually on, not the one the last session used.
       syncAcpConfig(set, id);
+      const startedAt = get().runtimeStartedAt;
       set((s) => ({
         threads: {
           ...s.threads,
-          [id]: { ...historyToThread(messages, s.commands), loaded: true },
+          [id]: { ...historyToThread(messages, s.commands, startedAt), loaded: true },
         },
         // Seed the agent pill from history: a session that was planning when
         // the app closed (or whose plan_exit flip fell into an SSE gap) must
@@ -3252,7 +3266,7 @@ export const useRuntimeStore = create<RuntimeState>((set, get) => ({
         // a session still mid-answer would otherwise reopen with no "Working…"
         // and no way to stop it — a silent long tool call streams no event to
         // re-lock it either (#59).
-        ...(turnStillStreaming(messages, get().runtimeStartedAt)
+        ...(turnStillStreaming(messages, startedAt)
           ? { runningSessions: { ...s.runningSessions, [id]: true as const } }
           : {}),
       }));
@@ -3284,12 +3298,16 @@ export const useRuntimeStore = create<RuntimeState>((set, get) => ({
       // slash-command expansion renders raw.
       if (catalogInFlight && get().commands.length === 0) await catalogInFlight;
       if (get().threads[id]?.loaded) return; // a live fold beat us to it
+      const startedAt = get().runtimeStartedAt;
       set((s) => ({
-        threads: { ...s.threads, [id]: { ...historyToThread(messages, s.commands), loaded: true } },
+        threads: {
+          ...s.threads,
+          [id]: { ...historyToThread(messages, s.commands, startedAt), loaded: true },
+        },
         sessionAgents: { ...s.sessionAgents, [id]: lastAgentMode(messages) },
         // Same server-truth seeding as openSession — a background pane must not
         // adopt a still-running session as idle (#59).
-        ...(turnStillStreaming(messages, get().runtimeStartedAt)
+        ...(turnStillStreaming(messages, startedAt)
           ? { runningSessions: { ...s.runningSessions, [id]: true as const } }
           : {}),
       }));
@@ -3448,7 +3466,7 @@ export const useRuntimeStore = create<RuntimeState>((set, get) => ({
             loaded: true,
             blocks: [
               ...(settled[sid] ?? cur).blocks,
-              { kind: "status-line", text: "Interrupted", tone: "error" },
+              { kind: "status-line", text: "Interrupted", tone: "error", interrupted: true },
             ],
           },
         },
@@ -4030,7 +4048,11 @@ export function lastAgentMode(messages: HistoryMessage[]): AgentMode {
   return "build";
 }
 
-export function historyToThread(messages: HistoryMessage[], commands?: CommandInfo[]): FoldState {
+export function historyToThread(
+  messages: HistoryMessage[],
+  commands?: CommandInfo[],
+  runtimeStartedAt?: number,
+): FoldState {
   const blocks: ThreadBlock[] = [];
   // OpenCode stores a slash command's EXPANDED template as the user message —
   // show the "/name args" the user actually typed instead. Templates either
@@ -4064,7 +4086,7 @@ export function historyToThread(messages: HistoryMessage[], commands?: CommandIn
   // A step frozen mid-run (the runtime restarted or the turn was killed before
   // it finished) must not spin forever in history — render it quietly and say
   // once, at the end, that the turn was interrupted.
-  let interrupted = false;
+  let interrupted = turnNeedsRecovery(messages, runtimeStartedAt);
   // A user-typed "!" command is recorded as a synthetic user text plus a bash
   // tool part on the next assistant message. Render it like the live path:
   // the "! cmd" echo and the output inline — never the synthetic marker text.
@@ -4210,6 +4232,7 @@ export function historyToThread(messages: HistoryMessage[], commands?: CommandIn
       kind: "status-line",
       text: "Interrupted — this turn did not finish. Send a new message to continue.",
       tone: "error",
+      interrupted: true,
     });
   }
   return { blocks, index: {} };

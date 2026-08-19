@@ -86,7 +86,7 @@ describe("update store", () => {
     });
   });
 
-  it("manual checks bypass the 24 hour throttle", async () => {
+  it("does not contact an upstream feed before Happy Science configures one", async () => {
     const fetchMock = vi.fn().mockResolvedValue({
       ok: true,
       json: async () => ({
@@ -101,8 +101,9 @@ describe("update store", () => {
     useUpdateStore.setState({ lastCheckedAt: 1000 });
     await useUpdateStore.getState().check({ manual: true, now: 2000 });
 
-    expect(fetchMock).toHaveBeenCalledTimes(1);
-    expect(useUpdateStore.getState().hasUpdate).toBe(true);
-    expect(useUpdateStore.getState().showBadge).toBe(true);
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(useUpdateStore.getState().status).toBe("idle");
+    expect(useUpdateStore.getState().hasUpdate).toBe(false);
+    expect(useUpdateStore.getState().showBadge).toBe(false);
   });
 });

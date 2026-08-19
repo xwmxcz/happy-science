@@ -30,7 +30,7 @@ LangString webview2InstallSuccess ${LANG_ENGLISH} "WebView2 installed successful
 
 ; Default: "Delete the application data". That names nothing, and the box is
 ; ticked on a screen most people click through — while it erases
-; %APPDATA%\com.ai4s.workbench, which holds every session, every run record and
+; %APPDATA%\com.happyscience.desktop, which holds every session, every run record and
 ; the SQLite index. Say what is actually lost, in the user's own terms.
 LangString deleteAppData ${LANG_ENGLISH} "Also delete my sessions, run history and settings (cannot be undone)"
 

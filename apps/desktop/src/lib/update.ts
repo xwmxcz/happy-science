@@ -1,7 +1,11 @@
 import { create } from "zustand";
+import { UPDATE_REPOSITORY } from "@ai4s/shared";
 import { latestRelease } from "./tauri";
 
-const RELEASE_URL = "https://api.github.com/repos/ai4s-research/open-science/releases/latest";
+const RELEASE_URL = UPDATE_REPOSITORY
+  ? `https://api.github.com/repos/${UPDATE_REPOSITORY}/releases/latest`
+  : null;
+export const UPDATE_CHECK_AVAILABLE = RELEASE_URL !== null;
 const CHECK_INTERVAL_MS = 24 * 60 * 60 * 1000;
 const ENABLED_KEY = "openscience.update.enabled";
 const BADGE_KEY = "openscience.update.badge";
@@ -128,6 +132,7 @@ function derive(base: Pick<UpdateState, "enabled" | "badgeEnabled" | "latest" | 
 }
 
 async function fetchLatestRelease(): Promise<UpdateInfo> {
+  if (!RELEASE_URL) throw new Error("Happy Science does not have a release feed yet");
   const native = await latestRelease();
   if (native) return native;
 
@@ -150,7 +155,7 @@ async function fetchLatestRelease(): Promise<UpdateInfo> {
 }
 
 const initial = {
-  enabled: readBool(ENABLED_KEY, true),
+  enabled: UPDATE_CHECK_AVAILABLE && readBool(ENABLED_KEY, true),
   badgeEnabled: readBool(BADGE_KEY, true),
   dismissedVersion: typeof window === "undefined" ? null : window.localStorage.getItem(DISMISSED_KEY),
   lastCheckedAt: readNumber(LAST_CHECKED_KEY),
@@ -177,6 +182,7 @@ export const useUpdateStore = create<UpdateState>((set, get) => ({
     set((s) => ({ dismissedVersion, ...derive({ ...s, dismissedVersion }) }));
   },
   check: async (opts) => {
+    if (!UPDATE_CHECK_AVAILABLE) return;
     const manual = opts?.manual ?? false;
     const now = opts?.now ?? Date.now();
     const s = get();
@@ -205,5 +211,5 @@ export const useUpdateStore = create<UpdateState>((set, get) => ({
       });
     }
   },
-  maybeAutoCheck: () => get().check({ manual: false }),
+  maybeAutoCheck: () => (UPDATE_CHECK_AVAILABLE ? get().check({ manual: false }) : Promise.resolve()),
 }));

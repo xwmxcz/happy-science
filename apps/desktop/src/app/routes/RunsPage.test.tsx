@@ -4,15 +4,17 @@ import { MemoryRouter } from "react-router-dom";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { RunRecord } from "@ai4s/shared";
 import type { RunPage, RunQuery } from "@/lib/runs";
-import { useUiStore } from "@/lib/store";
+import { useRuntimeStore } from "@/lib/runtime";
 import { RunsPage } from "./RunsPage";
 
 const queryRuns = vi.fn();
 const readRunLog = vi.fn();
+const prepareReproduction = vi.fn();
 vi.mock("@/lib/runs", async (importOriginal) => ({
   ...(await importOriginal<typeof import("@/lib/runs")>()),
   queryRuns: (q: RunQuery) => queryRuns(q),
   readRunLog: (hash: string) => readRunLog(hash),
+  prepareReproduction: (runId: string) => prepareReproduction(runId),
 }));
 
 const openArtifactExternally = vi.fn();
@@ -70,10 +72,16 @@ const renderPage = (entry = "/runs") =>
   );
 
 describe("RunsPage", () => {
+  const runShell = vi.fn();
+
   beforeEach(() => {
     queryRuns.mockReset();
     readRunLog.mockReset();
     openArtifactExternally.mockReset();
+    prepareReproduction.mockReset();
+    runShell.mockReset();
+    runShell.mockResolvedValue("ses_1");
+    useRuntimeStore.setState({ status: "ready", runShell });
     serve([run]);
   });
 
@@ -85,13 +93,74 @@ describe("RunsPage", () => {
     expect(screen.getByText(/3.11.4/)).toBeInTheDocument();
   });
 
-  it("drafts the run recipe when Reproduce is clicked", async () => {
-    useUiStore.setState({ composerDraft: null });
+  it("surfaces automatic plan deviations on the run", async () => {
+    serve([
+      {
+        ...run,
+        integrity: {
+          schemaVersion: 1,
+          status: "attention",
+          planPaths: ["research/protocol.md"],
+          findings: [
+            {
+              kind: "unregistered-predictor",
+              level: "warn",
+              tag: "stats · prereg",
+              title: "Predictor not in the research plan",
+              evidence: "analysis.py:2  y ~ x + gender",
+              path: "analysis.py",
+              line: 2,
+            },
+          ],
+        },
+      },
+    ]);
+    renderPage();
+    expect(await screen.findByText("1 warning")).toBeInTheDocument();
+    expect(screen.getByText("Predictor not in the research plan")).toBeInTheDocument();
+    expect(screen.getByText(/research\/protocol\.md/)).toBeInTheDocument();
+  });
+
+  it("shows the persisted reproduction comparison by dimension", async () => {
+    const comparison = {
+      matched: [],
+      changed: ["train.py"],
+      missing: [],
+      added: [],
+      unverifiable: [],
+    };
+    serve([
+      {
+        ...run,
+        reproduction: {
+          requestId: "hsr_1",
+          baselineRunId: "run_baseline",
+          outcome: "different",
+          inputs: { ...comparison, changed: [], matched: ["data.csv"] },
+          code: comparison,
+          environment: { matches: false, changes: ["packages"] },
+          outputs: { ...comparison, changed: ["output/metrics.json"] },
+        },
+      },
+    ]);
+    renderPage();
+    expect(await screen.findByText("Differences found")).toBeInTheDocument();
+    expect(screen.getByText(/baseline run_baseline/)).toBeInTheDocument();
+    expect(screen.getByText("packages")).toBeInTheDocument();
+  });
+
+  it("prepares and runs an exact one-click reproduction", async () => {
+    prepareReproduction.mockResolvedValue({
+      requestId: "hsr_1",
+      baselineRunId: run.runId,
+      command: run.command,
+      sessionId: run.sessionId,
+      preflight: {},
+    });
     renderPage();
     await userEvent.click(await screen.findByRole("button", { name: /Reproduce/ }));
-    const draft = useUiStore.getState().composerDraft;
-    expect(draft).toContain("Reproduce run `run_ab12cd34`");
-    expect(draft).toContain("python train.py --lr 3e-4");
+    await waitFor(() => expect(runShell).toHaveBeenCalledWith(run.command, run.sessionId));
+    expect(prepareReproduction).toHaveBeenCalledWith(run.runId);
   });
 
   it("loads the captured log on demand", async () => {
