@@ -4,12 +4,17 @@
 
 # Happy Science
 
-**本地优先、模型无关的 macOS、Windows & Linux AI 科研桌面工作台。**
+**以任务契约为起点、以证据和可复现性为底座的 AI 科研智能体工作台。**
 
-Happy Science 是基于 MIT 许可项目
-[Open Science Desktop](https://github.com/ai4s-research/open-science) 的独立产品分支。
-它基于 Tauri、MCP、agent skills 和可复现工件构建，把智能体、笔记本、文件、图表、
-报告、运行记录和审查连接成一条可审计的桌面工作流。
+Happy Science 把一个研究目标变成受控的科研任务：先定义任务契约和交付物，在关键
+决策点获得批准，再交给模型无关的智能体执行，最后在一个本地优先的驾驶舱中审阅
+证据、主张、溯源、计划偏差与发布产物。它面向的是需要经得起检查和答辩的研究，
+而不只是看起来合理的聊天回答。
+
+Happy Science 是构建在
+[Open Science Desktop](https://github.com/ai4s-research/open-science) 之上的独立
+MIT 许可产品。我们感谢其维护者和贡献者提供桌面端与智能体工作台基础。继承范围与
+Happy Science 自研边界见[致谢](#致谢)。
 
 <p>
   <a href="./README.md">English</a> ·
@@ -27,7 +32,7 @@ Happy Science 是基于 MIT 许可项目
   <img src="https://img.shields.io/badge/i18n-7%20languages-5B8DEF" alt="7 interface languages">
   <img src="https://img.shields.io/badge/built%20with-Tauri%202%20%2B%20React-24C8DB" alt="Built with Tauri + React">
   <img src="https://img.shields.io/badge/runtime-OpenCode-success" alt="OpenCode runtime">
-  <a href="https://discord.gg/fWNMDKcd5P"><img src="https://img.shields.io/badge/Join-Discord-5865F2" alt="Join Discord"></a>
+  <a href="https://discord.gg/fWNMDKcd5P"><img src="https://img.shields.io/badge/upstream-Open%20Science%20Discord-5865F2" alt="Open Science 上游 Discord"></a>
   <a href="http://makeapullrequest.com"><img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" alt="PRs Welcome"></a>
   <a href="https://linux.do"><img src="https://img.shields.io/badge/Join-linux.do-orange" alt="linux.do"></a>
 </p>
@@ -38,6 +43,13 @@ Happy Science 是基于 MIT 许可项目
 
 ## 最新动态
 
+- **2026-08-19** — 🧪 **Happy Science 首个公开预览版。** 「研究启动、证据冲刺、复现挑战、稿件压力测试」现已成为有版本的科研任务，具备明确契约、审批、质量门、证据到主张的追溯、方案与实际运行的一致性检查，以及可审阅的发布包。经过验证的 Windows 与 Linux 安装包可从 [Releases](https://github.com/xwmxcz/happy-science/releases/latest) 下载。
+
+<details>
+<summary><b>继承自 Open Science Desktop 的上游平台里程碑</b></summary>
+
+<br>
+
 - **2026-08-18** — 🖥️ **无屏也能跑，终端命令随包附带。** `osd server` 在没有显示器的机器上启动整套工作台——工作区、智能体运行时，以及*同一套* Web UI；`osd session send … --wait` 让脚本或另一个智能体来驱动它。`osd` 现在装在桌面安装包里，首次启动自动进入 PATH；服务器上用压缩包，什么都不用装。模型、密钥、审批都能在终端配置（`osd model`、`osd auth`、`osd approval`）。
 - **2026-08-13** — 🔌 **双向支持 Agent Client Protocol。** 在本应用里直接驱动 Codex、Gemini CLI、Claude Code 等任意 ACP 智能体——沿用它自己的模型、历史，以及你在本应用配置的 MCP 连接器；反过来，也可以从 Zed、JetBrains、Neovim 里驱动 Open Science。 *(v0.4.0)*
 - **2026-08-01** — 🗂️ **项目、记忆与完整历史。** 会话可以归入命名项目（**就地**导入已有仓库，不做复制），智能体获得持久的全局记忆与项目记忆，全部历史对话都能在可搜索的历史视图中找到，并支持归档、恢复与导出。 *(v0.3.1)*
@@ -46,10 +58,13 @@ Happy Science 是基于 MIT 许可项目
 - **2026-07-21** — 🧭 **浏览器控制。** 智能体可以驱动你自己的 Chrome——保留配置文件和登录状态——像你一样浏览实时网页，也可以按需使用隔离的隐私浏览器。 *(v0.2.3)*
 - **2026-07-09** — 🎉 **ResearchClawBench 排名第 1。** Open Science Desktop 在面向自主科研智能体的端到端基准 [ResearchClawBench](https://internscience.github.io/ResearchClawBench-Home/) 上，按已评分任务平均分排名第 1（Pass@1 榜单）。
 
+</details>
+
 ---
 
 ## 目录
 
+- [🧭 为什么选择 Happy Science](#为什么选择-happy-science)
 - [✨ 它能做什么](#它能做什么)
 - [🎬 效果演示](#效果演示)
 - [🧪 当前能力](#当前能力)
@@ -62,23 +77,40 @@ Happy Science 是基于 MIT 许可项目
 - [📌 状态](#状态)
 - [🤝 参与贡献](#参与贡献)
 - [📖 引用](#引用)
+- [🙏 致谢](#致谢)
 - [⚖️ 许可证](#许可证)
+
+## 为什么选择 Happy Science
+
+大多数智能体工作台优化的是对话体验；Happy Science 优化的是对话之外的科学决策链。
+
+- **先立任务，再开始行动**：每次运行都从带版本的类型化任务契约开始，明确范围、约束、交付物、严谨等级与质量门。
+- **关键决策必须审批**：方案批准与内容指纹绑定；批准后再修改方案会自动使批准失效，避免看过结果后悄悄改计划。
+- **先有证据，再谈置信度**：来源快照、精确引文、哈希、支持/反驳证据与裁决记录，把每个主张连接到审阅者可检查的材料。
+- **计划必须与实际运行对照**：审阅驾驶舱会标记未注册预测变量、缺失随机种子，以及超出实际结果的结论。
+- **完成状态需要证据支撑**：自动质量门和内核生成的下一步动作，会阻止缺少交付物或证据的任务自称完成。
+- **智能体运行时可以替换**：当前内置 OpenCode，但任务、证据、溯源和发布契约独立于运行时，为以后切换其他 runtime 保留边界。
 
 ## 它能做什么
 
-**跑完整个科研闭环**——从一个宽泛的方向到一篇成稿论文：探索、文献综述、假设、实验代码、分析、绘图、写作，全部在一次连续、可审计的会话里完成。
+Happy Science 的任务不是开放式提示词，而是一条受控的科研工作流。目前内置四种任务：
 
-- **自主科研智能体**：内置的 `ai4s-agent` 端到端串起各专项技能(探索 → 综述 → 实验 → 写作)，每一步都把一个真实、可检查的工件落到你的工作区里,而不只是一条聊天回复。
-- **一切都可回溯**：图、表、报告、笔记本和运行输出都连回生成它们的确切代码、输入、环境、模型输出和对话。
-- **本地优先，数据归你**：会话、数据、溯源、笔记本和运行记录都在本机的本地文件夹里,默认不外流。
-- **模型无关运行时**：UI 通过 `packages/sdk` 调用内置固定版本的 OpenCode sidecar——自带模型即可;模型提供方、技能和 MCP 服务器保持可插拔。
-- **天然可复现**：本地、SSH/Slurm、Modal 和 notebook-batch 运行都被记录为可复现的 run record,而不是散落的终端输出。
-- **随时随地访问**：内置的、基于令牌认证的网关把*真正的*桌面 UI 提供给局域网里的浏览器或手机(有隧道时更可从任何地方访问)——在电脑前发起一次运行,午饭时用手机查看进度。默认关闭;开启前仅限回环地址,且 API key 永不离开本机。
-- **驱动你自己的浏览器**：智能体可以控制你真实的 Chrome,保留你的配置文件和登录状态,像你一样浏览实时网页——你也可以选择一个隔离的隐私浏览器。
-- **先规划再动手**：`/plan` 在动任何文件之前先给出执行计划,`/goal` 则先确定目标、约束与验收标准,再让智能体朝它推进。
-- **为长期项目而建**:命名项目把相关会话归到一处,两层持久记忆(全局与项目级)在会话之间承载要紧的信息,长对话在接近模型上下文窗口时自动压缩。
-- **同时推进多条线**:分栏并排平铺、多个互不干扰的「屏幕」,每个分栏可用各自的模型。
-- **可扩展**:智能体技能、MCP 服务器与一键科学连接器、`/` 命令、`!` shell 模式,以及一个模型无关的 SDK。
+| 任务 | 适用场景 | 必须得到的审阅结果 |
+| --- | --- | --- |
+| **研究启动** | 一个问题需要在分析前形成预注册式方案 | 已批准的方案、分析决策和结果审阅边界 |
+| **证据冲刺** | 一个主张或主题需要可追溯的文献答案 | 去重后的来源、证据记录、冲突与主张覆盖 |
+| **复现挑战** | 一个结果需要重新运行并与基线比较 | 环境记录、确定性运行记录、对比结果与偏差 |
+| **稿件压力测试** | 稿件发布前需要一次对抗式审阅 | 引用、数值、逻辑、图/代码一致性与夸大结论问题 |
+
+所有任务都遵循同一套由产品内核管理的流程：
+
+1. **定义**研究问题、范围、约束、交付物和严谨等级。
+2. **规划并审批**那些在看到结果之后再决定会引发质疑的事项。
+3. **执行**所选模型和技能，同时保留运行记录与溯源。
+4. **审阅**证据、主张、矛盾、计划偏差和缺失产物。
+5. **发布**前要求每一道质量门都有可检查的证据。
+
+外围工作台仍保持本地优先与模型无关：项目、会话、笔记本、文件、远程计算、浏览器控制、无头运行、手机访问、ACP 智能体、MCP 连接器和科学文件查看器，都不会让科研任务契约绑定到某一家模型或某一种智能体运行时。
 
 ## 效果演示
 
@@ -116,6 +148,23 @@ Happy Science 是基于 MIT 许可项目
 </details>
 
 ## 当前能力
+
+### Happy Science 科研任务内核
+
+科研契约由应用内核而不是提示词负责。桌面界面、网关、命令行运行时、验证器和审阅驾驶舱消费同一套规则。
+
+| 内核能力 | 持久化和检查的内容 |
+| --- | --- |
+| 任务生命周期 | `planned`、运行中、等待输入/审批、暂停、中断、待审阅、完成、失败、取消，以及经过验证的状态转换 |
+| 方案批准 | 批准与方案指纹绑定；后续修改必须重新批准 |
+| 证据账本 | 来源身份、已验证快照哈希、精确引文、与主张的关系、裁决历史 |
+| 主张护照 | 稳定的主张指纹、支持/反驳/限定证据、决策状态、审阅覆盖 |
+| 研究完整性 | 把计划变量和分析选择与实际运行、输出、随机种子及报告措辞进行比较 |
+| 复现记录 | 准备后的命令、捕获的环境、基线比较、关联输出与偏差 |
+| 发布包 | 带版本的清单与内容哈希；存在未解决或无证据支撑的主张时阻止导出 |
+| 能力注册表 | 用唯一事实源把任务需求映射到内置技能，并审计实际部署的技能清单 |
+
+### 智能体技能
 
 **把科研闭环做成技能。** 一个元技能跑完整条流水线;每个阶段都是一个自足的技能,产出真实、可评审的工件——在 OpenCode 支持的任意模型上都能跑:
 
@@ -349,8 +398,8 @@ pnpm lint
 
 ## 参与贡献
 
-欢迎 Issue 和 PR。请保持改动最小且可验证，遵循 [`AGENTS.md`](./AGENTS.md)，并在提交 PR 前运行检查。讨论和交流可以加入
-[Open Science Discord](https://discord.gg/fWNMDKcd5P)，也可以在 [linux.do](https://linux.do) 社区参与。
+欢迎 Issue 和 PR。请保持改动最小且可验证，遵循 [`AGENTS.md`](./AGENTS.md)，并在提交 PR 前运行检查。
+[Open Science Discord](https://discord.gg/fWNMDKcd5P) 是上游项目的社区；更广泛的生态讨论也可在 [linux.do](https://linux.do) 参与。
 
 ## 引用
 
@@ -368,6 +417,21 @@ pnpm lint
 ```
 
 仓库页顶部的 **"Cite this repository"** 按钮(由 [`CITATION.cff`](./CITATION.cff) 生成)提供 APA 与 BibTeX 两种格式。
+
+## 致谢
+
+如果没有 [Open Science Desktop](https://github.com/ai4s-research/open-science)
+以及 `ai4s-research` 维护者和贡献者的工作，就不会有 Happy Science。我们真诚感谢他们
+将基础项目开源，让这个产品有了可以继续构建的起点。
+
+继承的基础包括 Tauri 桌面外壳、本地优先工作区、OpenCode 集成边界、项目与会话、
+ACP 与网关支持、浏览器和远程计算集成、科学工件查看器，以及跨平台构建系统的主要
+部分。Happy Science 保留上游 MIT 许可证与版权声明。
+
+Happy Science 在这套基础上发展独立产品层：自己的产品身份与发布渠道、带版本的科研
+任务、与批准内容绑定的方案、证据与裁决账本、主张护照、预注册方案与实际运行的一致性
+检查、复现与发布契约、自动质量门，以及科研审阅驾驶舱。Happy Science 是独立衍生产品，
+不是 Open Science Desktop 的官方发行版。
 
 ## 许可证
 

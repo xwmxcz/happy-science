@@ -4,12 +4,19 @@
 
 # Happy Science
 
-**Local-first, model-agnostic AI research workbench for macOS, Windows & Linux.**
+**Decision-first AI research missions, with evidence and reproducibility built in.**
 
-Happy Science is an independent product fork based on the MIT-licensed
-[Open Science Desktop](https://github.com/ai4s-research/open-science). It is built
-with Tauri, MCP, agent skills, and reproducible artifacts, connecting agents,
-notebooks, files, figures, reports, runs, and review into one auditable workflow.
+Happy Science turns a research objective into a governed mission: define the
+contract and deliverables, approve consequential decisions, execute through a
+model-agnostic agent, and review the evidence, claims, provenance, deviations,
+and release artifacts in one local-first cockpit. It is built for research that
+must be inspectable and defensible, not merely plausible in a chat window.
+
+Happy Science is an independent MIT-licensed product built on
+[Open Science Desktop](https://github.com/ai4s-research/open-science). We are
+grateful to its maintainers and contributors for the desktop and agent-workbench
+foundation. See [Acknowledgements](#acknowledgements) for the inherited foundation
+and the Happy Science product boundary.
 
 <p>
   <b>English</b> ·
@@ -27,7 +34,7 @@ notebooks, files, figures, reports, runs, and review into one auditable workflow
   <img src="https://img.shields.io/badge/i18n-7%20languages-5B8DEF" alt="7 interface languages">
   <img src="https://img.shields.io/badge/built%20with-Tauri%202%20%2B%20React-24C8DB" alt="Built with Tauri + React">
   <img src="https://img.shields.io/badge/runtime-OpenCode-success" alt="OpenCode runtime">
-  <a href="https://discord.gg/fWNMDKcd5P"><img src="https://img.shields.io/badge/Join-Discord-5865F2" alt="Join Discord"></a>
+  <a href="https://discord.gg/fWNMDKcd5P"><img src="https://img.shields.io/badge/upstream-Open%20Science%20Discord-5865F2" alt="Open Science upstream Discord"></a>
   <a href="http://makeapullrequest.com"><img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" alt="PRs Welcome"></a>
   <a href="https://linux.do"><img src="https://img.shields.io/badge/Join-linux.do-orange" alt="linux.do"></a>
 </p>
@@ -38,6 +45,13 @@ notebooks, files, figures, reports, runs, and review into one auditable workflow
 
 ## News
 
+- **2026-08-19** — 🧪 **The first Happy Science public preview.** Research Launch, Evidence Sprint, Reproduction Challenge, and Manuscript Stress Test now run as versioned missions with explicit contracts, approvals, quality gates, evidence-to-claim traceability, protocol-to-run integrity checks, and review-ready release packages. Verified Windows and Linux installers are available in [Releases](https://github.com/xwmxcz/happy-science/releases/latest).
+
+<details>
+<summary><b>Upstream platform milestones inherited from Open Science Desktop</b></summary>
+
+<br>
+
 - **2026-08-18** — 🖥️ **Runs without a screen, and the terminal command comes with it.** `osd server` starts the whole workbench — workspace, agent runtime, and the *same* web UI — on a machine with no display, and `osd session send … --wait` drives it from a script or another agent. `osd` ships inside the desktop installer and puts itself on your PATH on first launch; on a server the archive needs nothing installed. Models, keys and approvals are all configurable from the terminal (`osd model`, `osd auth`, `osd approval`).
 - **2026-08-13** — 🔌 **Speaks the Agent Client Protocol, both directions.** Drive Codex, Gemini CLI, Claude Code, or any other ACP agent from inside this app — with its own models, history, and your MCP connectors — or drive Open Science itself from Zed, JetBrains, or Neovim. *(v0.4.0)*
 - **2026-08-01** — 🗂️ **Projects, memory, and full history.** Group sessions into named projects (import an existing repo *in place*, no copying), give the agent persistent global and project memory, and reach every past conversation through a searchable history with archive, restore, and export. *(v0.3.1)*
@@ -46,10 +60,13 @@ notebooks, files, figures, reports, runs, and review into one auditable workflow
 - **2026-07-21** — 🧭 **Browser control.** The agent can drive your own Chrome — profile and logins intact — to read the live web the way you do, or an isolated private browser on demand. *(v0.2.3)*
 - **2026-07-09** — 🎉 **#1 on ResearchClawBench.** Open Science Desktop ranks #1 by scored-task average on [ResearchClawBench](https://internscience.github.io/ResearchClawBench-Home/), an end-to-end benchmark for autonomous scientific research agents (Pass@1 leaderboard).
 
+</details>
+
 ---
 
 ## Contents
 
+- [🧭 Why Happy Science](#why-happy-science)
 - [✨ What it does](#what-it-does)
 - [🎬 See it in action](#see-it-in-action)
 - [🧪 Current capabilities](#current-capabilities)
@@ -62,44 +79,53 @@ notebooks, files, figures, reports, runs, and review into one auditable workflow
 - [📌 Status](#status)
 - [🤝 Contributing](#contributing)
 - [📖 Citation](#citation)
+- [🙏 Acknowledgements](#acknowledgements)
 - [⚖️ License](#license)
+
+## Why Happy Science
+
+Most agent workbenches optimize the conversation. Happy Science optimizes the
+scientific decision trail around the conversation.
+
+- **Mission before motion** — every run starts from a typed, versioned mission
+  contract with scope, constraints, deliverables, rigor level, and quality gates.
+- **Approval at consequential boundaries** — protocol approval is bound to the
+  approved content hash; edits invalidate approval instead of silently changing
+  the plan after outcomes are visible.
+- **Evidence before confidence** — source snapshots, exact quotes, hashes,
+  supporting/contradicting evidence, and adjudication records connect claims to
+  material a reviewer can inspect.
+- **Plans are compared with runs** — the review cockpit flags deviations such as
+  unregistered predictors, missing seeds, and claims that overreach their outputs.
+- **Completion is earned** — automatic gates and kernel-owned next actions prevent
+  a mission from reporting success while required artifacts or evidence are absent.
+- **Runtime remains replaceable** — OpenCode is bundled today, while mission,
+  evidence, provenance, and release contracts stay outside the agent runtime.
 
 ## What it does
 
-**Runs the whole research loop** — from a broad direction to a finished paper:
-exploration, literature survey, hypothesis, experiment code, analysis, figures, and
-write-up, in one continuous, auditable session.
+A Happy Science mission is a controlled research workflow rather than an open-ended
+prompt. The product currently ships four mission types:
 
-- **Autonomous research agents** — the bundled `ai4s-agent` chains specialist skills
-  end to end (explore → survey → experiment → write), and each stage drops a real,
-  inspectable artifact into your workspace, not just a chat reply.
-- **Everything traces back** — figures, tables, reports, notebooks, and run outputs
-  link to the exact code, inputs, environment, model output, and conversation that
-  produced them.
-- **Local-first and yours** — sessions, data, provenance, notebooks, and run records
-  live in local folders on your machine. Nothing leaves by default.
-- **Model-agnostic runtime** — the UI talks through `packages/sdk` to a bundled,
-  pinned OpenCode sidecar. Bring your own model; providers, skills, and MCP servers
-  stay pluggable.
-- **Reproducible by construction** — local, SSH/Slurm, Modal, and notebook-batch runs
-  are captured as reproducible run records, not loose terminal scrollback.
-- **Reach it from anywhere** — a built-in, token-authenticated gateway serves the
-  *real* desktop UI to a browser on your LAN or phone (or, with a tunnel, from
-  anywhere) — kick off a run at your desk and check on it from your phone over lunch.
-  Off by default; loopback-only until you opt in, and API keys never leave the machine.
-- **Drives your own browser** — the agent can control your real Chrome, with your
-  profile and logins intact, to read the live web the way you do — or an isolated
-  private browser when you'd rather it not.
-- **Plan before it acts** — `/plan` lays out an execution plan before touching a
-  file, and `/goal` fixes the objective, constraints, and acceptance criteria the
-  agent then works toward.
-- **Built for long projects** — named projects group their sessions, two layers of
-  persistent memory (global and per-project) carry what matters between them, and a
-  long conversation compacts itself as it approaches the model's context window.
-- **Work several threads at once** — tile panes side by side, keep independent
-  Screens, and give each pane its own model.
-- **Extensible** — agent skills, MCP servers and one-click science connectors,
-  `/` commands, `!` shell mode, and a model-agnostic SDK.
+| Mission | Use it when | Required review outcome |
+| --- | --- | --- |
+| **Research Launch** | A question needs a preregistration-style plan before analysis | Approved protocol, analysis decisions, and result-review boundary |
+| **Evidence Sprint** | A claim or topic needs a traceable literature answer | Deduplicated sources, evidence records, conflicts, and claim coverage |
+| **Reproduction Challenge** | A result must be rerun and compared with its baseline | Captured environment, deterministic run record, comparison, and deviations |
+| **Manuscript Stress Test** | A draft needs hostile review before release | Citation, numerical, logical, figure/code, and overclaim findings |
+
+Every mission follows the same product-owned sequence:
+
+1. **Define** the question, scope, constraints, deliverables, and rigor level.
+2. **Plan and approve** decisions that would become questionable after seeing outcomes.
+3. **Execute** through the selected model and skills while preserving runs and provenance.
+4. **Review** evidence, claims, contradictions, plan deviations, and missing artifacts.
+5. **Release** only after the quality gates have inspectable evidence.
+
+The surrounding workbench remains local-first and model-agnostic: projects, sessions,
+notebooks, files, remote compute, browser control, headless operation, phone access,
+ACP agents, MCP connectors, and scientific viewers are available without making the
+mission contract depend on one model provider or agent runtime.
 
 ## See it in action
 
@@ -144,6 +170,25 @@ at your desk and read the finished figure and report on your phone.
 </details>
 
 ## Current capabilities
+
+### Happy Science research kernel
+
+The scientific contract is owned by the application kernel, not by a prompt. The
+same rules are consumed by the desktop UI, gateway, CLI-facing runtime, validators,
+and review cockpit.
+
+| Kernel capability | What is persisted and checked |
+| --- | --- |
+| Mission lifecycle | Planned, running, waiting for input/approval, paused, interrupted, review-ready, completed, failed, and cancelled states with validated transitions |
+| Protocol approval | Approval bound to the protocol fingerprint; later edits require a new approval |
+| Evidence ledger | Source identity, verified snapshot hash, exact quote, relationship to a claim, and adjudication history |
+| Claim passport | Stable claim fingerprint, supporting/contradicting/qualifying evidence, decision state, and review coverage |
+| Research integrity | Planned variables and analysis choices compared with recorded runs, outputs, seeds, and report language |
+| Reproduction record | Prepared command, captured environment, baseline comparison, linked outputs, and deviations |
+| Release package | Versioned manifest and content hashes; unresolved or unsupported claims block export |
+| Capability registry | One source of truth maps mission requirements to bundled skills and audits their deployed manifests |
+
+### Agent skills
 
 **The research loop, as skills.** One meta-skill runs the full pipeline; each stage
 is a self-contained skill that produces a real, gradeable artifact — runnable on any
@@ -437,9 +482,10 @@ reproducibility review, plus signing before the first public macOS package.
 ## Contributing
 
 Issues and PRs are welcome. Keep changes minimal and verifiable, follow
-[`AGENTS.md`](./AGENTS.md), and run the checks before opening a PR. For discussion,
-join the [Open Science Discord](https://discord.gg/fWNMDKcd5P) or the
-[linux.do](https://linux.do) community.
+[`AGENTS.md`](./AGENTS.md), and run the checks before opening a PR. The
+[Open Science Discord](https://discord.gg/fWNMDKcd5P) is the upstream project's
+community; [linux.do](https://linux.do) is another place where the broader ecosystem
+is discussed.
 
 ## Citation
 
@@ -458,6 +504,26 @@ If you use Happy Science in your research, please cite it:
 
 GitHub's **"Cite this repository"** button (top of the repo page, generated from
 [`CITATION.cff`](./CITATION.cff)) provides the same reference in APA and BibTeX.
+
+## Acknowledgements
+
+Happy Science would not exist without
+[Open Science Desktop](https://github.com/ai4s-research/open-science) and the work of
+the `ai4s-research` maintainers and contributors. We sincerely thank them for
+open-sourcing the foundation that made this product possible.
+
+The inherited foundation includes the Tauri desktop shell, local-first workspaces,
+the OpenCode integration boundary, projects and sessions, ACP and gateway support,
+browser and remote-compute integrations, scientific artifact viewers, and much of
+the cross-platform build system. Happy Science keeps the upstream MIT license and
+copyright notice.
+
+Happy Science develops a separate product layer on that foundation: its own identity
+and release channel, versioned research missions, approval-bound protocols, the
+evidence and adjudication ledger, claim passports, preregistration-to-run integrity
+checks, reproduction and release contracts, automatic quality gates, and the research
+review cockpit. It is an independent derivative, not an official Open Science Desktop
+release.
 
 ## License
 
