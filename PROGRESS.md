@@ -1,5 +1,7 @@
 # Progress
 
+2026-08-19 17:26 · publish(happy-science): created the independent public repository `xwmxcz/happy-science`, preserved `ai4s-research/open-science` as the read-only upstream remote, pushed the verified research-product source to `master`, and prepared the four unsigned Windows/Linux 0.5.0 packages for the first Happy Science public preview release after a clean secret-pattern audit.
+
 2026-08-19 17:19 · release(happy-science): rebuilt the Windows NSIS/MSI and Linux DEB/RPM distributions with product-scoped `happy-science-*` sidecars to avoid overwriting system tools, restored the bundled goal-plugin dependency tree for offline installs, and verified MSI/DEB/RPM contents, a 10-second Windows launch, a fresh Ubuntu 22.04 Xvfb launch to runtime-ready, 1114 frontend tests (3 skipped), 260 Rust tests, shell syntax, zero production audit findings, formatting, and `git diff --check`.
 
 2026-08-19 17:18 · optimize(happy-science): completed the ordered research-product pass with the capability registry, mission lifecycle and automatic quality gates, review-cockpit integrity findings and next actions, lazy-loaded research/file-preview surfaces that reduced the main JavaScript chunk by about 24%, pinned dependency overrides, desktop CSP, and Jupyter/OpenCode liveness supervision.
