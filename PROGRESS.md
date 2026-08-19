@@ -1,5 +1,7 @@
 # Progress
 
+2026-08-19 17:45 · docs(happy-science): replaced the inherited Open Science showcase across all seven localized READMEs with two genuine Happy Science Windows captures for Research Launch and Evidence Sprint, then removed the eight unreferenced upstream showcase assets.
+
 2026-08-19 17:34 · docs(happy-science): rewrote the English and Chinese public READMEs around Happy Science's decision-first mission product, four governed research workflows, kernel-owned evidence/review contracts, and explicit differentiation, while adding a dedicated acknowledgement that credits Open Science Desktop for the inherited workbench foundation and identifies the independent Happy Science product layer.
 
 2026-08-19 17:29 · publish(release): published `v0.5.0-happy-science.1` as the non-draft, non-prerelease Happy Science Windows/Linux public preview with EXE, MSI, DEB, and RPM assets, and verified every GitHub-hosted byte size and SHA-256 digest against the locally smoke-tested packages.

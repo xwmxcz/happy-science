@@ -129,45 +129,20 @@ mission contract depend on one model provider or agent runtime.
 
 ## See it in action
 
-**One prompt -> a publication-grade figure, and every point traces to the exact code
-and inputs that made it.** No black boxes: open any artifact to see its generating
-script, its data files, and the conversation that produced it.
+These are screenshots of the Happy Science product itself, captured from the
+Windows build in this repository.
 
-![A rendered cross-species atlas figure beside its generating script and input files in the artifact inspector](./docs/assets/showcase-provenance.webp)
+**Research Launch — define the scientific contract before the agent runs.** The
+workbench collects the question, population, intervention, outcome, and constraints;
+the right rail selects the rigor level and shows the required deliverables.
 
-**Literature -> a verifiable report.** Fan the search out across sources, draft a
-manuscript rendered as a PDF, and gate it on a citation review — DOIs resolved,
-unsourced numbers and figure/code inconsistencies flagged — before anything ships.
+![Happy Science Research Launch mission with its contract fields, rigor selector, and required deliverables](./docs/assets/happy-science-research-launch.png)
 
-![A protein-language-model literature survey compiled into a PDF manuscript, with a citation reviewer confirming every DOI resolves](./docs/assets/showcase-literature.webp)
+**Evidence Sprint — ask what evidence supports or contradicts a claim.** The mission
+requires a complete search record, source-linked evidence table, conflict and
+uncertainty review, and source snapshots with hashes before completion.
 
-**Drives your own Chrome.** The agent reads the live web through your real browser
-profile — logins and all — then turns what it finds into a figure and a sortable CSV.
-
-![The agent driving the user's own Chrome via open-science-browser to harvest bioRxiv preprints into a chart and CSV](./docs/assets/showcase-browser.webp)
-
-**Research from anywhere — even your phone.** A built-in authenticated gateway serves
-the *real* desktop UI to a browser on your LAN (or a tunnel), so you can kick off a run
-at your desk and read the finished figure and report on your phone.
-
-<table align="center">
-  <tr>
-    <td align="center" width="33%"><img src="./docs/assets/showcase-mobile-home.webp" width="240" alt="The workbench in a phone browser: the new-session screen with starter analyses"><br><sub>New session</sub></td>
-    <td align="center" width="33%"><img src="./docs/assets/showcase-mobile-run.webp" width="240" alt="A completed dose-response analysis — script, results, figure, and report — on a phone"><br><sub>A finished analysis</sub></td>
-    <td align="center" width="33%"><img src="./docs/assets/showcase-mobile-reproduce.webp" width="240" alt="Reproducing an scVI benchmark, with its ARI-vs-epoch figure, viewed on a phone"><br><sub>A reproduced benchmark</sub></td>
-  </tr>
-</table>
-
-<details>
-<summary><b>More screenshots</b></summary>
-
-<br>
-
-![Reproducing an scVI integration benchmark on a remote A100 with a pinned environment, execution log, and provenance](./docs/assets/showcase-remote.webp)
-
-![An 8-arm scVI hyperparameter sweep table beside a live analysis notebook sharing the agent's kernel](./docs/assets/showcase-experiment.webp)
-
-</details>
+![Happy Science Evidence Sprint mission with its evidence question, scope, quality level, and source-traceability deliverables](./docs/assets/happy-science-evidence-sprint.png)
 
 ## Current capabilities
 

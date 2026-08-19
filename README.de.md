@@ -73,38 +73,15 @@ Happy Science ist ein unabhängiger Produkt-Fork auf Basis des MIT-lizenzierten 
 
 ## Screenshots
 
-**Ein Prompt -> eine publikationsreife Abbildung, und jeder Punkt lässt sich auf genau den Code und die Eingaben zurückführen, die ihn erzeugt haben.** Keine Black Boxes: Öffne ein beliebiges Artefakt, um sein erzeugendes Skript, seine Datendateien und die Konversation zu sehen, die es hervorgebracht hat.
+Diese beiden Screenshots stammen aus dem tatsächlichen Happy-Science-Windows-Build dieses Repositorys, nicht aus dem Upstream-Projekt.
 
-![Eine gerenderte artenübergreifende Atlas-Abbildung neben ihrem erzeugenden Skript und den Eingabedateien im Artefakt-Inspektor](./docs/assets/showcase-provenance.webp)
+**Research Launch — den Forschungsauftrag vor der Ausführung definieren.** Die Workbench erfasst Frage, Population, Intervention, Ergebnis und Einschränkungen; rechts werden Strengegrad und Pflichtlieferungen festgelegt.
 
-**Literatur -> ein überprüfbarer Bericht.** Fächere die Suche über mehrere Quellen auf, verfasse ein als PDF gerendertes Manuskript und stelle es unter einen Zitations-Review — DOIs aufgelöst, unbelegte Zahlen und Inkonsistenzen zwischen Abbildungen und Code markiert —, bevor irgendetwas ausgeliefert wird.
+![Happy Science Research Launch mit Vertragsfeldern, Strengegrad und Pflichtlieferungen](./docs/assets/happy-science-research-launch.png)
 
-![Eine Literaturrecherche zu Protein-Sprachmodellen, zusammengestellt zu einem PDF-Manuskript, mit einem Zitations-Reviewer, der bestätigt, dass jede DOI auflöst](./docs/assets/showcase-literature.webp)
+**Evidence Sprint — prüfen, welche Evidenz eine Behauptung stützt oder widerlegt.** Vor Abschluss sind Suchprotokoll, quellengebundene Evidenztabelle, Konfliktprüfung und gehashte Quellenschnappschüsse erforderlich.
 
-**Steuert deinen eigenen Chrome.** Der Agent liest das aktuelle Web über dein echtes Browser-Profil — Logins inklusive — und macht daraus eine Abbildung und eine sortierbare CSV.
-
-![Der Agent steuert den eigenen Chrome des Nutzers per Browser-Steuerung, um bioRxiv-Preprints in ein Diagramm und eine CSV zu überführen](./docs/assets/showcase-browser.webp)
-
-**Forschen von überall — sogar vom Handy.** Ein eingebautes, authentifiziertes Gateway liefert die *echte* Desktop-UI an einen Browser in deinem LAN (oder über einen Tunnel), sodass du einen Lauf am Schreibtisch starten und die fertige Abbildung und den Bericht auf deinem Handy lesen kannst.
-
-<table align="center">
-  <tr>
-    <td align="center" width="33%"><img src="./docs/assets/showcase-mobile-home.webp" width="240" alt="Die Workbench in einem Handy-Browser: der Neue-Sitzung-Bildschirm mit Starter-Analysen"><br><sub>Neue Sitzung</sub></td>
-    <td align="center" width="33%"><img src="./docs/assets/showcase-mobile-run.webp" width="240" alt="Eine fertige Dosis-Wirkungs-Analyse — Skript, Ergebnisse, Abbildung und Bericht — auf einem Handy"><br><sub>Eine fertige Analyse</sub></td>
-    <td align="center" width="33%"><img src="./docs/assets/showcase-mobile-reproduce.webp" width="240" alt="Reproduktion eines scVI-Benchmarks mit seiner ARI-über-Epochen-Abbildung, betrachtet auf einem Handy"><br><sub>Ein reproduzierter Benchmark</sub></td>
-  </tr>
-</table>
-
-<details>
-<summary><b>Weitere Screenshots</b></summary>
-
-<br>
-
-![Reproduktion eines scVI-Integrations-Benchmarks auf einer entfernten A100 mit gepinnter Umgebung, Ausführungslog und Provenance](./docs/assets/showcase-remote.webp)
-
-![Eine Tabelle mit einem 8-armigen scVI-Hyperparameter-Sweep neben einem live Analyse-Notebook, das sich den Kernel des Agents teilt](./docs/assets/showcase-experiment.webp)
-
-</details>
+![Happy Science Evidence Sprint mit Evidenzfrage, Umfang, Qualitätsstufe und Nachverfolgbarkeits-Lieferungen](./docs/assets/happy-science-evidence-sprint.png)
 
 ## Aktuelle Funktionen
 
