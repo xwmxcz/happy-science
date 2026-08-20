@@ -3,13 +3,13 @@
 > **Status (v0.1, 2026-07-02).** The runtime is **OpenCode**, bundled as an isolated
 > sidecar (one-click, auto-started, does not touch a user's own OpenCode). Built: the
 > three-column workbench UI, real multi-session chat with history, a real Skills/Agents
-> view, BYOK key config, and a macOS installer. Literature search, provenance/reviewer,
+> view, BYOK key config, and Windows/Linux installers. Literature search, provenance/reviewer,
 > code-execution backends, and Science Packs below are the target scope, not all shipped.
 
 ## 1. Positioning
 
-**Happy Science** is an open-source AI research workbench with macOS /
-Windows installers, positioned as an **open-source alternative to Claude Science
+**Happy Science** is an open-source AI research workbench with Windows and
+Linux installers, positioned as an **open-source alternative to Claude Science
 style products**.
 
 It is not an ordinary paper-summarization tool. It is a local-first, model-agnostic,
@@ -39,12 +39,11 @@ Required support:
 
 | Platform | Installer | Priority |
 | --- | --- | --- |
-| macOS Apple Silicon | `.dmg` / `.app` | P0 |
-| macOS Intel | `.dmg` / `.app` | P1 |
 | Windows x64 | `.exe` NSIS installer | P0 |
 | Windows x64 | `.msi` installer (IT-managed deployment) | P1 |
+| Linux x64 | `.deb` / `.rpm` | P1 |
 
-Tauri can package `dmg`, `app`, `nsis`, and `msi` targets. Windows ships both:
+Tauri packages `nsis`, `msi`, `deb`, and `rpm` targets. Windows ships both:
 NSIS is the default download and the only target supporting per-user install,
 while the MSI serves Group Policy / Intune deployment and has taken 6-10% of
 Windows downloads every release. They are labelled by audience rather than
@@ -345,13 +344,13 @@ discussion. Shipped versions are kept here as the delivery record.
 
 ### Shipped
 
-- **v0.1.x Desktop MVP → hardening** — macOS / Windows / Linux installers, local
+- **v0.1.x Desktop MVP → hardening** — Windows / Linux installers, local
   workspace, bundled OpenCode runtime, model config, agent chat, plan approval,
   Python analysis, artifact panel, `provenance.jsonl`, notebooks (Python + R),
   science MCP connectors, remote compute (SSH / Slurm / Modal), projects,
   searchable model browser, network proxy + mirrors, 7 UI languages.
 - **v0.2.0 UI & reliability** — three themes (light / warm / dark) with per-theme
-  accents, translucent macOS sidebar, Codex-style settings (section routes +
+  accents, translucent sidebar, Codex-style settings (section routes +
   sidebar navigation), in-app zoom, provider retry/error surfacing, OAuth
   recovery via the credential store, git-snapshot bloat guards, first Zenodo DOI.
 - **v0.2.1 – v0.2.2 Patches** — traffic-light re-pin on the transparent/vibrancy
@@ -376,9 +375,8 @@ discussion. Shipped versions are kept here as the delivery record.
   notifications when the agent is blocked on a permission or question (#21),
   and N-ary split-pane tiling — drag-to-dock, screens/groups, per-pane model,
   deferred session creation with per-pane drafts.
-- **v0.3.1 Signed distribution** — first Developer ID signed, notarized and
-  stapled macOS builds (v0.3.0 and earlier shipped unsigned), plus
-  local-first project workflow and long-session fixes.
+- **v0.3.1 Distribution hardening** — local-first project workflow and
+  long-session fixes.
 - **v0.3.2 Field fixes** — the Skills page no longer reports the app's own
   bundled `uv` and managed Jupyter as "not found" (#68); a session started in a
   project is created there, each draft carrying its own destination (#69).
@@ -480,7 +478,7 @@ complete example results; clear license; separate note for third-party skill lic
 
 ## 11. One-liner
 
-**Happy Science is an open-source research agent workbench with macOS and
-Windows installers that uses OpenCode, MCP, scientific skills, and a reproducible
+**Happy Science is an open-source research agent workbench with Windows and
+Linux installers that uses OpenCode, MCP, scientific skills, and a reproducible
 artifact system to weave literature, code, figures, reports, and review into one
 local-first scientific workflow.**

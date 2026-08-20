@@ -4,7 +4,7 @@
 
 # Happy Science
 
-**macOS、Windows & Linux 向けのローカルファースト、モデル非依存 AI 研究ワークベンチ。**
+**Windows & Linux 向けのローカルファースト、モデル非依存 AI 研究ワークベンチ。**
 
 Happy Science は、MIT ライセンスの [Open Science Desktop](https://github.com/ai4s-research/open-science) を基盤にした独立した製品フォークです。Tauri、MCP、agent skills、再現可能な成果物を基盤に、エージェント、ノートブック、ファイル、図、レポート、実行記録、レビューを 1 つの監査可能なデスクトップワークフローにまとめます。
 
@@ -22,7 +22,7 @@ Happy Science は、MIT ライセンスの [Open Science Desktop](https://github
   <a href="./LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License: MIT"></a>
   <a href="https://doi.org/10.5281/zenodo.21351225"><img src="https://img.shields.io/badge/DOI-10.5281%2Fzenodo.21351225-1682D4" alt="DOI"></a>
   <a href="https://internscience.github.io/ResearchClawBench-Home/"><img src="https://img.shields.io/badge/%F0%9F%8F%86%20%231-ResearchClawBench-FFB300" alt="#1 on ResearchClawBench"></a>
-  <img src="https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20%7C%20Linux-blue" alt="Platforms">
+  <img src="https://img.shields.io/badge/platform-Windows%20%7C%20Linux-blue" alt="Platforms">
   <img src="https://img.shields.io/badge/i18n-7%20languages-5B8DEF" alt="7 interface languages">
   <img src="https://img.shields.io/badge/built%20with-Tauri%202%20%2B%20React-24C8DB" alt="Built with Tauri + React">
   <img src="https://img.shields.io/badge/runtime-OpenCode-success" alt="OpenCode runtime">
@@ -103,7 +103,7 @@ Happy Science は、MIT ライセンスの [Open Science Desktop](https://github
 
 | 領域 | 現在の状態 |
 | --- | --- |
-| デスクトップ | Tauri 2 + React + TypeScript + Vite。macOS、Windows、Linux のビルド対象。 |
+| デスクトップ | Tauri 2 + React + TypeScript + Vite。Windows、Linux のビルド対象。 |
 | ランタイム | アプリが自動起動するバンドル済み OpenCode sidecar。ユーザー自身の OpenCode 設定/データとは分離。 |
 | プロジェクト | セッションをまとめる名前付きプロジェクト。既存フォルダをその場でインポート（コピーしない）、ワークスペース内の既存フォルダの取り込み、既存セッションのプロジェクトへの移動。 |
 | セッション | 複数セッション、履歴、日時付きワークスペース、検索可能な履歴（アーカイブ／復元／エクスポート）、`@` ファイル参照と `#` 会話参照、`/` コマンド、`!` shell モード。 |
@@ -133,7 +133,6 @@ Happy Science は、MIT ライセンスの [Open Science Desktop](https://github
 
 [Releases](https://github.com/xwmxcz/happy-science/releases/latest) から最新版をダウンロードしてください。
 
-- **macOS**: ソースからのビルドに対応していますが、このプレビューに署名済みインストーラーは含まれません。
 - **Windows**: NSIS `.exe`、Windows 10/11 x64 — ユーザーごとにインストールされ、管理者権限は不要です。IT 部門による一括配布向けに `.msi` も配布しています。どちらか一方に統一してください。
 - **Linux**: x86_64 Linux 向け `.deb` と `.rpm`。
 
@@ -267,7 +266,7 @@ pnpm lint
 
 ## 状態
 
-現在の実装ログは [`PROGRESS.md`](./PROGRESS.md) を参照してください。近い作業は Windows のコード署名、自動更新、Windows/Linux 検証の拡大、コネクタの堅牢化、再現性レビュー、および最初の公開 macOS パッケージの署名です。議論には [Open Science Discord](https://discord.gg/fWNMDKcd5P) も使えます。
+現在の実装ログは [`PROGRESS.md`](./PROGRESS.md) を参照してください。近い作業は Windows のコード署名、自動更新、Windows/Linux 検証の拡大、コネクタの堅牢化、および再現性レビューです。議論には [Open Science Discord](https://discord.gg/fWNMDKcd5P) も使えます。
 
 [MIT](./LICENSE). Happy Science は beta の研究ツールです。出力は草稿として扱い、公開や意思決定の前に数字、引用、コード、結論を検証してください。
 

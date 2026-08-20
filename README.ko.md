@@ -4,7 +4,7 @@
 
 # Happy Science
 
-**macOS, Windows & Linux용 로컬 우선, 모델 독립 AI 연구 워크벤치.**
+**Windows & Linux용 로컬 우선, 모델 독립 AI 연구 워크벤치.**
 
 Happy Science는 MIT 라이선스의 [Open Science Desktop](https://github.com/ai4s-research/open-science)을 기반으로 한 독립 제품 포크입니다. Tauri, MCP, agent skills, 재현 가능한 산출물을 기반으로 에이전트, 노트북, 파일, 그림, 보고서, 실행 기록, 리뷰를 하나의 감사 가능한 워크플로로 연결합니다.
 
@@ -22,7 +22,7 @@ Happy Science는 MIT 라이선스의 [Open Science Desktop](https://github.com/a
   <a href="./LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License: MIT"></a>
   <a href="https://doi.org/10.5281/zenodo.21351225"><img src="https://img.shields.io/badge/DOI-10.5281%2Fzenodo.21351225-1682D4" alt="DOI"></a>
   <a href="https://internscience.github.io/ResearchClawBench-Home/"><img src="https://img.shields.io/badge/%F0%9F%8F%86%20%231-ResearchClawBench-FFB300" alt="#1 on ResearchClawBench"></a>
-  <img src="https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20%7C%20Linux-blue" alt="Platforms">
+  <img src="https://img.shields.io/badge/platform-Windows%20%7C%20Linux-blue" alt="Platforms">
   <img src="https://img.shields.io/badge/i18n-7%20languages-5B8DEF" alt="7 interface languages">
   <img src="https://img.shields.io/badge/built%20with-Tauri%202%20%2B%20React-24C8DB" alt="Built with Tauri + React">
   <img src="https://img.shields.io/badge/runtime-OpenCode-success" alt="OpenCode runtime">
@@ -103,7 +103,7 @@ Happy Science는 MIT 라이선스의 [Open Science Desktop](https://github.com/a
 
 | 영역 | 현재 상태 |
 | --- | --- |
-| 데스크톱 | Tauri 2 + React + TypeScript + Vite, macOS/Windows/Linux 빌드 대상. |
+| 데스크톱 | Tauri 2 + React + TypeScript + Vite, Windows/Linux 빌드 대상. |
 | 런타임 | 앱이 자동 시작하는 번들 OpenCode sidecar. 사용자의 OpenCode 설정/데이터와 격리됩니다. |
 | 프로젝트 | 세션을 묶는 이름 있는 프로젝트 워크스페이스. 기존 폴더를 그 자리에서 가져오기(복사하지 않음), 워크스페이스 안에 이미 있는 폴더 편입, 기존 세션을 프로젝트로 이동. |
 | 세션 | 다중 세션 채팅, 보관/복원/내보내기가 있는 검색 가능한 히스토리, 날짜별 워크스페이스 폴더, `@` 파일 및 `#` 대화 참조, `/` 명령, `!` shell 모드. |
@@ -133,7 +133,6 @@ Happy Science는 MIT 라이선스의 [Open Science Desktop](https://github.com/a
 
 [Releases](https://github.com/xwmxcz/happy-science/releases/latest)에서 최신 설치 파일을 받으세요.
 
-- **macOS**: 소스 빌드를 지원하지만, 이 미리보기 릴리스에는 서명된 설치 패키지가 아직 없습니다.
 - **Windows**: NSIS `.exe`, Windows 10/11 x64 — 사용자별로 설치되며 관리자 권한이 필요 없습니다. IT 일괄 배포용 `.msi`도 함께 제공하며, 두 형식을 섞어 설치하지 마세요.
 - **Linux**: x86_64용 `.deb` 및 `.rpm`.
 
@@ -267,7 +266,7 @@ pnpm lint
 
 ## 상태
 
-가장 신뢰할 수 있는 구현 로그는 [`PROGRESS.md`](./PROGRESS.md)입니다. 가까운 작업은 Windows 코드 서명, 자동 업데이트, Windows/Linux 검증 확대, 커넥터 강화, 재현성 리뷰, 그리고 첫 공개 macOS 패키지 서명입니다. 토론은 [Open Science Discord](https://discord.gg/fWNMDKcd5P)에서도 할 수 있습니다.
+가장 신뢰할 수 있는 구현 로그는 [`PROGRESS.md`](./PROGRESS.md)입니다. 가까운 작업은 Windows 코드 서명, 자동 업데이트, Windows/Linux 검증 확대, 커넥터 강화, 그리고 재현성 리뷰입니다. 토론은 [Open Science Discord](https://discord.gg/fWNMDKcd5P)에서도 할 수 있습니다.
 
 [MIT](./LICENSE). Happy Science는 beta 연구 도구입니다. 출력은 초안으로 보고, 공개나 의사결정 전에 숫자, 인용, 코드, 결론을 검증하세요.
 

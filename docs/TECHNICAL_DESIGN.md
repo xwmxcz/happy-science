@@ -3,14 +3,14 @@
 > **Implementation status (v0.1, 2026-07-02).** Built and verified: Tauri 2 shell + React
 > UI; **OpenCode** bundled as an isolated sidecar (auto-started, app-private config/data,
 > dedicated port); `OpenCodeClient` over HTTP + SSE; real multi-session chat with history;
-> Skills page backed by OpenCode's real skills/agents; macOS `.dmg`; cross-platform CI.
+> Skills page backed by OpenCode's real skills/agents; Windows/Linux installers; cross-platform CI.
 > Planned (not yet built): self-authored scientific skills, MCP connectors, provenance/
 > reviewer engine, literature search, Jupyter runtime, remote compute. This document is the
 > target design; sections mixing built vs planned are noted inline.
 
 ## 1. Technical goals
 
-A high-performance, open-source research workbench with macOS / Windows installers.
+A high-performance, open-source research workbench with Windows / Linux installers.
 Design priorities: fast startup; smooth UI; simple install; replaceable agent runtime;
 local and sandboxed execution; MCP / skills / workflow support; artifact provenance;
 extensibility to Jupyter, HPC, Modal, Docker, and remote servers.
@@ -30,7 +30,7 @@ Happy Science
 ├── MCP Layer: filesystem / paper-search / BioMCP / Zotero / GitHub / custom
 ├── Execution Layer: OpenCode agents/tools + optional Jupyter Kernel Gateway
 ├── Storage: Local workspace + SQLite + JSONL mission/evidence/provenance records
-└── Packaging: Tauri DMG / APP / NSIS / MSI
+└── Packaging: Tauri NSIS / MSI / DEB / RPM
 ```
 
 ## 3. Tauri over Electron
@@ -40,7 +40,7 @@ Happy Science
 v1 uses **Tauri 2 + React + TypeScript + Vite**. Not Electron.
 
 Reasons: Tauri is lighter with smaller installers; it uses the OS-native WebView,
-suited to tool-type desktop apps; it is cross-platform (macOS / Windows / Linux); it
+suited to tool-type desktop apps; it is cross-platform (Windows / Linux); it
 allows any frontend framework; and a Rust backend is well-suited to local files,
 security, process management, and sidecar orchestration. Tauri positions itself around
 small, fast, secure cross-platform apps built from a single codebase.
@@ -365,14 +365,7 @@ secrets). Never enter provenance, logs, crash reports, git, or exported projects
 
 ## 12. Packaging & release
 
-### 12.1 macOS
-
-Outputs: `AI4S-Workbench-aarch64.dmg`, `AI4S-Workbench-x64.dmg`,
-`AI4S-Workbench-universal.dmg` (later). Code signing / notarization needs an Apple
-Developer account; a free account cannot notarize, so users may still see an
-"unverified" prompt.
-
-### 12.2 Windows
+### 12.1 Windows
 
 Outputs: an NSIS `Setup.exe` installed per user (no admin prompt) as the default
 download, plus a WiX `.msi` for IT-managed deployment. Two installers for one app
@@ -389,6 +382,10 @@ SmartScreen; formal release needs a code-signing certificate (EV certs earn Smar
 reputation faster). Early GitHub Release preview builds may be unsigned, but the README
 must say so.
 
+### 12.2 Linux
+
+Outputs: `.deb` and `.rpm` packages for x86_64 Linux.
+
 ### 12.3 Auto update
 
 Tauri updater with GitHub Releases + `latest.json` + a Tauri updater signature (update
@@ -400,14 +397,13 @@ auto-update; v0.2 adds a GitHub Releases updater; v0.3 adds in-app update prompt
 GitHub Actions build matrix:
 
 ```yaml
-macos-latest:
-  - aarch64-apple-darwin
-  - x86_64-apple-darwin
 windows-latest:
   - x86_64-pc-windows-msvc
+ubuntu-22.04:
+  - x86_64-unknown-linux-gnu
 ```
 
-The official Tauri GitHub Action builds native binaries for macOS / Linux / Windows and
+The official Tauri GitHub Action builds native binaries for Linux / Windows and
 uploads to a GitHub Release.
 
 ## 13. Process model
@@ -508,7 +504,7 @@ ai4s-workbench/
 
 ### 17.2 v0.1 must deliver
 
-macOS app runs; Windows app runs; README has screenshots; a complete demo; API key
+Windows and Linux apps run; README has screenshots; a complete demo; API key
 config; open a workspace; a bundled OpenCode the app auto-starts and drives (sessions,
 streaming, history, skills); show plan / tool / artifact / review; export `report.md`.
 

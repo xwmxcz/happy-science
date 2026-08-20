@@ -30,7 +30,7 @@ and the Happy Science product boundary.
 
 <p>
   <a href="./LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License: MIT"></a>
-  <img src="https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20%7C%20Linux-blue" alt="Platforms">
+  <img src="https://img.shields.io/badge/platform-Windows%20%7C%20Linux-blue" alt="Platforms">
   <img src="https://img.shields.io/badge/i18n-7%20languages-5B8DEF" alt="7 interface languages">
   <img src="https://img.shields.io/badge/built%20with-Tauri%202%20%2B%20React-24C8DB" alt="Built with Tauri + React">
   <img src="https://img.shields.io/badge/runtime-OpenCode-success" alt="OpenCode runtime">
@@ -186,7 +186,7 @@ office/document skills below.
 
 | Area | Current state |
 | --- | --- |
-| Desktop shell | Tauri 2 + React + TypeScript + Vite, with macOS, Windows, and Linux desktop builds. |
+| Desktop shell | Tauri 2 + React + TypeScript + Vite, with Windows and Linux desktop builds. |
 | Runtime | Bundled OpenCode sidecar, auto-started by the app, isolated from the user's own OpenCode config/data. |
 | Projects | Named project workspaces that group their sessions; import an existing folder in place (never copied) or adopt one already inside the workspace; move an existing session into a project. |
 | Sessions | Multi-session chat/history, dated workspace folders, searchable history with archive/restore/export, `@` file and `#` conversation references, `/` commands, and `!` shell mode. |
@@ -234,14 +234,13 @@ You can also add any local or remote MCP server from Settings. See
 [`docs/CONNECT_YOUR_TOOLS.md`](./docs/CONNECT_YOUR_TOOLS.md).
 
 For a neutral positioning note, see
-[`Open Science Desktop vs OpenScience`](./docs/open-science-desktop-vs-openscience.md).
+[`Happy Science vs OpenScience`](./docs/open-science-desktop-vs-openscience.md).
 
 ## Install
 
 Download the latest installer from the
 [Releases page](https://github.com/xwmxcz/happy-science/releases/latest).
 
-- **macOS**: supported for source builds; a signed installer is not part of this preview release.
 - **Windows**: NSIS `.exe`, Windows 10/11 x64 — installs per user, no admin needed. A `.msi` is also published for IT-managed deployment; pick one format and stay on it.
 - **Linux**: `.deb` and `.rpm` on x86_64 Linux.
 
@@ -385,7 +384,7 @@ Prerequisites:
 - Node.js >= 20
 - pnpm 9
 - Rust toolchain
-- macOS, Windows, or Linux system dependencies required by Tauri
+- Windows or Linux system dependencies required by Tauri
 
 ```bash
 git clone https://github.com/xwmxcz/happy-science
@@ -452,7 +451,7 @@ target design as well as historical status notes.
 
 Near-term work is focused on Windows code signing, auto-update, broader
 Windows/Linux verification, richer connector hardening, and continued
-reproducibility review, plus signing before the first public macOS package.
+reproducibility review.
 
 ## Contributing
 

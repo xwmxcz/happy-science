@@ -4,7 +4,7 @@
 
 # Happy Science
 
-**Banco de trabajo de investigación con IA, local-first y agnóstico al modelo, para macOS, Windows & Linux.**
+**Banco de trabajo de investigación con IA, local-first y agnóstico al modelo, para Windows & Linux.**
 
 Happy Science es un producto derivado independiente basado en [Open Science Desktop](https://github.com/ai4s-research/open-science), con licencia MIT. Está construido con Tauri, MCP, agent skills y artefactos reproducibles, y conecta agentes, notebooks, archivos, figuras, informes, ejecuciones y revisión en un flujo auditable.
 
@@ -22,7 +22,7 @@ Happy Science es un producto derivado independiente basado en [Open Science Desk
   <a href="./LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License: MIT"></a>
   <a href="https://doi.org/10.5281/zenodo.21351225"><img src="https://img.shields.io/badge/DOI-10.5281%2Fzenodo.21351225-1682D4" alt="DOI"></a>
   <a href="https://internscience.github.io/ResearchClawBench-Home/"><img src="https://img.shields.io/badge/%F0%9F%8F%86%20%231-ResearchClawBench-FFB300" alt="#1 on ResearchClawBench"></a>
-  <img src="https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20%7C%20Linux-blue" alt="Platforms">
+  <img src="https://img.shields.io/badge/platform-Windows%20%7C%20Linux-blue" alt="Platforms">
   <img src="https://img.shields.io/badge/i18n-7%20languages-5B8DEF" alt="7 interface languages">
   <img src="https://img.shields.io/badge/built%20with-Tauri%202%20%2B%20React-24C8DB" alt="Built with Tauri + React">
   <img src="https://img.shields.io/badge/runtime-OpenCode-success" alt="OpenCode runtime">
@@ -103,7 +103,7 @@ Vienen en el pack `ai4s-skills`, junto a las skills de revisión propias y las s
 
 | Área | Estado actual |
 | --- | --- |
-| Escritorio | Tauri 2 + React + TypeScript + Vite, con objetivos de build para macOS, Windows y Linux. |
+| Escritorio | Tauri 2 + React + TypeScript + Vite, con objetivos de build para Windows y Linux. |
 | Runtime | Sidecar OpenCode incluido, iniciado por la app y aislado de la configuración/datos OpenCode del usuario. |
 | Proyectos | Workspaces de proyecto con nombre que agrupan sus sesiones; importa una carpeta existente en su sitio (nunca se copia) o adopta una que ya esté en el workspace; mueve una sesión existente a un proyecto. |
 | Sesiones | Chat multi-sesión, historial buscable con archivar/restaurar/exportar, carpetas fechadas, referencias `@` a archivos y `#` a conversaciones, comandos `/` y modo shell `!`. |
@@ -133,7 +133,6 @@ Conectores MCP científicos de un clic: búsqueda bibliográfica, bases biomédi
 
 Descarga la versión más reciente desde [Releases](https://github.com/xwmxcz/happy-science/releases/latest).
 
-- **macOS**: admite compilación desde el código fuente; esta versión preliminar aún no incluye un instalador firmado.
 - **Windows**: `.exe` NSIS, Windows 10/11 x64: se instala por usuario, sin permisos de administrador. También se publica un `.msi` para despliegue gestionado por TI; elige un formato y mantente en él.
 - **Linux**: `.deb` y `.rpm` para x86_64.
 
@@ -298,7 +297,7 @@ Los archivos del workspace, datos crudos, historial, procedencia, notebooks y ru
 
 ## Estado
 
-El registro de implementación más fiable es [`PROGRESS.md`](./PROGRESS.md). El trabajo cercano se centra en la firma de código en Windows, auto-update, más verificación en Windows/Linux, endurecimiento de conectores, revisión de reproducibilidad y la firma del primer paquete público de macOS. Para discutir el proyecto, únete al [Open Science Discord](https://discord.gg/fWNMDKcd5P).
+El registro de implementación más fiable es [`PROGRESS.md`](./PROGRESS.md). El trabajo cercano se centra en la firma de código en Windows, auto-update, más verificación en Windows/Linux, endurecimiento de conectores y revisión de reproducibilidad. Para discutir el proyecto, únete al [Open Science Discord](https://discord.gg/fWNMDKcd5P).
 
 [MIT](./LICENSE). Happy Science es tooling beta de investigación: trata las salidas como borradores y verifica números, citas, código y conclusiones antes de publicar o decidir.
 

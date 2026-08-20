@@ -1,7 +1,7 @@
 # Happy Science
 
 Brand name: **Happy Science** — "Local-first, model-agnostic AI research
-workbench for macOS, Windows & Linux." The temporary bundle identifier is
+workbench for Windows & Linux." The temporary bundle identifier is
 `com.happyscience.desktop`. Internal `@ai4s/*`, `osd*`, `.openscience/`, and
 `OPENSCIENCE_*` compatibility identifiers remain unchanged until an explicit
 contract migration replaces them.
@@ -21,7 +21,7 @@ Keep it **simple, explicit, clear, complete**.
 ## What this project is
 
 An open-source, local-first, model-agnostic, reproducible AI research desktop
-for macOS, Windows, and Linux. See `README.md`, `docs/PRD.md`, and
+for Windows and Linux. See `README.md`, `docs/PRD.md`, and
 `docs/TECHNICAL_DESIGN.md`.
 
 Recommended stack: **Tauri 2 + React + TypeScript + Vite**, Tailwind + Radix UI,
@@ -44,7 +44,7 @@ local workspace + SQLite + JSONL provenance.
 - Keep the frontend, desktop shell, and agent runtime decoupled.
 - Skills, MCP servers, and model providers must stay pluggable.
 - Keep the artifact schema and workflow templates stable and versioned.
-- Every feature must work on Windows, macOS, and Linux, AND in the gateway web
+- Every feature must work on Windows and Linux, AND in the gateway web
   client — including phone-width viewports (the web client is used from
   phones). If a feature fundamentally cannot work over the web (local kernels,
   native dialogs, host filesystem access), hide it in web mode (`isGatewayWeb`)

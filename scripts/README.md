@@ -2,6 +2,5 @@
 
 Repo tooling.
 
-- `release/` — packaging and release scripts (Tauri build matrix, signing/notarization
-  helpers, GitHub Release upload, `latest.json` generation).
+- `release/` — packaging helpers used by the Windows/Linux release matrix.
 - `dev/` — local development helpers (bootstrap, run the app, seed the demo workspace).

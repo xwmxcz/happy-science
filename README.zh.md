@@ -28,7 +28,7 @@ Happy Science 自研边界见[致谢](#致谢)。
 
 <p>
   <a href="./LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License: MIT"></a>
-  <img src="https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20%7C%20Linux-blue" alt="Platforms">
+  <img src="https://img.shields.io/badge/platform-Windows%20%7C%20Linux-blue" alt="Platforms">
   <img src="https://img.shields.io/badge/i18n-7%20languages-5B8DEF" alt="7 interface languages">
   <img src="https://img.shields.io/badge/built%20with-Tauri%202%20%2B%20React-24C8DB" alt="Built with Tauri + React">
   <img src="https://img.shields.io/badge/runtime-OpenCode-success" alt="OpenCode runtime">
@@ -161,7 +161,7 @@ Happy Science 的任务不是开放式提示词，而是一条受控的科研工
 
 | 范围 | 当前状态 |
 | --- | --- |
-| 桌面外壳 | Tauri 2 + React + TypeScript + Vite，主打 macOS 和 Windows 桌面构建，同时提供 Linux 包。 |
+| 桌面外壳 | Tauri 2 + React + TypeScript + Vite，提供 Windows 和 Linux 桌面构建。 |
 | 运行时 | 内置 OpenCode sidecar，由应用自动启动，并与用户自己的 OpenCode 配置/数据隔离。 |
 | 项目 | 命名的项目工作区,把相关会话归到一处;可就地导入已有文件夹(绝不复制),或纳管工作区内已存在的文件夹;已有会话也能移动到项目中。 |
 | 会话 | 多会话聊天与历史、按时间创建的工作区文件夹、可搜索的历史(含归档/恢复/导出)、`@` 引用文件与 `#` 引用历史会话、`/` 命令和 `!` shell 模式。 |
@@ -205,13 +205,12 @@ Happy Science 的任务不是开放式提示词，而是一条受控的科研工
 [`docs/CONNECT_YOUR_TOOLS.md`](./docs/CONNECT_YOUR_TOOLS.md)。
 
 中立定位对比见
-[`Open Science Desktop vs OpenScience`](./docs/open-science-desktop-vs-openscience.md)。
+[`Happy Science vs OpenScience`](./docs/open-science-desktop-vs-openscience.md)。
 
 ## 安装
 
 从 [Releases 页面](https://github.com/xwmxcz/happy-science/releases/latest) 下载最新安装包。
 
-- **macOS**：支持从源码构建；当前预览版暂不提供签名安装包。
 - **Windows**：NSIS `.exe`，Windows 10/11 x64 —— 按用户安装，无需管理员权限。另发 `.msi` 供机构批量部署；两种格式请择一使用，不要混装。
 - **Linux**：x86_64 Linux 的 `.deb` 和 `.rpm`。
 
@@ -314,7 +313,7 @@ WantedBy=multi-user.target
 - Node.js >= 20
 - pnpm 9
 - Rust 工具链
-- Tauri 在当前系统需要的 macOS、Windows 或 Linux 依赖
+- Tauri 在当前 Windows 或 Linux 系统需要的依赖
 
 ```bash
 git clone https://github.com/xwmxcz/happy-science
@@ -371,7 +370,7 @@ pnpm lint
 产品和架构说明位于 [`docs/PRD.md`](./docs/PRD.md) 和
 [`docs/TECHNICAL_DESIGN.md`](./docs/TECHNICAL_DESIGN.md)，但这些文档同时包含目标设计和历史状态说明。
 
-近期工作集中在 Windows 代码签名、自动更新、更广的 Windows/Linux 验证、连接器加固、可复现性审查，以及首个 macOS 公开安装包的签名。
+近期工作集中在 Windows 代码签名、自动更新、更广的 Windows/Linux 验证、连接器加固和可复现性审查。
 
 ## 参与贡献
 

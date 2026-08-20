@@ -4,7 +4,7 @@
 
 # Happy Science
 
-**Atelier de recherche IA local-first et agnostique au modèle pour macOS, Windows & Linux.**
+**Atelier de recherche IA local-first et agnostique au modèle pour Windows & Linux.**
 
 Happy Science est un produit dérivé indépendant basé sur [Open Science Desktop](https://github.com/ai4s-research/open-science), sous licence MIT. Construit avec Tauri, MCP, agent skills et des artefacts reproductibles, il relie agents, notebooks, fichiers, figures, rapports, exécutions et revue dans un flux auditable.
 
@@ -22,7 +22,7 @@ Happy Science est un produit dérivé indépendant basé sur [Open Science Deskt
   <a href="./LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License: MIT"></a>
   <a href="https://doi.org/10.5281/zenodo.21351225"><img src="https://img.shields.io/badge/DOI-10.5281%2Fzenodo.21351225-1682D4" alt="DOI"></a>
   <a href="https://internscience.github.io/ResearchClawBench-Home/"><img src="https://img.shields.io/badge/%F0%9F%8F%86%20%231-ResearchClawBench-FFB300" alt="#1 on ResearchClawBench"></a>
-  <img src="https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20%7C%20Linux-blue" alt="Platforms">
+  <img src="https://img.shields.io/badge/platform-Windows%20%7C%20Linux-blue" alt="Platforms">
   <img src="https://img.shields.io/badge/i18n-7%20languages-5B8DEF" alt="7 interface languages">
   <img src="https://img.shields.io/badge/built%20with-Tauri%202%20%2B%20React-24C8DB" alt="Built with Tauri + React">
   <img src="https://img.shields.io/badge/runtime-OpenCode-success" alt="OpenCode runtime">
@@ -103,7 +103,7 @@ Ils sont fournis dans le pack `ai4s-skills`, aux côtés des skills de revue mai
 
 | Domaine | État actuel |
 | --- | --- |
-| Desktop | Tauri 2 + React + TypeScript + Vite, avec cibles macOS, Windows et Linux. |
+| Desktop | Tauri 2 + React + TypeScript + Vite, avec cibles Windows et Linux. |
 | Runtime | Sidecar OpenCode inclus, démarré par l'app et isolé de la configuration/données OpenCode de l'utilisateur. |
 | Projets | Workspaces de projet nommés qui regroupent leurs sessions ; importez un dossier existant sur place (jamais copié) ou adoptez-en un déjà présent dans le workspace ; déplacez une session existante dans un projet. |
 | Sessions | Chat multi-session, historique cherchable avec archivage/restauration/export, dossiers datés, références `@` aux fichiers et `#` aux conversations, commandes `/` et mode shell `!`. |
@@ -133,7 +133,6 @@ Connecteurs MCP scientifiques en un clic : recherche bibliographique, bases biom
 
 Téléchargez la dernière version depuis [Releases](https://github.com/xwmxcz/happy-science/releases/latest).
 
-- **macOS** : les builds depuis les sources sont pris en charge ; cette préversion ne fournit pas encore d'installateur signé.
 - **Windows** : `.exe` NSIS, Windows 10/11 x64 — installation par utilisateur, sans droits administrateur. Un `.msi` est aussi publié pour les déploiements gérés par la DSI ; choisissez un format et conservez-le.
 - **Linux** : `.deb` et `.rpm` pour x86_64.
 
@@ -299,7 +298,7 @@ Les fichiers du workspace, données brutes, historique, provenance, notebooks et
 
 ## État
 
-Le journal d'implémentation le plus fiable est [`PROGRESS.md`](./PROGRESS.md). Les prochains travaux portent sur la signature de code Windows, l'auto-update, une vérification Windows/Linux plus large, le durcissement des connecteurs, la revue de reproductibilité et la signature du premier paquet macOS public. Pour discuter du projet, rejoignez le [Discord Open Science](https://discord.gg/fWNMDKcd5P).
+Le journal d'implémentation le plus fiable est [`PROGRESS.md`](./PROGRESS.md). Les prochains travaux portent sur la signature de code Windows, l'auto-update, une vérification Windows/Linux plus large, le durcissement des connecteurs et la revue de reproductibilité. Pour discuter du projet, rejoignez le [Discord Open Science](https://discord.gg/fWNMDKcd5P).
 
 [MIT](./LICENSE). Happy Science est un outil de recherche beta : traitez les sorties comme des brouillons et vérifiez nombres, citations, code et conclusions avant publication ou décision.
 

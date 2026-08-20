@@ -1,5 +1,7 @@
 # Progress
 
+2026-08-19 21:26 · release(platforms): narrowed the supported release contract to Windows and Linux, removed macOS jobs, signing, notarization, and DMG handling from GitHub Actions, disabled the remote scheduled notarization workflow, and aligned localized READMEs, product metadata, and release notes.
+
 2026-08-19 17:45 · docs(happy-science): replaced the inherited Open Science showcase across all seven localized READMEs with two genuine Happy Science Windows captures for Research Launch and Evidence Sprint, then removed the eight unreferenced upstream showcase assets.
 
 2026-08-19 17:34 · docs(happy-science): rewrote the English and Chinese public READMEs around Happy Science's decision-first mission product, four governed research workflows, kernel-owned evidence/review contracts, and explicit differentiation, while adding a dedicated acknowledgement that credits Open Science Desktop for the inherited workbench foundation and identifies the independent Happy Science product layer.

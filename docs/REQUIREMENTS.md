@@ -41,12 +41,12 @@ The moat of an AI research workbench is **not the model**. It is:
 4. **domain-correctness gates** — because across *every* field the top complaint
    is code that **runs but is scientifically wrong** (see P0-5).
 
-Open Science Desktop must win on those four axes — plus two things competitors are
+Happy Science must win on those four axes — plus two things competitors are
 criticized for lacking: **multi-discipline breadth** and **Windows support**.
 
 Do **not** market as "open-source Claude Science" or "zero hallucination."
-Market as: *"Open Science Desktop — local-first, model-agnostic AI research
-workbench for macOS, Windows & Linux."* Sell **traceable / verifiable**, not **perfect**.
+Market as: *"Happy Science — local-first, model-agnostic AI research
+workbench for Windows & Linux."* Sell **traceable / verifiable**, not **perfect**.
 
 ---
 
@@ -514,19 +514,17 @@ competitors.
   complete. Gap: FITS corner plots; ternary phase diagrams; richer basemaps
   (coastlines) for the anomaly map.
 
-### P1-4 · Cross-platform installer incl. Windows — 🟡 Partial
+### P1-4 · Windows and Linux installers — 🟡 Partial
 
 - **Evidence.** Competitor's official entry lists only Mac/Linux; HN noted Linux
-  friction. Shipping Windows/macOS/Linux reads as consumer-grade.
-- **Requirement.** One-click installers for macOS **and** Windows (Linux next);
+  friction. Shipping Windows/Linux packages covers the current release scope.
+- **Requirement.** One-click installers for Windows and Linux;
   first launch works without CLI knowledge.
 - **Acceptance.** A non-technical user installs and reaches a working first
-  session on both macOS and Windows via a signed installer.
-- **Status.** 🟡 macOS installer shipped; sidecars bundled. Windows CI pipeline in
-  place (matrix produces the NSIS `.exe` and the `.msi`; both sidecar fetch scripts emit the
-  Windows binaries) and cross-platform paths audited (fixed a Windows-only
-  orphaned-jupyter cleanup gap). Gap (host-bound): producing + code-signing the
-  Windows installer and verifying a real first-run need a Windows machine/CI.
+  session on both Windows and Linux.
+- **Status.** 🟡 Windows and Linux CI pipelines produce NSIS `.exe`, WiX `.msi`,
+  `.deb`, and `.rpm` packages with bundled sidecars. Windows code signing and
+  broader first-run verification remain.
 
 ### P1-5 · Interaction & visualization craft (the app must feel premium) — 🟡 Partial
 
@@ -696,7 +694,7 @@ competitors.
 | P1-1 | Multi-discipline from day one | P1 | 🟡 Partial — pluggable + climate example; non-bio depth pending |
 | P1-2 | Domain + literature connectors | P1 | 🟡 Partial — literature/bio + non-bio across ALL 5 disciplines (materials, economics, physics space-weather, earth Open-Meteo + USGS) shipped, each MCP-handshake verified; astronomy catalogs (no PyPI MCP) + more chem/social DBs pending |
 | P1-3 | Scientific renderers | P1 | 🟡 Partial — base + 3D structure + genome + FITS + DOS + band + phase + qualitative-coding + anomaly map (all 4 disciplines; materials trio complete); ternary/coastlines next |
-| P1-4 | Windows + macOS installers | P1 | 🟡 Partial — macOS done; Windows CI ready (signing/verify host-bound) |
+| P1-4 | Windows + Linux installers | P1 | 🟡 Partial — packages ship; Windows signing and broader first-run verification remain |
 | P1-5 | Interaction & visualization craft | P1 | 🟡 Partial — chart system + palette + command palette + native table→chart surface shipped |
 | **P1-6** | **Social-science analysis integrity** | **P1** | 🟡 **Partial — stats-integrity skill: interpretation/prereg/seed checks + verified .dta→R round-trip** |
 | P2-1 | Notebook + larger-project handling | P2 | ✅ Done — notebook + workspace Files explorer |

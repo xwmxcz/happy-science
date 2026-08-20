@@ -4,7 +4,7 @@
 
 # Happy Science
 
-**Local-first, modellunabhängige KI-Forschungs-Workbench für macOS, Windows & Linux.**
+**Local-first, modellunabhängige KI-Forschungs-Workbench für Windows & Linux.**
 
 Happy Science ist ein unabhängiger Produkt-Fork auf Basis des MIT-lizenzierten [Open Science Desktop](https://github.com/ai4s-research/open-science). Es verbindet mit Tauri, MCP, agent skills und reproduzierbaren Artefakten Agenten, Notebooks, Dateien, Abbildungen, Berichte, Läufe und Reviews zu einem auditierbaren Workflow.
 
@@ -22,7 +22,7 @@ Happy Science ist ein unabhängiger Produkt-Fork auf Basis des MIT-lizenzierten 
   <a href="./LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License: MIT"></a>
   <a href="https://doi.org/10.5281/zenodo.21351225"><img src="https://img.shields.io/badge/DOI-10.5281%2Fzenodo.21351225-1682D4" alt="DOI"></a>
   <a href="https://internscience.github.io/ResearchClawBench-Home/"><img src="https://img.shields.io/badge/%F0%9F%8F%86%20%231-ResearchClawBench-FFB300" alt="#1 on ResearchClawBench"></a>
-  <img src="https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20%7C%20Linux-blue" alt="Platforms">
+  <img src="https://img.shields.io/badge/platform-Windows%20%7C%20Linux-blue" alt="Platforms">
   <img src="https://img.shields.io/badge/i18n-7%20languages-5B8DEF" alt="7 interface languages">
   <img src="https://img.shields.io/badge/built%20with-Tauri%202%20%2B%20React-24C8DB" alt="Built with Tauri + React">
   <img src="https://img.shields.io/badge/runtime-OpenCode-success" alt="OpenCode runtime">
@@ -103,7 +103,7 @@ Diese sind im `ai4s-skills`-Pack enthalten, neben den First-Party-Review-Skills 
 
 | Bereich | Aktueller Stand |
 | --- | --- |
-| Desktop | Tauri 2 + React + TypeScript + Vite, mit Build-Zielen für macOS, Windows und Linux. |
+| Desktop | Tauri 2 + React + TypeScript + Vite, mit Build-Zielen für Windows und Linux. |
 | Runtime | Gebündeltes OpenCode-Sidecar, von der App gestartet und von der OpenCode-Konfiguration des Nutzers isoliert. |
 | Projekte | Benannte Projekt-Workspaces, die ihre Sitzungen gruppieren; einen bestehenden Ordner an seinem Ort importieren (nie kopiert) oder einen bereits im Workspace liegenden übernehmen; bestehende Sitzungen in ein Projekt verschieben. |
 | Sitzungen | Multi-Session-Chat, durchsuchbarer Verlauf mit Archivieren/Wiederherstellen/Export, datierte Workspace-Ordner, `@`-Datei- und `#`-Unterhaltungsverweise, `/`-Befehle und `!`-Shell-Modus. |
@@ -133,7 +133,6 @@ Ein-Klick-MCP-Konnektoren: Literatursuche, biomedizinische Datenbanken, Material
 
 Lade den neuesten Installer von [Releases](https://github.com/xwmxcz/happy-science/releases/latest).
 
-- **macOS**: Quellcode-Builds werden unterstützt; diese Vorschau enthält noch keinen signierten Installer.
 - **Windows**: NSIS `.exe`, Windows 10/11 x64 — Installation pro Benutzer, ohne Administratorrechte. Zusätzlich erscheint eine `.msi` für IT-verwaltete Verteilung; bleiben Sie bei einem Format.
 - **Linux**: `.deb` und `.rpm` für x86_64.
 
@@ -298,7 +297,7 @@ Workspace-Dateien, Rohdaten, Sitzungsverlauf, Provenance, Notebooks und Run Reco
 
 ## Status
 
-Das verlässlichste Implementierungslog ist [`PROGRESS.md`](./PROGRESS.md). Nahe Arbeiten: Windows-Code-Signierung, Auto-Update, breitere Windows/Linux-Verifikation, robustere Konnektoren, weitere Reproduzierbarkeits-Reviews und die Signierung des ersten öffentlichen macOS-Pakets. Für Diskussionen gibt es den [Open Science Discord](https://discord.gg/fWNMDKcd5P).
+Das verlässlichste Implementierungslog ist [`PROGRESS.md`](./PROGRESS.md). Nahe Arbeiten: Windows-Code-Signierung, Auto-Update, breitere Windows/Linux-Verifikation, robustere Konnektoren und weitere Reproduzierbarkeits-Reviews. Für Diskussionen gibt es den [Open Science Discord](https://discord.gg/fWNMDKcd5P).
 
 [MIT](./LICENSE). Open Science Desktop ist Beta-Forschungstooling. Ausgaben sind Entwürfe: Zahlen, Zitate, Code und Schlussfolgerungen vor Veröffentlichung oder Entscheidung prüfen.
 
