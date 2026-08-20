@@ -1,5 +1,7 @@
 # Progress
 
+2026-08-20 11:28 · examples(happy-science): replaced the six inherited first-install mock sessions and their upstream-specific figures with four Happy Science-owned, read-only mission examples for Research Launch, Evidence Sprint, Reproduction Challenge, and Manuscript Stress Test, all using explicitly synthetic demonstration data; verified the full 1,115-test frontend suite and built fresh Windows NSIS and MSI installers.
+
 2026-08-19 21:26 · release(platforms): narrowed the supported release contract to Windows and Linux, removed macOS jobs, signing, notarization, and DMG handling from GitHub Actions, disabled the remote scheduled notarization workflow, and aligned localized READMEs, product metadata, and release notes.
 
 2026-08-19 17:45 · docs(happy-science): replaced the inherited Open Science showcase across all seven localized READMEs with two genuine Happy Science Windows captures for Research Launch and Evidence Sprint, then removed the eight unreferenced upstream showcase assets.
