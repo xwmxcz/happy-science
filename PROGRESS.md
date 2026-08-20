@@ -1,5 +1,7 @@
 # Progress
 
+2026-08-20 11:56 · publish(release): published `v0.5.0-happy-science.2` as the latest Windows/Linux release after both GitHub Actions jobs passed, with six verified assets covering NSIS, MSI, DEB, RPM, and Windows/Linux `osd` CLI archives.
+
 2026-08-20 11:28 · examples(happy-science): replaced the six inherited first-install mock sessions and their upstream-specific figures with four Happy Science-owned, read-only mission examples for Research Launch, Evidence Sprint, Reproduction Challenge, and Manuscript Stress Test, all using explicitly synthetic demonstration data; verified the full 1,115-test frontend suite and built fresh Windows NSIS and MSI installers.
 
 2026-08-19 21:26 · release(platforms): narrowed the supported release contract to Windows and Linux, removed macOS jobs, signing, notarization, and DMG handling from GitHub Actions, disabled the remote scheduled notarization workflow, and aligned localized READMEs, product metadata, and release notes.
