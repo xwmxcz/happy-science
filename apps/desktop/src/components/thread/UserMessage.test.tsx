@@ -34,6 +34,22 @@ describe("UserMessage", () => {
     expect(container.querySelector(".w-fit")).not.toBeNull();
   });
 
+  it("collapses a long task by default and lets the user reveal it", () => {
+    const text = "Research contract ".repeat(40);
+    const { container } = render(<UserMessage block={{ kind: "user", text }} />);
+
+    expect(container.querySelector(".max-h-40")).not.toBeNull();
+    const toggle = screen.getByRole("button", { name: "Show more" });
+    expect(toggle).toHaveAttribute("aria-expanded", "false");
+
+    fireEvent.click(toggle);
+    expect(container.querySelector(".max-h-40")).toBeNull();
+    expect(screen.getByRole("button", { name: "Show less" })).toHaveAttribute(
+      "aria-expanded",
+      "true",
+    );
+  });
+
   it("shows Edit/Revert only when the message has an id AND the handler", () => {
     const { rerender } = render(<UserMessage block={{ kind: "user", text: "hi", messageID: "m1" }} />);
     expect(screen.queryByLabelText("Edit")).toBeNull(); // no handlers

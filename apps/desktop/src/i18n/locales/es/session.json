@@ -581,6 +581,8 @@
     "copy": "Copiar",
     "copied": "Copiado",
     "copyFailed": "No se pudo copiar al portapapeles.",
+    "showMore": "Mostrar más",
+    "showLess": "Mostrar menos",
     "edit": "Editar",
     "editing": {
       "cancel": "Cancelar",

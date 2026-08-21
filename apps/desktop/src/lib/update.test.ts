@@ -10,8 +10,8 @@ import {
 
 const latest: UpdateInfo = {
   version: "v0.1.8",
-  url: "https://github.com/ai4s-research/open-science/releases/tag/v0.1.8",
-  name: "v0.1.8",
+  url: "https://github.com/xwmxcz/happy-science/releases/tag/v0.1.8",
+  name: "Happy Science 0.1.8",
   publishedAt: "2026-07-09T00:00:00Z",
 };
 
@@ -86,7 +86,7 @@ describe("update store", () => {
     });
   });
 
-  it("does not contact an upstream feed before Happy Science configures one", async () => {
+  it("checks the Happy Science release feed instead of the upstream project", async () => {
     const fetchMock = vi.fn().mockResolvedValue({
       ok: true,
       json: async () => ({
@@ -101,9 +101,12 @@ describe("update store", () => {
     useUpdateStore.setState({ lastCheckedAt: 1000 });
     await useUpdateStore.getState().check({ manual: true, now: 2000 });
 
-    expect(fetchMock).not.toHaveBeenCalled();
-    expect(useUpdateStore.getState().status).toBe("idle");
-    expect(useUpdateStore.getState().hasUpdate).toBe(false);
-    expect(useUpdateStore.getState().showBadge).toBe(false);
+    expect(fetchMock).toHaveBeenCalledWith(
+      "https://api.github.com/repos/xwmxcz/happy-science/releases/latest",
+      expect.objectContaining({ headers: { Accept: "application/vnd.github+json" } }),
+    );
+    expect(useUpdateStore.getState().status).toBe("ready");
+    expect(useUpdateStore.getState().hasUpdate).toBe(true);
+    expect(useUpdateStore.getState().showBadge).toBe(true);
   });
 });

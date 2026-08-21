@@ -1,5 +1,16 @@
+// Memoized conversation atoms: compact user-task presentation, streamed agent
+// answers, artifact links, and lightweight status/data blocks.
 import { memo, useEffect, useRef, useState } from "react";
-import { Check, Copy, Loader2, Paperclip, Pencil, RotateCcw } from "lucide-react";
+import {
+  Check,
+  ChevronDown,
+  ChevronUp,
+  Copy,
+  Loader2,
+  Paperclip,
+  Pencil,
+  RotateCcw,
+} from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { copyText } from "@/lib/clipboard";
 import { toast } from "@/lib/toast";
@@ -45,11 +56,13 @@ export const UserMessage = memo(function UserMessage({
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(block.text);
   const [copied, setCopied] = useState(false);
+  const [expanded, setExpanded] = useState(false);
   // Which destructive action is awaiting confirmation, if any.
   const [confirm, setConfirm] = useState<null | "edit" | "revert">(null);
   const areaRef = useRef<HTMLTextAreaElement>(null);
   const canEdit = !!onEdit && !!block.messageID;
   const canRevert = !!onRevert && !!block.messageID;
+  const collapsible = block.text.length > 480 || block.text.split("\n").length > 8;
 
   const copy = async () => {
     try {
@@ -141,8 +154,32 @@ export const UserMessage = memo(function UserMessage({
 
   return (
     <div {...{ [HOVER_HOST]: "" }} className="flex flex-col items-end">
-      <div className="w-fit max-w-[85%] whitespace-pre-wrap break-words rounded-card bg-surface-2 px-4 py-2.5 text-[15px] leading-relaxed text-text">
-        {block.text}
+      <div className="relative w-fit max-w-[85%] rounded-card bg-surface-2 px-4 py-2.5 text-[15px] leading-relaxed text-text">
+        <div
+          className={cn(
+            "whitespace-pre-wrap break-words",
+            collapsible && !expanded && "max-h-40 overflow-hidden",
+          )}
+        >
+          {block.text}
+        </div>
+        {collapsible && !expanded && (
+          <div
+            className="pointer-events-none absolute inset-x-0 bottom-0 h-14 rounded-b-card bg-gradient-to-t from-surface-2 to-transparent"
+            aria-hidden
+          />
+        )}
+        {collapsible && (
+          <button
+            type="button"
+            aria-expanded={expanded}
+            onClick={() => setExpanded((value) => !value)}
+            className="relative z-10 mt-1 inline-flex items-center gap-1 rounded px-1 py-0.5 text-xs font-medium text-accent hover:bg-surface"
+          >
+            {expanded ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
+            {expanded ? t("message.showLess") : t("message.showMore")}
+          </button>
+        )}
       </div>
       <div
         data-hover-row

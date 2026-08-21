@@ -5,7 +5,6 @@
 export const PRODUCT_NAME = "Happy Science";
 export const PRODUCT_SLUG = "happy-science";
 
-// Keep release checks off until Happy Science has its own public repository.
-// Pointing a rebranded build at the upstream Open Science feed would advertise
-// unrelated installers to users.
-export const UPDATE_REPOSITORY: string | null = null;
+// Single owner for the public release feed. The desktop passes this repository
+// to the native fetch bridge; the gateway client derives the GitHub API URL.
+export const UPDATE_REPOSITORY = "xwmxcz/happy-science";

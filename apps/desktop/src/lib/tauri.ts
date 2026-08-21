@@ -645,10 +645,10 @@ export interface LatestRelease {
   publishedAt: string | null;
 }
 
-export async function latestRelease(): Promise<LatestRelease | null> {
+export async function latestRelease(repository: string): Promise<LatestRelease | null> {
   if (!isTauri) return null;
   const { invoke } = await import("@tauri-apps/api/core");
-  return invoke<LatestRelease>("latest_release");
+  return invoke<LatestRelease>("latest_release", { repository });
 }
 
 export type SaveResult =

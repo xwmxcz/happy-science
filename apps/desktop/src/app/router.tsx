@@ -1,3 +1,7 @@
+// Application route ownership, including route-level code splitting for heavy
+// secondary surfaces so the main research workspace stays quick to start.
+import { lazy, Suspense } from "react";
+import { Loader2 } from "lucide-react";
 import { createBrowserRouter, Navigate, type RouteObject } from "react-router-dom";
 import { AppShell } from "./layout/AppShell";
 import { SessionPage } from "./routes/SessionPage";
@@ -8,8 +12,25 @@ import { FilesPage } from "./routes/FilesPage";
 import { RunsPage } from "./routes/RunsPage";
 import { ProjectsPage } from "./routes/ProjectsPage";
 import { HistoryPage } from "./routes/HistoryPage";
-import { SettingsPage } from "./routes/SettingsPage";
 import { NotFound } from "./routes/NotFound";
+
+const SettingsPage = lazy(() =>
+  import("./routes/SettingsPage").then((module) => ({ default: module.SettingsPage })),
+);
+
+function SettingsRoute() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex h-full items-center justify-center" role="status" aria-busy="true">
+          <Loader2 className="animate-spin text-muted" size={18} aria-hidden />
+        </div>
+      }
+    >
+      <SettingsPage />
+    </Suspense>
+  );
+}
 
 export const routes: RouteObject[] = [
   {
@@ -26,8 +47,8 @@ export const routes: RouteObject[] = [
       { path: "runs", element: <RunsPage /> },
       { path: "projects", element: <ProjectsPage /> },
       { path: "history", element: <HistoryPage /> },
-      { path: "settings", element: <SettingsPage /> },
-      { path: "settings/:section", element: <SettingsPage /> },
+      { path: "settings", element: <SettingsRoute /> },
+      { path: "settings/:section", element: <SettingsRoute /> },
       { path: "*", element: <NotFound /> },
     ],
   },

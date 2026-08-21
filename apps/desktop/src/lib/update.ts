@@ -133,7 +133,7 @@ function derive(base: Pick<UpdateState, "enabled" | "badgeEnabled" | "latest" | 
 
 async function fetchLatestRelease(): Promise<UpdateInfo> {
   if (!RELEASE_URL) throw new Error("Happy Science does not have a release feed yet");
-  const native = await latestRelease();
+  const native = await latestRelease(UPDATE_REPOSITORY);
   if (native) return native;
 
   const res = await fetch(RELEASE_URL, {

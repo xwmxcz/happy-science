@@ -573,6 +573,8 @@
     "copy": "복사",
     "copied": "복사됨",
     "copyFailed": "클립보드에 복사할 수 없습니다.",
+    "showMore": "더 보기",
+    "showLess": "접기",
     "edit": "편집",
     "editing": {
       "cancel": "취소",

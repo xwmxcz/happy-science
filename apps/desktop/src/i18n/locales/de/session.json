@@ -581,6 +581,8 @@
     "copy": "Kopieren",
     "copied": "Kopiert",
     "copyFailed": "Konnte nicht in die Zwischenablage kopieren.",
+    "showMore": "Mehr anzeigen",
+    "showLess": "Weniger anzeigen",
     "edit": "Bearbeiten",
     "editing": {
       "cancel": "Abbrechen",

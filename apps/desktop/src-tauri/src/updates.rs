@@ -1,8 +1,7 @@
+//! Native GitHub release-feed bridge for the desktop update checker. The
+//! shared product contract owns the repository name; this layer validates it
+//! before performing the request outside the WebView CSP.
 use serde::Serialize;
-
-// Disabled until Happy Science has its own public release repository. Never
-// advertise upstream Open Science installers from a rebranded build.
-const RELEASES_ATOM_URL: Option<&str> = None;
 
 #[derive(Debug, Clone, Serialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
@@ -14,14 +13,14 @@ pub struct ReleaseInfo {
 }
 
 #[tauri::command]
-pub async fn latest_release() -> Result<ReleaseInfo, String> {
-    tauri::async_runtime::spawn_blocking(fetch_latest_release)
+pub async fn latest_release(repository: String) -> Result<ReleaseInfo, String> {
+    tauri::async_runtime::spawn_blocking(move || fetch_latest_release(&repository))
         .await
         .map_err(|e| format!("update check task failed: {e}"))?
 }
 
-fn fetch_latest_release() -> Result<ReleaseInfo, String> {
-    let url = RELEASES_ATOM_URL.ok_or("Happy Science does not have a release feed yet")?;
+fn fetch_latest_release(repository: &str) -> Result<ReleaseInfo, String> {
+    let url = release_atom_url(repository)?;
     let body = reqwest::blocking::Client::builder()
         .user_agent("Happy Science update checker")
         .build()
@@ -33,6 +32,22 @@ fn fetch_latest_release() -> Result<ReleaseInfo, String> {
         .text()
         .map_err(|e| format!("could not read GitHub releases feed: {e}"))?;
     parse_latest_release(&body)
+}
+
+fn release_atom_url(repository: &str) -> Result<String, String> {
+    let mut parts = repository.split('/');
+    let owner = parts.next().unwrap_or_default();
+    let name = parts.next().unwrap_or_default();
+    let valid = |part: &str| {
+        !part.is_empty()
+            && part
+                .chars()
+                .all(|c| c.is_ascii_alphanumeric() || matches!(c, '-' | '_' | '.'))
+    };
+    if !valid(owner) || !valid(name) || parts.next().is_some() {
+        return Err("invalid GitHub release repository".into());
+    }
+    Ok(format!("https://github.com/{owner}/{name}/releases.atom"))
 }
 
 fn parse_latest_release(atom: &str) -> Result<ReleaseInfo, String> {
@@ -95,13 +110,23 @@ mod tests {
     use super::*;
 
     #[test]
+    fn derives_a_github_release_feed_from_the_configured_repository() {
+        assert_eq!(
+            release_atom_url("xwmxcz/happy-science").unwrap(),
+            "https://github.com/xwmxcz/happy-science/releases.atom"
+        );
+        assert!(release_atom_url("https://example.com/repo").is_err());
+        assert!(release_atom_url("owner/repo/extra").is_err());
+    }
+
+    #[test]
     fn parses_first_release_entry_from_atom() {
         let atom = r#"
 <feed>
   <entry>
     <updated>2026-07-09T13:59:12Z</updated>
-    <link rel="alternate" type="text/html" href="https://github.com/ai4s-research/open-science/releases/tag/v0.1.8"/>
-    <title>Happy Science v0.1.8</title>
+    <link rel="alternate" type="text/html" href="https://github.com/xwmxcz/happy-science/releases/tag/v0.5.0-happy-science.2"/>
+    <title>Happy Science 0.5.0 Preview 2</title>
   </entry>
 </feed>
 "#;
@@ -109,9 +134,10 @@ mod tests {
         assert_eq!(
             parse_latest_release(atom).unwrap(),
             ReleaseInfo {
-                version: "v0.1.8".into(),
-                url: "https://github.com/ai4s-research/open-science/releases/tag/v0.1.8".into(),
-                name: Some("Happy Science v0.1.8".into()),
+                version: "v0.5.0-happy-science.2".into(),
+                url: "https://github.com/xwmxcz/happy-science/releases/tag/v0.5.0-happy-science.2"
+                    .into(),
+                name: Some("Happy Science 0.5.0 Preview 2".into()),
                 published_at: Some("2026-07-09T13:59:12Z".into()),
             },
         );

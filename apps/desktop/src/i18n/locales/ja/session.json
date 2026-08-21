@@ -573,6 +573,8 @@
     "copy": "コピー",
     "copied": "コピーしました",
     "copyFailed": "クリップボードにコピーできませんでした。",
+    "showMore": "さらに表示",
+    "showLess": "折りたたむ",
     "edit": "編集",
     "editing": {
       "cancel": "キャンセル",

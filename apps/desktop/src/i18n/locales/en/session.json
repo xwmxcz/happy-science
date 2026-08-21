@@ -635,6 +635,8 @@
     "copy": "Copy",
     "copied": "Copied",
     "copyFailed": "Could not copy to the clipboard.",
+    "showMore": "Show more",
+    "showLess": "Show less",
     "edit": "Edit",
     "editing": {
       "cancel": "Cancel",
